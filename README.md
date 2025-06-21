@@ -2,6 +2,8 @@
 
 A modern AI chat application built with Deno, featuring a React frontend and a robust API backend that supports multiple AI providers.
 
+> **🪟 Windows Users**: After installing `just`, you MUST run `just setup` (or `deno run --allow-read --allow-write scripts/setup-justfile.ts` if that fails) to configure the shell. This fixes "could not find the shell" errors.
+
 ## Architecture
 
 ```
@@ -64,8 +66,12 @@ cargo install just
 git clone <repository-url>
 cd <repository-name>
 
-# Configure justfile for your operating system (Windows users must run this)
+# IMPORTANT: Configure justfile for your operating system
+# Windows users MUST run this to avoid shell errors:
 just setup
+
+# If you get "could not find the shell" error on Windows, run this instead:
+# deno run --allow-read --allow-write scripts/setup-justfile.ts
 
 # Install project dependencies
 just install
@@ -150,8 +156,11 @@ just docker-prod      # Start all services with Docker Compose (production)
 
 1. **First time setup:**
    ```bash
-   # Configure justfile for your OS (required for Windows)
+   # Configure justfile for your OS (REQUIRED for Windows)
    just setup
+
+   # If you get shell errors on Windows, run this instead:
+   # deno run --allow-read --allow-write scripts/setup-justfile.ts
 
    # Install dependencies and configure environment
    just install
@@ -248,9 +257,19 @@ Make sure `just` is installed and in your PATH. See installation instructions ab
 ### Windows-Specific Issues
 
 #### "Could not find `cygpath` executable" or "could not find the shell" Error
-These errors occur when `just` can't find the appropriate shell on Windows. Our `justfile` has been updated to be fully cross-platform compatible.
+These errors occur when `just` can't find the appropriate shell on Windows.
 
-**Solution**: The latest version automatically detects your operating system and uses the appropriate shell (PowerShell on Windows, sh on Unix systems).
+**Solution 1 (Recommended)**:
+```powershell
+just setup
+```
+
+**Solution 2 (If just setup fails)**:
+```powershell
+deno run --allow-read --allow-write scripts/setup-justfile.ts
+```
+
+This configures the `justfile` to use PowerShell on Windows and sh on Unix systems.
 
 #### PowerShell Execution Policy Issues
 If you get execution policy errors:

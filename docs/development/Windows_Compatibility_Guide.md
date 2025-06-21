@@ -42,9 +42,12 @@ cargo install just
 just --version
 # Should output: just 1.40.0 (or similar)
 
-# Configure justfile for Windows (IMPORTANT!)
+# Configure justfile for Windows (REQUIRED!)
 just setup
 # Should output: ✅ justfile configured for Windows (PowerShell)
+
+# If you get "could not find the shell" error, run this instead:
+deno run --allow-read --allow-write scripts/setup-justfile.ts
 ```
 
 ## Common Windows Issues and Solutions
@@ -53,13 +56,21 @@ just setup
 
 **Problem**: These errors occur when `just` can't find the appropriate shell on Windows.
 
-**Solution**: This has been completely fixed in the current version. The `justfile` now automatically detects your operating system and uses the appropriate shell.
+**Solution 1 (Recommended)**:
+```powershell
+just setup
+```
 
-**What was changed**:
-- Added automatic OS detection: `set shell := if os() == "windows" { ["powershell.exe", "-c"] } else { ["sh", "-c"] }`
-- Replaced all platform-specific commands with cross-platform TypeScript scripts
-- Created comprehensive cross-platform scripts for all operations
-- All commands now work identically on Windows, macOS, and Linux
+**Solution 2 (If just setup fails)**:
+```powershell
+deno run --allow-read --allow-write scripts/setup-justfile.ts
+```
+
+**What this does**:
+- Detects your operating system automatically
+- Configures PowerShell for Windows, sh for Unix systems
+- Updates the justfile with the correct shell configuration
+- Eliminates all shell-related errors
 
 ### 2. PowerShell Execution Policy Issues
 
@@ -189,27 +200,41 @@ If you encounter issues:
    just --version
    ```
 
-3. **Test Basic Commands**:
+3. **Fix Shell Configuration (MOST COMMON ISSUE)**:
+   ```powershell
+   # If you get "could not find the shell" errors:
+
+   # Try this first:
+   just setup
+
+   # If that fails, run directly:
+   deno run --allow-read --allow-write scripts/setup-justfile.ts
+
+   # Verify it worked:
+   just --list
+   ```
+
+4. **Test Basic Commands**:
    ```powershell
    just --list
    just install
    ```
 
-4. **Check Environment**:
+5. **Check Environment**:
    ```powershell
    # Verify you're in the project root
    ls justfile
-   
+
    # Check if .env files exist
    ls internal/ai-api/.env.example
    ```
 
-5. **Try Individual Services**:
+6. **Try Individual Services**:
    ```powershell
    # Test AI API separately
    cd internal/ai-api
    deno task dev
-   
+
    # Test AI Chat separately (in new terminal)
    cd web/ai-chat
    deno task dev
