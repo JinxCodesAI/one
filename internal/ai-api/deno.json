@@ -13,6 +13,6 @@
     "dev": "deno run --allow-all --watch main.ts",
     "start": "deno run --allow-all main.ts",
     "test": "deno test --allow-env --allow-net",
-    "test:e2e": "deno test --allow-all e2e/"
+    "test:e2e": "deno test --allow-all e2e/**/*.e2e.ts"
   }
 }
