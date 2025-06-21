@@ -12,8 +12,8 @@ dev: dev-api dev-chat      # Run all dev servers
 test-unit:
     @echo "🔬 Running all unit tests..."
     @cd internal/ai-api && deno task test
-    @cd ../../web/ai-chat && deno task test
-    @cd ../../packages/testing-infrastructure && deno task test
+    @cd web/ai-chat && deno task test
+    @cd packages/testing-infrastructure && deno task test
 
 # --- E2E Testing (with infrastructure management) ---
 test-e2e: test-e2e-api test-e2e-chat
