@@ -4,9 +4,19 @@
 # Set environment variables
 set dotenv-load := true
 
+# Shell configuration - defaults to sh for Unix compatibility
+# Windows users should run 'just setup' to configure PowerShell
+set shell := ["sh", "-c"]
+
 # Default recipe - show available commands
 default:
     @just --list
+
+# Setup justfile for current OS (run this first on new systems)
+setup:
+    @echo "🔧 Configuring justfile for your operating system..."
+    @deno run --allow-read --allow-write scripts/setup-justfile.ts
+    @echo "✅ Setup complete! You can now use all just commands."
 
 # Development commands
 dev-api:
@@ -31,12 +41,7 @@ test: test-unit test-e2e
 
 test-unit:
     @echo "🔬 Running unit tests..."
-    @echo "Testing AI API..."
-    @deno task --cwd internal/ai-api test
-    @echo "Testing AI Chat..."
-    @deno task --cwd web/ai-chat test
-    @echo "Testing infrastructure..."
-    @deno task --cwd packages/testing-infrastructure test || echo "ℹ️ No tests found in testing-infrastructure (expected)"
+    @deno run --allow-run --allow-read scripts/test-unit-cross-platform.ts
 
 test-e2e:
     @echo "🌐 Running E2E tests..."
@@ -70,9 +75,7 @@ fmt:
 # Cleanup
 clean:
     @echo "🧹 Cleaning build artifacts..."
-    @rm -rf internal/ai-api/dist/ || true
-    @rm -rf web/ai-chat/dist/ || true
-    @rm -rf node_modules/.cache/ || true
+    @deno run --allow-read --allow-write scripts/clean-cross-platform.ts
 
 # Installation
 install:
@@ -119,8 +122,7 @@ docker-prod:
 
 docker-stop:
     @echo "🛑 Stopping Docker Compose services..."
-    @docker-compose -f docker-compose.dev.yml down || true
-    @docker-compose -f docker-compose.prod.yml down || true
+    @deno run --allow-run scripts/docker-stop-cross-platform.ts
 
 docker-logs:
     @echo "📋 Showing Docker Compose logs..."
@@ -128,6 +130,4 @@ docker-logs:
 
 docker-clean:
     @echo "🧹 Cleaning Docker resources..."
-    @docker-compose -f docker-compose.dev.yml down -v --rmi all || true
-    @docker-compose -f docker-compose.prod.yml down -v --rmi all || true
-    @docker system prune -f
+    @deno run --allow-run scripts/docker-clean-cross-platform.ts

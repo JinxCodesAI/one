@@ -41,19 +41,24 @@ cargo install just
 ```powershell
 just --version
 # Should output: just 1.40.0 (or similar)
+
+# Configure justfile for Windows (IMPORTANT!)
+just setup
+# Should output: ✅ justfile configured for Windows (PowerShell)
 ```
 
 ## Common Windows Issues and Solutions
 
-### 1. "Could not find `cygpath` executable" Error
+### 1. "Could not find `cygpath` executable" or "could not find the shell" Error
 
-**Problem**: This error occurs when `just` tries to run bash scripts on Windows.
+**Problem**: These errors occur when `just` can't find the appropriate shell on Windows.
 
-**Solution**: This has been fixed in the current version. The `justfile` now uses cross-platform TypeScript scripts instead of bash.
+**Solution**: This has been completely fixed in the current version. The `justfile` now automatically detects your operating system and uses the appropriate shell.
 
 **What was changed**:
-- Replaced bash shebang scripts with `@echo` commands
-- Created `scripts/dev-all-cross-platform.ts` for service orchestration
+- Added automatic OS detection: `set shell := if os() == "windows" { ["powershell.exe", "-c"] } else { ["sh", "-c"] }`
+- Replaced all platform-specific commands with cross-platform TypeScript scripts
+- Created comprehensive cross-platform scripts for all operations
 - All commands now work identically on Windows, macOS, and Linux
 
 ### 2. PowerShell Execution Policy Issues

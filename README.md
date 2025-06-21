@@ -64,6 +64,9 @@ cargo install just
 git clone <repository-url>
 cd <repository-name>
 
+# Configure justfile for your operating system (Windows users must run this)
+just setup
+
 # Install project dependencies
 just install
 ```
@@ -84,6 +87,9 @@ You need at least one AI provider API key:
 ### Development Commands
 
 ```bash
+# Setup (run once)
+just setup            # Configure justfile for your OS (required for Windows)
+
 # Native Development (Recommended - Faster)
 just dev-api          # Start AI API server
 just dev-chat         # Start AI Chat app
@@ -144,6 +150,9 @@ just docker-prod      # Start all services with Docker Compose (production)
 
 1. **First time setup:**
    ```bash
+   # Configure justfile for your OS (required for Windows)
+   just setup
+
    # Install dependencies and configure environment
    just install
    cp internal/ai-api/.env.example internal/ai-api/.env
@@ -238,10 +247,10 @@ Make sure `just` is installed and in your PATH. See installation instructions ab
 
 ### Windows-Specific Issues
 
-#### "Could not find `cygpath` executable" Error
-This error occurs when `just` tries to run bash scripts on Windows. Our `justfile` has been updated to be cross-platform compatible.
+#### "Could not find `cygpath` executable" or "could not find the shell" Error
+These errors occur when `just` can't find the appropriate shell on Windows. Our `justfile` has been updated to be fully cross-platform compatible.
 
-**Solution**: Make sure you're using the latest version of the repository with the cross-platform `justfile`.
+**Solution**: The latest version automatically detects your operating system and uses the appropriate shell (PowerShell on Windows, sh on Unix systems).
 
 #### PowerShell Execution Policy Issues
 If you get execution policy errors:
