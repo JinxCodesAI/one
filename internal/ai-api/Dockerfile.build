@@ -1,0 +1,17 @@
+# Dockerfile for cross-compiling Deno application to Linux
+FROM denoland/deno:2.3.6
+
+WORKDIR /app
+
+# Copy the application files
+COPY . .
+
+# Cache dependencies
+RUN deno cache main.ts
+
+# Compile for Linux
+RUN deno compile --allow-net --allow-env --output ai-api-linux main.ts
+
+# Create a simple output stage
+FROM scratch
+COPY --from=0 /app/ai-api-linux /ai-api-linux

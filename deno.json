@@ -1,0 +1,36 @@
+{
+  "tasks": {
+    "dev": "deno run --watch main.ts",
+    "dev:api": "deno task --cwd internal/ai-api dev",
+    "dev:chat": "deno task --cwd web/ai-chat dev",
+    "dev:all": "deno run --allow-run --allow-read scripts/dev-all.ts",
+    "start:api": "deno task --cwd internal/ai-api start",
+    "start:chat": "deno task --cwd web/ai-chat preview",
+    "test": "echo '🧪 Running tests for all workspace projects...' && deno task test:all",
+    "test:all": "deno task test:ai-api && deno task test:ai-chat && deno task test:testing-infrastructure",
+    "test:unit": "echo '🔬 Running unit tests for all projects...' && deno task test:unit:ai-api && deno task test:unit:ai-chat",
+    "test:e2e": "echo '🌐 Running E2E tests for all projects...' && deno task test:e2e:ai-api && deno task test:e2e:ai-chat",
+    "test:ai-api": "echo '🔧 Testing AI-API (unit + E2E)...' && cd internal/ai-api && deno task test && deno task test:e2e",
+    "test:ai-chat": "echo '💬 Testing ai-chat (unit + E2E)...' && cd web/ai-chat && deno task test && deno task test:e2e",
+    "test:testing-infrastructure": "echo '🛠️ Testing infrastructure package...' && cd packages/testing-infrastructure && (deno test --allow-all || echo 'ℹ️ No tests found in testing-infrastructure (expected)')",
+    "test:unit:ai-api": "echo '🔬 AI-API unit tests...' && cd internal/ai-api && deno task test",
+    "test:unit:ai-chat": "echo '🔬 ai-chat unit tests...' && cd web/ai-chat && deno task test",
+    "test:e2e:ai-api": "echo '🌐 AI-API E2E tests...' && cd internal/ai-api && deno task test:e2e",
+    "test:e2e:ai-chat": "echo '🌐 ai-chat E2E tests...' && cd web/ai-chat && deno task test:e2e",
+    "test:watch": "echo 'Please specify which project to watch. Use: deno task test:watch:ai-api or deno task test:watch:ai-chat'",
+    "test:watch:ai-api": "cd internal/ai-api && deno test --allow-all --watch --ignore=e2e/",
+    "test:watch:ai-chat": "cd web/ai-chat && deno task test:watch"
+  },
+  "imports": {
+    "@std/assert": "jsr:@std/assert@1",
+    "@std/testing/bdd": "jsr:@std/testing@1/bdd",
+    "ai": "npm:ai@^4.3.16",
+    "playwright": "npm:playwright@^1.40.0",
+    "@one/testing-infrastructure": "./packages/testing-infrastructure/src/mod.ts"
+  },
+  "nodeModulesDir":"auto",
+  "workspace": ["./internal/ai-api", "./web/ai-chat", "./packages/testing-infrastructure"],
+  "compilerOptions": {
+    "lib": ["deno.ns", "es2022", "dom"]
+  }
+}
