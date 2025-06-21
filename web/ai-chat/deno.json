@@ -1,16 +1,27 @@
 {
   "tasks": {
     "dev": "deno run -A --node-modules-dir npm:vite",
+    "dev:debug": "deno run -A --node-modules-dir npm:vite --debug",
     "build": "deno run -A --node-modules-dir npm:vite build",
+    "build:dev": "deno run -A --node-modules-dir npm:vite build --mode development",
+    "build:watch": "deno run -A --node-modules-dir npm:vite build --watch",
     "preview": "deno run -A --node-modules-dir npm:vite preview",
     "serve": "deno run --allow-net --allow-read jsr:@std/http@1/file-server dist/",
-    "test": "deno test --allow-net --allow-env --allow-read --allow-write src/",
+    "test": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys src/",
     "test:unit": "deno test --allow-net --allow-env --allow-read --allow-write --ignore='src/**/*.integration.ts' --ignore='src/**/*.e2e.ts' src/",
-    "test:integration": "deno test --allow-net --allow-env --allow-read --allow-write src/**/*.integration.ts",
+    "test:integration": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys src/**/*.integration.ts",
     "test:e2e": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys e2e/**/*.e2e.ts",
     "test:e2e-ui": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys e2e/**/*.ui.e2e.ts",
-    "test:all": "deno test --allow-net --allow-env --allow-read --allow-write src/ e2e/",
-    "test:watch": "deno test --allow-net --allow-env --allow-read --allow-write --watch --ignore='src/**/*.e2e.ts' src/"
+    "test:watch": "deno test --allow-net --allow-env --allow-read --allow-write --watch --ignore='src/**/*.e2e.ts' src/",
+    "test:coverage": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys --coverage=coverage/ src/",
+    "test:all": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys src/ e2e/",
+    "lint": "deno lint src/ e2e/",
+    "lint:fix": "deno lint --fix src/ e2e/",
+    "format": "deno fmt src/ e2e/",
+    "format:check": "deno fmt --check src/ e2e/",
+    "typecheck": "deno check src/**/*.ts src/**/*.tsx e2e/**/*.ts",
+    "clean": "rm -rf dist/ coverage/ node_modules/",
+    "health": "curl -f http://localhost:5173 || echo 'Development server not running'"
   },
   "compilerOptions": {
     "lib": ["ES2020", "DOM", "DOM.Iterable", "deno.ns"],
