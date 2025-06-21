@@ -1,45 +1,15 @@
 {
+  "workspace": [
+    "./internal/ai-api",
+    "./web/ai-chat",
+    "./packages/testing-infrastructure"
+  ],
   "tasks": {
-    "dev": "echo 'Use: deno task dev:api, deno task dev:chat, or deno task dev:all'",
-    "dev:api": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task dev --project ai-api",
-    "dev:chat": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task dev --project ai-chat",
-    "dev:all": "deno run --allow-run --allow-read scripts/dev-all.ts",
-    "start:api": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task start --project ai-api",
-    "start:chat": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task preview --project ai-chat",
-    "build": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task build --verbose",
-    "build:api": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task build --project ai-api",
-    "build:chat": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task build --project ai-chat",
-    "test": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task test --verbose --continue-on-error",
-    "test:unit": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task test --verbose --continue-on-error",
-    "test:e2e": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task test:e2e --verbose --continue-on-error",
-    "test:parallel": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task test --parallel --verbose",
-    "test:api": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task test --project ai-api && deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task test:e2e --project ai-api",
-    "test:chat": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task test --project ai-chat && deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task test:e2e --project ai-chat",
-    "test:infrastructure": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task test --project testing-infrastructure",
-    "test:all": "echo '⚠️  DEPRECATED: Use \"deno task test\" instead' && deno task test",
-    "test:ai-api": "echo '⚠️  DEPRECATED: Use \"deno task test:api\" instead' && deno task test:api",
-    "test:ai-chat": "echo '⚠️  DEPRECATED: Use \"deno task test:chat\" instead' && deno task test:chat",
-    "test:testing-infrastructure": "echo '⚠️  DEPRECATED: Use \"deno task test:infrastructure\" instead' && deno task test:infrastructure",
-    "test:unit:ai-api": "echo '⚠️  DEPRECATED: Use \"deno run scripts/task-runner.ts --task test --project ai-api\" instead' && deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task test --project ai-api",
-    "test:unit:ai-chat": "echo '⚠️  DEPRECATED: Use \"deno run scripts/task-runner.ts --task test --project ai-chat\" instead' && deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task test --project ai-chat",
-    "test:e2e:ai-api": "echo '⚠️  DEPRECATED: Use \"deno run scripts/task-runner.ts --task test:e2e --project ai-api\" instead' && deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task test:e2e --project ai-api",
-    "test:e2e:ai-chat": "echo '⚠️  DEPRECATED: Use \"deno run scripts/task-runner.ts --task test:e2e --project ai-chat\" instead' && deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --task test:e2e --project ai-chat",
-    "test:watch": "echo '⚠️  DEPRECATED: Use project-specific watch tasks' && echo 'Use: deno task test:watch:ai-api or deno task test:watch:ai-chat'",
-    "test:watch:ai-api": "cd internal/ai-api && deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys --watch --ignore=e2e/",
-    "test:watch:ai-chat": "cd web/ai-chat && deno task test:watch",
-    "tasks:list": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --list",
-    "tasks:help": "deno run --allow-run --allow-read --allow-env scripts/task-runner.ts --help"
+    "test": "cd internal/ai-api && deno task test && cd ../../web/ai-chat && deno task test && cd ../../packages/testing-infrastructure && deno task test",
+    "lint": "cd internal/ai-api && deno lint && cd ../../web/ai-chat && deno lint && cd ../../packages/testing-infrastructure && deno lint"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1",
-    "@std/testing/bdd": "jsr:@std/testing@1/bdd",
-    "ai": "npm:ai@^4.3.16",
-    "playwright": "npm:playwright@^1.40.0",
     "@one/testing-infrastructure": "./packages/testing-infrastructure/src/mod.ts"
-  },
-  "nodeModulesDir":"auto",
-  "workspace": ["./internal/ai-api", "./web/ai-chat", "./packages/testing-infrastructure"],
-  "compilerOptions": {
-    "lib": ["deno.ns", "es2022", "dom"]
   }
 }

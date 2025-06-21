@@ -1224,10 +1224,7 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@std/assert@1",
-      "jsr:@std/testing@1",
-      "npm:ai@^4.3.16",
-      "npm:playwright@^1.40.0"
+      "jsr:@std/assert@1"
     ],
     "members": {
       "internal/ai-api": {

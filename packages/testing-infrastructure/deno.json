@@ -14,16 +14,7 @@
     "playwright": "npm:playwright@^1.40.0"
   },
   "tasks": {
-    "test": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys",
-    "test:unit": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys",
-    "test:watch": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys --watch",
-    "test:coverage": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys --coverage=coverage/",
-    "lint": "deno lint src/",
-    "lint:fix": "deno lint --fix src/",
-    "format": "deno fmt src/",
-    "format:check": "deno fmt --check src/",
-    "typecheck": "deno check src/**/*.ts",
-    "clean": "rm -rf coverage/"
+    "test": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys"
   },
   "compilerOptions": {
     "lib": ["deno.ns", "es2022", "dom"]
