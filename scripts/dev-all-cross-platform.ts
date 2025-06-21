@@ -110,11 +110,20 @@ async function startService(name: string, command: string[], port: number): Prom
 async function main() {
   // Set up signal handlers for graceful shutdown
   Deno.addSignalListener("SIGINT", cleanup);
-  Deno.addSignalListener("SIGTERM", cleanup);
-  
-  // On Windows, we need to handle Ctrl+C differently
+
+  // Only add SIGTERM listener on Unix systems (Windows doesn't support it)
+  if (Deno.build.os !== "windows") {
+    Deno.addSignalListener("SIGTERM", cleanup);
+  }
+
+  // On Windows, add additional cleanup handlers
   if (Deno.build.os === "windows") {
-    // Windows doesn't support SIGTERM, so we rely on SIGINT (Ctrl+C)
+    // Windows supports SIGBREAK (Ctrl+Break)
+    try {
+      Deno.addSignalListener("SIGBREAK", cleanup);
+    } catch {
+      // SIGBREAK might not be available in all Windows versions
+    }
     globalThis.addEventListener("unload", cleanup);
   }
   
