@@ -1,0 +1,33 @@
+# Production Dockerfile for AI API
+# See docs/development/ADRs/Docker_Compose_Strategy.md for full implementation plan
+
+FROM denoland/deno:2.3.6
+
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy dependency files first for better caching
+COPY deno.json deno.lock* ./
+COPY internal/ai-api/deno.json ./internal/ai-api/
+
+# Cache dependencies
+RUN deno cache internal/ai-api/main.ts
+
+# Copy source code
+COPY . .
+
+# Cache dependencies again with full source
+RUN deno cache internal/ai-api/main.ts
+
+# Create non-root user for security
+RUN groupadd -r deno && useradd -r -g deno deno
+RUN chown -R deno:deno /app
+USER deno
+
+# Expose port
+EXPOSE 8000
+
+# Production command
+CMD ["deno", "task", "--cwd", "internal/ai-api", "start"]

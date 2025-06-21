@@ -55,12 +55,23 @@ You need at least one AI provider API key:
 ### Development Commands
 
 ```bash
+# Native Development (Recommended - Faster)
 just dev-api          # Start AI API server
 just dev-chat         # Start AI Chat app
 just dev-all          # Start both services concurrently
+
+# Docker Development (Optional - Environment Consistency)
+just docker-dev       # Start all services with Docker Compose
+just docker-stop      # Stop Docker services
+just docker-logs      # View Docker logs
+just docker-clean     # Clean Docker resources
+
+# Testing
 just test             # Run all tests
 just test-unit        # Run unit tests only
 just test-e2e         # Run E2E tests only
+
+# Code Quality
 just lint             # Lint all projects
 just fmt              # Format all projects
 just clean            # Clean build artifacts
@@ -70,9 +81,13 @@ just check            # Run lint + test
 ### Production Commands
 
 ```bash
+# Native Production
 just build-chat       # Build AI Chat for production
 just start-api        # Start AI API in production mode
 just start-chat       # Start AI Chat in production mode
+
+# Docker Production
+just docker-prod      # Start all services with Docker Compose (production)
 ```
 
 ## Project Structure
@@ -108,9 +123,12 @@ just start-chat       # Start AI Chat in production mode
 
 2. **Daily development:**
    ```bash
-   # Start both services
+   # Native development (recommended - faster)
    just dev-all
-   
+
+   # OR Docker development (optional - environment consistency)
+   just docker-dev
+
    # Open browser to http://localhost:3000
    ```
 
@@ -137,6 +155,28 @@ just start-chat       # Start AI Chat in production mode
 - Real-time model switching
 - Message history management
 - Responsive design
+
+## Development Options
+
+### Native Development (Recommended)
+- **Faster**: Direct Deno execution without container overhead
+- **Hot Reload**: Instant file change detection
+- **Resource Efficient**: Lower memory and CPU usage
+- **Debugging**: Easier debugging with native tools
+
+### Docker Development (Optional)
+- **Environment Consistency**: Identical dev/prod environments
+- **Easy Onboarding**: New developers just run `just docker-dev`
+- **Isolation**: No conflicts with local development tools
+- **External Dependencies**: Easy to add databases, Redis, etc.
+
+**When to use Docker:**
+- New team members (easier setup)
+- Testing production-like environment
+- Need external dependencies (databases, caching)
+- Debugging environment-specific issues
+
+See [Docker Compose Strategy ADR](docs/development/ADRs/Docker_Compose_Strategy.md) for detailed implementation.
 
 ## Troubleshooting
 

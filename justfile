@@ -115,3 +115,30 @@ start-chat:
 build-chat:
     @echo "🏗️ Building AI Chat for production..."
     @deno task --cwd web/ai-chat build
+
+# Docker Compose commands
+docker-dev:
+    @echo "🐳 Starting all services with Docker Compose (development)..."
+    @echo "📡 AI API will be available at: http://localhost:8000"
+    @echo "🌐 AI Chat will be available at: http://localhost:3000"
+    @echo "⚠️  Note: Docker development is slower than native. Use 'just dev-all' for faster development."
+    @docker-compose -f docker-compose.dev.yml up --build
+
+docker-prod:
+    @echo "🐳 Starting all services with Docker Compose (production)..."
+    @docker-compose -f docker-compose.prod.yml up -d --build
+
+docker-stop:
+    @echo "🛑 Stopping Docker Compose services..."
+    @docker-compose -f docker-compose.dev.yml down || true
+    @docker-compose -f docker-compose.prod.yml down || true
+
+docker-logs:
+    @echo "📋 Showing Docker Compose logs..."
+    @docker-compose -f docker-compose.dev.yml logs -f
+
+docker-clean:
+    @echo "🧹 Cleaning Docker resources..."
+    @docker-compose -f docker-compose.dev.yml down -v --rmi all || true
+    @docker-compose -f docker-compose.prod.yml down -v --rmi all || true
+    @docker system prune -f
