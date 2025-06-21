@@ -5,8 +5,8 @@
     "./packages/testing-infrastructure"
   ],
   "tasks": {
-    "test": "cd internal/ai-api && deno task test && cd ../../web/ai-chat && deno task test && cd ../../packages/testing-infrastructure && deno task test",
-    "lint": "cd internal/ai-api && deno lint && cd ../../web/ai-chat && deno lint && cd ../../packages/testing-infrastructure && deno lint"
+    "test": "deno task --cwd internal/ai-api test && deno task --cwd web/ai-chat test && deno task --cwd packages/testing-infrastructure test",
+    "lint": "deno lint internal/ai-api && deno lint web/ai-chat && deno lint packages/testing-infrastructure"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1",
