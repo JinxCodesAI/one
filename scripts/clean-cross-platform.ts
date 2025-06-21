@@ -6,7 +6,8 @@
 
 const pathsToClean = [
   "internal/ai-api/dist",
-  "web/ai-chat/dist", 
+  "web/ai-chat/dist",
+  "web/ai-chat/node_modules",
   "node_modules/.cache"
 ];
 

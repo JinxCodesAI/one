@@ -133,21 +133,35 @@ async function main() {
     console.log("🌐 AI Chat will be available at: http://localhost:3000");
     console.log("Press Ctrl+C to stop all services");
     console.log("");
-    
+
+    // Ensure dependencies are properly cached for AI Chat
+    console.log("🔄 Ensuring dependencies are properly resolved...");
+    try {
+      const cacheProcess = new Deno.Command("deno", {
+        args: ["cache", "--reload", "web/ai-chat/src/main.tsx"],
+        stdout: "piped",
+        stderr: "piped",
+      }).spawn();
+      await cacheProcess.status;
+      console.log("✅ Dependencies resolved");
+    } catch (error) {
+      console.log("⚠️ Dependency resolution warning:", error.message);
+    }
+
     // Start AI API service
     await startService(
-      "AI-API", 
-      ["deno", "task", "--cwd", "internal/ai-api", "dev"], 
+      "AI-API",
+      ["deno", "task", "--cwd", "internal/ai-api", "dev"],
       8000
     );
-    
+
     // Small delay to let API start first
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
     // Start AI Chat service
     await startService(
-      "AI-Chat", 
-      ["deno", "task", "--cwd", "web/ai-chat", "dev"], 
+      "AI-Chat",
+      ["deno", "task", "--cwd", "web/ai-chat", "dev"],
       3000
     );
     

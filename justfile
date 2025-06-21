@@ -77,6 +77,12 @@ clean:
     @echo "🧹 Cleaning build artifacts..."
     @deno run --allow-read --allow-write scripts/clean-cross-platform.ts
 
+# Clean Deno cache and dependencies (fixes React dependency issues)
+clean-deps:
+    @echo "🧹 Cleaning Deno cache and dependencies..."
+    @deno cache --reload web/ai-chat/src/main.tsx
+    @echo "✅ Dependencies refreshed"
+
 # Installation
 install:
     @echo "📦 Installing dependencies..."
