@@ -111,6 +111,8 @@ dev-<project-name>:
     @deno task --cwd <project-location>/<project-name> dev
 ```
 
+**Note**: Use `@echo` and simple commands for cross-platform compatibility. Avoid bash-specific syntax to ensure Windows compatibility.
+
 #### 4.2 Add Testing Commands
 ```makefile
 # Update existing test commands

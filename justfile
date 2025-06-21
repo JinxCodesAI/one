@@ -18,23 +18,12 @@ dev-chat:
     @deno task --cwd web/ai-chat dev
 
 dev-all:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    echo "🚀 Starting all services concurrently..."
-    echo "📡 AI API will be available at: http://localhost:8000"
-    echo "🌐 AI Chat will be available at: http://localhost:3000"
-    echo "Press Ctrl+C to stop all services"
-    echo ""
-
-    # Start services in background
-    just dev-api &
-    API_PID=$!
-    just dev-chat &
-    CHAT_PID=$!
-
-    # Wait for interrupt and cleanup
-    trap 'echo ""; echo "🛑 Shutting down all services..."; kill $API_PID $CHAT_PID 2>/dev/null || true; exit 0' INT TERM
-    wait
+    @echo "🚀 Starting all services concurrently..."
+    @echo "📡 AI API will be available at: http://localhost:8000"
+    @echo "🌐 AI Chat will be available at: http://localhost:3000"
+    @echo "Press Ctrl+C to stop all services"
+    @echo ""
+    @deno run --allow-run --allow-read scripts/dev-all-cross-platform.ts
 
 # Testing commands (avoiding --recursive issues)
 test: test-unit test-e2e

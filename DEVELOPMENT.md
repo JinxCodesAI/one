@@ -9,6 +9,24 @@ This monorepo contains two main services:
 - [Deno](https://deno.land/) 2.3.6+
 - [just](https://github.com/casey/just) task runner
 
+### Windows Setup Notes
+
+The project is fully compatible with Windows. The `justfile` uses cross-platform TypeScript scripts instead of bash to ensure compatibility.
+
+**Installation on Windows:**
+```powershell
+# Install just via Chocolatey (recommended)
+choco install just
+
+# Or via Scoop
+scoop install just
+```
+
+**Common Windows Issues:**
+- If you see "cygpath" errors, make sure you're using the latest version of the repository
+- PowerShell execution policy may need to be adjusted for some commands
+- All development commands work the same on Windows, macOS, and Linux
+
 ## Quick Start
 
 ### Option 1: Start Both Services (Recommended)

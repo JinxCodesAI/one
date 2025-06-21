@@ -24,13 +24,42 @@ A modern AI chat application built with Deno, featuring a React frontend and a r
 
 ### Installation
 
-```bash
-# Install just (choose one method)
-cargo install just                    # Via Cargo
-brew install just                     # Via Homebrew (macOS)
-choco install just                    # Via Chocolatey (Windows)
-scoop install just                    # Via Scoop (Windows)
+#### Install `just` Task Runner
 
+**Windows:**
+```powershell
+# Via Chocolatey (Recommended)
+choco install just
+
+# Via Scoop
+scoop install just
+
+# Via Cargo (if you have Rust installed)
+cargo install just
+```
+
+**macOS:**
+```bash
+# Via Homebrew (Recommended)
+brew install just
+
+# Via Cargo
+cargo install just
+```
+
+**Linux:**
+```bash
+# Via Cargo
+cargo install just
+
+# Via package manager (varies by distribution)
+# Ubuntu/Debian: sudo apt install just
+# Arch: sudo pacman -S just
+```
+
+#### Setup Project
+
+```bash
 # Clone and setup project
 git clone <repository-url>
 cd <repository-name>
@@ -206,6 +235,35 @@ If these ports are in use, you can modify the ports in:
 
 ### Command Not Found: `just`
 Make sure `just` is installed and in your PATH. See installation instructions above.
+
+### Windows-Specific Issues
+
+#### "Could not find `cygpath` executable" Error
+This error occurs when `just` tries to run bash scripts on Windows. Our `justfile` has been updated to be cross-platform compatible.
+
+**Solution**: Make sure you're using the latest version of the repository with the cross-platform `justfile`.
+
+#### PowerShell Execution Policy Issues
+If you get execution policy errors:
+
+```powershell
+# Check current policy
+Get-ExecutionPolicy
+
+# Set policy to allow local scripts (run as Administrator)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+#### Chocolatey Permission Issues
+If you see "Access to the path 'C:\ProgramData\chocolatey\lib-bad' is denied":
+
+```powershell
+# Run PowerShell as Administrator and try again
+choco install just
+
+# Or use Scoop instead (doesn't require admin)
+scoop install just
+```
 
 ## Contributing
 
