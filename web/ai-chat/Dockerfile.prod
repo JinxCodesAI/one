@@ -1,0 +1,43 @@
+# Production Dockerfile for AI Chat
+# See docs/development/ADRs/Docker_Compose_Strategy.md for full implementation plan
+
+FROM denoland/deno:2.3.6 as builder
+
+WORKDIR /app
+
+# Copy dependency files first for better caching
+COPY deno.json deno.lock* ./
+COPY web/ai-chat/deno.json ./web/ai-chat/
+
+# Cache dependencies
+RUN deno cache web/ai-chat/src/main.tsx
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN deno task --cwd web/ai-chat build
+
+# Production stage
+FROM denoland/deno:2.3.6
+
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy built application
+COPY --from=builder /app/web/ai-chat/dist ./dist
+COPY --from=builder /app/web/ai-chat/deno.json ./
+COPY --from=builder /app/deno.json ../
+
+# Create non-root user for security
+RUN groupadd -r deno && useradd -r -g deno deno
+RUN chown -R deno:deno /app
+USER deno
+
+# Expose port
+EXPOSE 3000
+
+# Production command (serve static files)
+CMD ["deno", "task", "preview"]

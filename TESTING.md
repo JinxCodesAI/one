@@ -7,45 +7,61 @@ This document provides comprehensive information about testing in the One monore
 ### Run All Tests
 ```bash
 # Run all tests across all workspace projects
-deno task test
+just test
 
 # Run only unit tests
-deno task test:unit
+just test-unit
 
 # Run only E2E tests
-deno task test:e2e
+just test-e2e
 ```
 
 ### Run Tests for Specific Projects
 ```bash
 # AI-API (unit + E2E)
-deno task test:ai-api
+just test-api
 
 # ai-chat (unit + E2E)
-deno task test:ai-chat
+just test-chat
 
-# Testing Infrastructure
-deno task test:testing-infrastructure
+# Testing Infrastructure (no tests expected)
+# Automatically handled by just test-unit
 ```
 
 ### Run Specific Test Types
 ```bash
-# Unit tests only
-deno task test:unit:ai-api
-deno task test:unit:ai-chat
+# Unit tests only (all projects)
+just test-unit
 
-# E2E tests only
-deno task test:e2e:ai-api
-deno task test:e2e:ai-chat
+# E2E tests only (all projects)
+just test-e2e
+
+# Individual project tests (using deno task directly)
+cd internal/ai-api && deno task test        # AI-API unit tests
+cd internal/ai-api && deno task test:e2e    # AI-API E2E tests
+cd web/ai-chat && deno task test            # ai-chat unit tests
+cd web/ai-chat && deno task test:e2e        # ai-chat E2E tests
 ```
 
 ### Watch Mode
 ```bash
 # Watch unit tests for AI-API
-deno task test:watch:ai-api
+just test-watch-api
 
 # Watch unit tests for ai-chat
-deno task test:watch:ai-chat
+just test-watch-chat
+```
+
+### Code Quality
+```bash
+# Run all checks (lint + test)
+just check
+
+# Lint all projects
+just lint
+
+# Format all projects
+just fmt
 ```
 
 ## Workspace Projects
@@ -113,7 +129,7 @@ import {
 
 ## Test Execution Flow
 
-When you run `deno task test`, the following happens:
+When you run `just test`, the following happens:
 
 1. **AI-API Tests**:
    - Unit tests for core logic (33 tests)
@@ -148,13 +164,13 @@ The workspace is configured to ensure:
 
 ```bash
 # Run with verbose output
-deno task test:e2e:ai-api
+just test-api
 
 # Check specific test file
 cd internal/ai-api && deno test e2e/basic_providers.e2e.ts
 
 # Run UI tests with visible browser (set headless: false in test config)
-cd web/ai-chat && deno task test:e2e-ui
+cd web/ai-chat && deno task test:e2e
 ```
 
 ### Getting Help

@@ -1,0 +1,84 @@
+# Docker Compose for Production Environment
+# See docs/development/ADRs/Docker_Compose_Strategy.md for full implementation plan
+
+version: '3.8'
+
+services:
+  ai-api:
+    build:
+      context: .
+      dockerfile: internal/ai-api/Dockerfile.prod
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=production
+      - PORT=8000
+      - HOST=0.0.0.0
+    env_file:
+      - internal/ai-api/.env.prod
+    restart: unless-stopped
+    networks:
+      - ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  ai-chat:
+    build:
+      context: .
+      dockerfile: web/ai-chat/Dockerfile.prod
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      ai-api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Production external dependencies (commented out for now)
+  # redis:
+  #   image: redis:7-alpine
+  #   restart: unless-stopped
+  #   networks:
+  #     - ai-network
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+  # postgres:
+  #   image: postgres:15-alpine
+  #   environment:
+  #     POSTGRES_DB: ai_chat
+  #     POSTGRES_USER: ${POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+  #   networks:
+  #     - ai-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ai_chat"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+networks:
+  ai-network:
+    driver: bridge
+
+# volumes:
+#   postgres_data:

@@ -4,12 +4,35 @@ This monorepo contains two main services:
 - **AI API Service** (`internal/ai-api`) - Backend API service on port 8000
 - **AI Chat Web App** (`web/ai-chat`) - Frontend web application on port 3000
 
+## Prerequisites
+
+- [Deno](https://deno.land/) 2.3.6+
+- [just](https://github.com/casey/just) task runner
+
+### Windows Setup Notes
+
+The project is fully compatible with Windows. The `justfile` uses cross-platform TypeScript scripts instead of bash to ensure compatibility.
+
+**Installation on Windows:**
+```powershell
+# Install just via Chocolatey (recommended)
+choco install just
+
+# Or via Scoop
+scoop install just
+```
+
+**Common Windows Issues:**
+- If you see "cygpath" errors, make sure you're using the latest version of the repository
+- PowerShell execution policy may need to be adjusted for some commands
+- All development commands work the same on Windows, macOS, and Linux
+
 ## Quick Start
 
 ### Option 1: Start Both Services (Recommended)
 ```bash
 # Start both AI API and AI Chat services concurrently
-deno task dev:all
+just dev-all
 ```
 
 This will start:
@@ -20,14 +43,14 @@ This will start:
 
 #### Start AI API Service Only
 ```bash
-deno task dev:api
+just dev-api
 # or
 cd internal/ai-api && deno task dev
 ```
 
 #### Start AI Chat Service Only
 ```bash
-deno task dev:chat
+just dev-chat
 # or
 cd web/ai-chat && deno task dev
 ```
@@ -71,20 +94,45 @@ This will wait for the AI API service to be ready before starting the chat app.
 
 ## Available Tasks
 
-### Root Level
-- `deno task dev:all` - Start both services concurrently
-- `deno task dev:api` - Start only AI API service
-- `deno task dev:chat` - Start only AI Chat service
+### Development Commands
+- `just dev-all` - Start both services concurrently
+- `just dev-api` - Start only AI API service
+- `just dev-chat` - Start only AI Chat service
 
-### AI API Service (`internal/ai-api`)
+### Testing Commands
+- `just test` - Run all tests (unit + E2E)
+- `just test-unit` - Run unit tests only
+- `just test-e2e` - Run E2E tests only
+- `just test-api` - Run AI API tests (unit + E2E)
+- `just test-chat` - Run AI Chat tests (unit + E2E)
+- `just test-watch-api` - Watch AI API tests
+- `just test-watch-chat` - Watch AI Chat tests
+
+### Code Quality Commands
+- `just lint` - Lint all projects
+- `just fmt` - Format all projects
+- `just check` - Run lint + test
+
+### Production Commands
+- `just build-chat` - Build AI Chat for production
+- `just start-api` - Start AI API in production mode
+- `just start-chat` - Start AI Chat in production mode
+
+### Utility Commands
+- `just install` - Install dependencies
+- `just clean` - Clean build artifacts
+
+### Individual Project Tasks
+You can still use `deno task` within individual projects:
+
+#### AI API Service (`internal/ai-api`)
 - `deno task dev` - Development server with hot reload
 - `deno task start` - Production server
 - `deno task test` - Run unit tests
 - `deno task test:e2e` - Run end-to-end tests
 
-### AI Chat Service (`web/ai-chat`)
+#### AI Chat Service (`web/ai-chat`)
 - `deno task dev` - Development server with hot reload
-- `deno task dev:with-api` - Start with API dependency check
 - `deno task preview` - Production preview server
 - `deno task build` - Build for production
 
@@ -100,7 +148,7 @@ If the AI Chat app shows "Loading models..." permanently:
 
 2. **Start the AI API service:**
    ```bash
-   deno task dev:api
+   just dev-api
    ```
 
 3. **Check environment variables:**
@@ -118,20 +166,47 @@ If these ports are in use, you can modify the ports in:
 
 1. **First time setup:**
    ```bash
+   # Install dependencies
+   just install
+
    # Configure environment
    cp internal/ai-api/.env.example internal/ai-api/.env
    # Edit internal/ai-api/.env with your API keys
-   
+
    # Start both services
-   deno task dev:all
+   just dev-all
    ```
 
 2. **Daily development:**
    ```bash
    # Start both services
-   deno task dev:all
-   
+   just dev-all
+
    # Open browser to http://localhost:3000
+   ```
+
+3. **Testing workflow:**
+   ```bash
+   # Run all tests
+   just test
+
+   # Run specific test types
+   just test-unit
+   just test-e2e
+
+   # Watch tests during development
+   just test-watch-api
+   just test-watch-chat
+   ```
+
+4. **Code quality:**
+   ```bash
+   # Format and lint code
+   just fmt
+   just lint
+
+   # Run all checks
+   just check
    ```
 
 3. **Working on individual services:**
