@@ -1,15 +1,8 @@
-# One Monorepo Task Runner
-# Uses just (https://just.systems) for task orchestration
-
 # Automatically load variables from .env for Docker
 set dotenv-load
 
 # Set PATH to include Deno
 export PATH := env_var('HOME') + "/.deno/bin:" + env_var('PATH')
-
-# Default recipe - show available commands
-default:
-    @just --list
 
 # --- High-Level Aliases ---
 test: test-unit test-e2e   # Run all tests
@@ -19,8 +12,8 @@ dev: dev-api dev-chat      # Run all dev servers
 test-unit:
     @echo "🔬 Running all unit tests..."
     @cd internal/ai-api && deno task test
-    @cd web/ai-chat && deno task test
-    @cd packages/testing-infrastructure && deno task test
+    @cd ../../web/ai-chat && deno task test
+    @cd ../../packages/testing-infrastructure && deno task test
 
 # --- E2E Testing (with infrastructure management) ---
 test-e2e: test-e2e-api test-e2e-chat
@@ -47,81 +40,11 @@ dev-chat:
 # --- Infrastructure Management Recipes ---
 up-api:
     @echo "🐘 Starting PostgreSQL for API..."
-    @docker network create monorepo-net || true
     @docker-compose -f docker-compose.yml -f docker-compose.api.yml up -d
 
 down-api:
     @echo "🐘 Stopping PostgreSQL for API..."
     @docker-compose -f docker-compose.yml -f docker-compose.api.yml down --volumes -t 1
-
-up-chat:
-    @echo "🐘 Starting PostgreSQL for Chat..."
-    @docker network create monorepo-net || true
-    @docker-compose -f docker-compose.yml -f docker-compose.chat.yml up -d
-
-down-chat:
-    @echo "🐘 Stopping PostgreSQL for Chat..."
-    @docker-compose -f docker-compose.yml -f docker-compose.chat.yml down --volumes -t 1
-
-# --- Additional Development Commands ---
-start-api:
-    @echo "🏭 Starting AI-API production server..."
-    @cd internal/ai-api && deno task start
-
-start-chat:
-    @echo "🏭 Starting AI-Chat production server..."
-    @cd web/ai-chat && deno task preview
-
-# --- Build Commands ---
-build:
-    @echo "🔨 Building all projects..."
-    @just build-api
-    @just build-chat
-
-build-api:
-    @echo "🔨 Building AI-API..."
-    @cd internal/ai-api && deno task build
-
-build-chat:
-    @echo "🔨 Building AI-Chat..."
-    @cd web/ai-chat && deno task build
-
-# --- Quality Assurance Commands ---
-lint:
-    @echo "🔍 Linting all projects..."
-    @cd internal/ai-api && deno lint
-    @cd web/ai-chat && deno lint
-    @cd packages/testing-infrastructure && deno lint
-
-format:
-    @echo "✨ Formatting all projects..."
-    @cd internal/ai-api && deno fmt
-    @cd web/ai-chat && deno fmt
-    @cd packages/testing-infrastructure && deno fmt
-
-typecheck:
-    @echo "🔎 Type checking all projects..."
-    @cd internal/ai-api && deno check **/*.ts
-    @cd web/ai-chat && deno check src/**/*.ts src/**/*.tsx
-    @cd packages/testing-infrastructure && deno check src/**/*.ts
-
-# --- Infrastructure Management (Full Stack) ---
-infra-start:
-    @echo "🐳 Starting full infrastructure stack..."
-    @docker network create monorepo-net || true
-    @docker-compose -f infrastructure/docker-compose.yml up -d
-
-infra-stop:
-    @echo "🛑 Stopping full infrastructure stack..."
-    @docker-compose -f infrastructure/docker-compose.yml down
-
-infra-logs:
-    @echo "📋 Showing infrastructure logs..."
-    @docker-compose -f infrastructure/docker-compose.yml logs -f
-
-infra-status:
-    @echo "📊 Infrastructure status..."
-    @docker-compose -f infrastructure/docker-compose.yml ps
 
 # Database commands
 db-migrate:

@@ -1,9 +1,7 @@
 version: '3.8'
-
 services:
   postgres-api:
     image: postgres:16
-    container_name: one-postgres-api
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -12,34 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres-api-data:/var/lib/postgresql/data
-      - ./infrastructure/init-scripts:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_API}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - monorepo-net
-
-  redis-api:
-    image: redis:7-alpine
-    container_name: one-redis-api
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-api-data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - monorepo-net
-
 volumes:
   postgres-api-data:
-  redis-api-data:
-
-networks:
-  monorepo-net:
-    external: true

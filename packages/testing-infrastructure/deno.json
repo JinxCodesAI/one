@@ -1,22 +1,8 @@
 {
-  "name": "@one/testing-infrastructure",
-  "version": "1.0.0",
-  "exports": {
-    "./fetch-mock": "./src/fetch-mock.ts",
-    "./server-setup": "./src/server-setup.ts",
-    "./ui-setup": "./src/ui-setup.ts",
-    "./scenarios": "./src/scenarios.ts",
-    "./helpers": "./src/helpers.ts"
-  },
   "imports": {
-    "@std/assert": "jsr:@std/assert@1",
-    "@std/testing/bdd": "jsr:@std/testing@1/bdd",
-    "playwright": "npm:playwright@^1.40.0"
+    "@std/assert": "jsr:@std/assert@1"
   },
   "tasks": {
-    "test": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys"
-  },
-  "compilerOptions": {
-    "lib": ["deno.ns", "es2022", "dom"]
+    "test": "deno test --allow-env --allow-net"
   }
 }
