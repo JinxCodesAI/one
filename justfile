@@ -1,6 +1,9 @@
 # One Monorepo Task Runner
 # Uses just (https://just.systems) for task orchestration
 
+# Automatically load variables from .env for Docker
+set dotenv-load
+
 # Set PATH to include Deno
 export PATH := env_var('HOME') + "/.deno/bin:" + env_var('PATH')
 
@@ -8,123 +11,117 @@ export PATH := env_var('HOME') + "/.deno/bin:" + env_var('PATH')
 default:
     @just --list
 
-# Development commands
+# --- High-Level Aliases ---
+test: test-unit test-e2e   # Run all tests
+dev: dev-api dev-chat      # Run all dev servers
+
+# --- Unit Testing ---
+test-unit:
+    @echo "🔬 Running all unit tests..."
+    @cd internal/ai-api && deno task test
+    @cd web/ai-chat && deno task test
+    @cd packages/testing-infrastructure && deno task test
+
+# --- E2E Testing (with infrastructure management) ---
+test-e2e: test-e2e-api test-e2e-chat
+
+test-e2e-api: up-api
+    @echo "🌐 Running AI-API E2E tests..."
+    @# The || true ensures the 'down' command always runs
+    @(cd internal/ai-api && deno task test:e2e || true)
+    @just down-api
+
+test-e2e-chat:
+    @echo "🌐 Running ai-chat E2E tests..."
+    @cd web/ai-chat && deno task test:e2e
+
+# --- Development Tasks ---
 dev-api:
-    @echo "🚀 Starting AI-API development server..."
-    cd internal/ai-api && deno task dev
+    @echo "🚀 Starting API server..."
+    @cd internal/ai-api && deno task dev
 
 dev-chat:
-    @echo "🚀 Starting AI-Chat development server..."
-    cd web/ai-chat && deno task dev
+    @echo "🚀 Starting Chat app..."
+    @cd web/ai-chat && deno task dev
 
-dev-all:
-    @echo "🚀 Starting all development servers..."
-    just dev-api &
-    just dev-chat &
-    wait
+# --- Infrastructure Management Recipes ---
+up-api:
+    @echo "🐘 Starting PostgreSQL for API..."
+    @docker network create monorepo-net || true
+    @docker-compose -f docker-compose.yml -f docker-compose.api.yml up -d
 
-# Production commands
+down-api:
+    @echo "🐘 Stopping PostgreSQL for API..."
+    @docker-compose -f docker-compose.yml -f docker-compose.api.yml down --volumes -t 1
+
+up-chat:
+    @echo "🐘 Starting PostgreSQL for Chat..."
+    @docker network create monorepo-net || true
+    @docker-compose -f docker-compose.yml -f docker-compose.chat.yml up -d
+
+down-chat:
+    @echo "🐘 Stopping PostgreSQL for Chat..."
+    @docker-compose -f docker-compose.yml -f docker-compose.chat.yml down --volumes -t 1
+
+# --- Additional Development Commands ---
 start-api:
     @echo "🏭 Starting AI-API production server..."
-    cd internal/ai-api && deno task start
+    @cd internal/ai-api && deno task start
 
 start-chat:
     @echo "🏭 Starting AI-Chat production server..."
-    cd web/ai-chat && deno task preview
+    @cd web/ai-chat && deno task preview
 
-# Build commands
+# --- Build Commands ---
 build:
     @echo "🔨 Building all projects..."
-    just build-api
-    just build-chat
+    @just build-api
+    @just build-chat
 
 build-api:
     @echo "🔨 Building AI-API..."
-    cd internal/ai-api && deno task build
+    @cd internal/ai-api && deno task build
 
 build-chat:
     @echo "🔨 Building AI-Chat..."
-    cd web/ai-chat && deno task build
+    @cd web/ai-chat && deno task build
 
-# Testing commands
-test:
-    @echo "🧪 Running all tests..."
-    just test-unit
-    just test-e2e
-
-test-unit:
-    @echo "🔬 Running unit tests..."
-    cd internal/ai-api && deno task test
-    cd web/ai-chat && deno task test
-    cd packages/testing-infrastructure && deno task test
-
-test-e2e:
-    @echo "🌐 Running E2E tests..."
-    just infra-start
-    cd internal/ai-api && deno task test:e2e
-    cd web/ai-chat && deno task test:e2e
-    just infra-stop
-
-test-api:
-    @echo "🔧 Testing AI-API..."
-    cd internal/ai-api && deno task test && deno task test:e2e
-
-test-chat:
-    @echo "💬 Testing AI-Chat..."
-    cd web/ai-chat && deno task test && deno task test:e2e
-
-# Quality assurance commands
+# --- Quality Assurance Commands ---
 lint:
     @echo "🔍 Linting all projects..."
-    cd internal/ai-api && deno lint
-    cd web/ai-chat && deno lint
-    cd packages/testing-infrastructure && deno lint
-
-lint-fix:
-    @echo "🔧 Fixing lint issues..."
-    cd internal/ai-api && deno lint --fix
-    cd web/ai-chat && deno lint --fix
-    cd packages/testing-infrastructure && deno lint --fix
+    @cd internal/ai-api && deno lint
+    @cd web/ai-chat && deno lint
+    @cd packages/testing-infrastructure && deno lint
 
 format:
     @echo "✨ Formatting all projects..."
-    cd internal/ai-api && deno fmt
-    cd web/ai-chat && deno fmt
-    cd packages/testing-infrastructure && deno fmt
-
-format-check:
-    @echo "📋 Checking code formatting..."
-    cd internal/ai-api && deno fmt --check
-    cd web/ai-chat && deno fmt --check
-    cd packages/testing-infrastructure && deno fmt --check
+    @cd internal/ai-api && deno fmt
+    @cd web/ai-chat && deno fmt
+    @cd packages/testing-infrastructure && deno fmt
 
 typecheck:
     @echo "🔎 Type checking all projects..."
-    cd internal/ai-api && deno check **/*.ts
-    cd web/ai-chat && deno check src/**/*.ts src/**/*.tsx
-    cd packages/testing-infrastructure && deno check src/**/*.ts
+    @cd internal/ai-api && deno check **/*.ts
+    @cd web/ai-chat && deno check src/**/*.ts src/**/*.tsx
+    @cd packages/testing-infrastructure && deno check src/**/*.ts
 
-# Infrastructure commands
+# --- Infrastructure Management (Full Stack) ---
 infra-start:
-    @echo "🐳 Starting infrastructure services..."
-    docker-compose -f infrastructure/docker-compose.yml up -d
+    @echo "🐳 Starting full infrastructure stack..."
+    @docker network create monorepo-net || true
+    @docker-compose -f infrastructure/docker-compose.yml up -d
 
 infra-stop:
-    @echo "🛑 Stopping infrastructure services..."
-    docker-compose -f infrastructure/docker-compose.yml down
-
-infra-restart:
-    @echo "🔄 Restarting infrastructure services..."
-    just infra-stop
-    just infra-start
+    @echo "🛑 Stopping full infrastructure stack..."
+    @docker-compose -f infrastructure/docker-compose.yml down
 
 infra-logs:
     @echo "📋 Showing infrastructure logs..."
-    docker-compose -f infrastructure/docker-compose.yml logs -f
+    @docker-compose -f infrastructure/docker-compose.yml logs -f
 
 infra-status:
     @echo "📊 Infrastructure status..."
-    docker-compose -f infrastructure/docker-compose.yml ps
+    @docker-compose -f infrastructure/docker-compose.yml ps
 
 # Database commands
 db-migrate:

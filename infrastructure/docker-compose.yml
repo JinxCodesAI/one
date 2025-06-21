@@ -1,7 +1,11 @@
 version: '3.8'
 
+networks:
+  monorepo-net:
+    driver: bridge
+
 services:
-  # PostgreSQL Database
+  # PostgreSQL Database (shared)
   postgres:
     image: postgres:15-alpine
     container_name: one-postgres
@@ -10,7 +14,7 @@ services:
       POSTGRES_USER: one_user
       POSTGRES_PASSWORD: one_password
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d
@@ -20,7 +24,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - one-network
+      - monorepo-net
 
   # Redis Cache
   redis:
@@ -36,7 +40,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - one-network
+      - monorepo-net
 
   # MinIO Object Storage (S3-compatible)
   minio:
@@ -57,7 +61,7 @@ services:
       timeout: 20s
       retries: 3
     networks:
-      - one-network
+      - monorepo-net
 
   # Mailhog (Email testing)
   mailhog:
@@ -67,7 +71,7 @@ services:
       - "1025:1025"  # SMTP
       - "8025:8025"  # Web UI
     networks:
-      - one-network
+      - monorepo-net
 
   # Jaeger (Distributed Tracing)
   jaeger:
@@ -81,7 +85,7 @@ services:
       - "4317:4317"    # OTLP gRPC
       - "4318:4318"    # OTLP HTTP
     networks:
-      - one-network
+      - monorepo-net
 
   # Prometheus (Metrics)
   prometheus:
@@ -99,7 +103,7 @@ services:
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--web.enable-lifecycle'
     networks:
-      - one-network
+      - monorepo-net
 
   # Grafana (Dashboards)
   grafana:
@@ -113,7 +117,7 @@ services:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
     networks:
-      - one-network
+      - monorepo-net
 
 volumes:
   postgres_data:
@@ -123,5 +127,5 @@ volumes:
   grafana_data:
 
 networks:
-  one-network:
+  monorepo-net:
     driver: bridge
