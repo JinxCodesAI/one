@@ -1,74 +1,69 @@
-#!/usr/bin/env -S deno run --allow-run --allow-read
+#!/usr/bin/env -S deno run --allow-run --allow-read --allow-env
 /**
  * Cross-platform unit test runner
  * Runs unit tests for all projects in the monorepo
  */
 
+// --- MODIFIED ---
+// Added a `runner` property to distinguish between Deno and Node.js projects.
 interface TestProject {
   name: string;
   path: string;
   hasTests: boolean;
+  runner: "deno" | "node"; 
 }
 
+// --- MODIFIED ---
+// Specified the correct runner for each project.
 const projects: TestProject[] = [
-  { name: "AI API", path: "internal/ai-api", hasTests: true },
-  { name: "AI Chat", path: "web/ai-chat", hasTests: true },
-  { name: "Testing Infrastructure", path: "packages/testing-infrastructure", hasTests: false }
+  { name: "AI API", path: "internal/ai-api", hasTests: true, runner: "deno" },
+  { name: "AI Chat", path: "web/ai-chat", hasTests: true, runner: "node" },
+  { name: "Testing Infrastructure", path: "packages/testing-infrastructure", hasTests: false, runner: "deno" }
 ];
 
 async function runTest(project: TestProject): Promise<boolean> {
-  console.log(`\n🔬 Testing ${project.name}...`);
+  if (!project.hasTests) {
+    console.log(`\nℹ️ Skipping tests for ${project.name} (no tests configured)`);
+    return true;
+  }
+
+  console.log(`\n🔬 Testing ${project.name} with ${project.runner} runner...`);
   
   try {
-    const command = new Deno.Command("deno", {
-      args: ["task", "--cwd", project.path, "test"],
+    // --- MODIFIED ---
+    // The command is now chosen based on the `runner` property.
+    // For "node", we use `npm test`, which is the standard.
+    // This assumes your `package.json` in `web/ai-chat` has a "test" script.
+    const commandArray = project.runner === "node"
+      ? ["npm", "test"] // Standard way to run tests in a Node.js project
+      : ["deno", "task", "test"]; // The existing Deno-native way
+
+    const process = new Deno.Command(commandArray[0], {
+      args: commandArray.slice(1),
+      cwd: project.path, // Explicitly set the CWD for the process
       stdout: "piped",
       stderr: "piped",
-    });
+    }).spawn();
     
-    const process = command.spawn();
-    
-    // Handle output
-    const decoder = new TextDecoder();
-    
-    // Pipe stdout
-    (async () => {
-      for await (const chunk of process.stdout) {
-        const text = decoder.decode(chunk);
-        process.stdout.write(new TextEncoder().encode(text));
-      }
-    })();
-    
-    // Pipe stderr
-    (async () => {
-      for await (const chunk of process.stderr) {
-        const text = decoder.decode(chunk);
-        process.stderr.write(new TextEncoder().encode(text));
-      }
-    })();
-    
-    const status = await process.status;
+    // --- MODIFIED ---
+    // Replaced the manual, inefficient piping with the recommended `pipeTo` method.
+    // This properly streams the output from the child process to the main process.
+    const outputPromise = process.stdout.pipeTo(Deno.stdout.writable);
+    const errorPromise = process.stderr.pipeTo(Deno.stderr.writable);
+
+    // Wait for the process to finish and for the streams to be fully piped.
+    const [status] = await Promise.all([process.status, outputPromise, errorPromise]);
     
     if (status.success) {
-      console.log(`✅ ${project.name} tests passed`);
+      console.log(`\n✅ ${project.name} tests passed`);
       return true;
     } else {
-      if (!project.hasTests) {
-        console.log(`ℹ️ No tests found in ${project.name} (expected)`);
-        return true;
-      } else {
-        console.log(`❌ ${project.name} tests failed`);
-        return false;
-      }
-    }
-  } catch (error) {
-    if (!project.hasTests) {
-      console.log(`ℹ️ No tests found in ${project.name} (expected)`);
-      return true;
-    } else {
-      console.log(`❌ Error running ${project.name} tests: ${error.message}`);
+      console.log(`\n❌ ${project.name} tests failed`);
       return false;
     }
+  } catch (error) {
+    console.log(`\n❌ Error running ${project.name} tests: ${error.message}`);
+    return false;
   }
 }
 
@@ -77,12 +72,12 @@ async function main() {
   
   let allPassed = true;
   
+  // Running tests sequentially to keep output clean
   for (const project of projects) {
-    const passed = await runTest(project);
-    if (!passed) {
+    if (!await runTest(project)) {
       allPassed = false;
     }
-  }
+_  }
   
   console.log("\n" + "=".repeat(50));
   if (allPassed) {

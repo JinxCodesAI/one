@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-run --allow-read
+#!/usr/bin/env -S deno run --allow-run --allow-read --allow-write --allow-env
 /**
  * Cross-platform development server orchestration
  * Replaces bash-specific dev-all recipe for Windows compatibility
@@ -53,13 +53,19 @@ async function cleanup() {
 
 /**
  * Start a service and track it
+ * --- MODIFIED ---
+ * Added an optional `cwd` parameter to explicitly set the working directory for the command.
  */
-async function startService(name: string, command: string[], port: number): Promise<void> {
+async function startService(name: string, command: string[], port: number, cwd?: string): Promise<void> {
   try {
     console.log(`🚀 Starting ${name}...`);
     
+    // --- MODIFIED ---
+    // The `cwd` option is passed directly to Deno.Command. This ensures the process
+    // starts in the correct directory, which is crucial for tools like Vite.
     const process = new Deno.Command(command[0], {
       args: command.slice(1),
+      cwd: cwd, // Sets the working directory for the new process
       stdout: "piped",
       stderr: "piped",
     }).spawn();
@@ -90,7 +96,7 @@ async function startService(name: string, command: string[], port: number): Prom
         const lines = text.split('\n');
         for (const line of lines) {
           if (line.trim()) {
-            console.error(`[${name}] ${line}`);
+            console.error(`[${name}] error: ${line}`);
           }
         }
       }
@@ -134,21 +140,24 @@ async function main() {
     console.log("Press Ctrl+C to stop all services");
     console.log("");
 
-    // Ensure dependencies are properly cached for AI Chat
-    console.log("🔄 Ensuring dependencies are properly resolved...");
+    // This step is fine, ensures Deno dependencies are cached. No changes needed.
+    console.log("🔄 Ensuring Deno dependencies are cached...");
     try {
       const cacheProcess = new Deno.Command("deno", {
-        args: ["cache", "--reload", "web/ai-chat/src/main.tsx"],
-        stdout: "piped",
-        stderr: "piped",
-      }).spawn();
-      await cacheProcess.status;
-      console.log("✅ Dependencies resolved");
+        args: ["cache", "web/ai-chat/src/main.tsx"],
+      }).outputSync();
+      if(cacheProcess.status.success) {
+        console.log("✅ Deno dependencies cached");
+      } else {
+        console.warn("⚠️  Could not cache Deno dependencies.");
+      }
     } catch (error) {
       console.log("⚠️ Dependency resolution warning:", error.message);
     }
 
     // Start AI API service
+    // --- UNCHANGED ---
+    // This is a Deno service, so running it with `deno task` is correct.
     await startService(
       "AI-API",
       ["deno", "task", "--cwd", "internal/ai-api", "dev"],
@@ -159,10 +168,15 @@ async function main() {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Start AI Chat service
+    // --- MODIFIED ---
+    // This is the key change. We now run `npx vite` directly.
+    // We pass the working directory 'web/ai-chat' as the `cwd` option.
+    // This replicates the successful manual test you performed.
     await startService(
       "AI-Chat",
-      ["deno", "task", "--cwd", "web/ai-chat", "dev"],
-      3000
+      ["npx", "vite"],
+      3000,
+      "web/ai-chat" 
     );
     
     console.log("");
