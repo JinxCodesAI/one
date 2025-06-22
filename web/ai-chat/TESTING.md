@@ -1,6 +1,7 @@
 # Testing Guide for AI Chat v2
 
-This document describes the comprehensive testing strategy for the AI Chat v2 application, including unit tests, integration tests, and end-to-end tests.
+This document describes the comprehensive testing strategy for the AI Chat v2
+application, including unit tests, integration tests, and end-to-end tests.
 
 ## Test Architecture
 
@@ -35,30 +36,35 @@ web/ai-chat/
 ## Running Tests
 
 ### All Tests
+
 ```bash
 # Run all tests (unit + integration + E2E)
 deno task test:all
 ```
 
 ### Unit Tests Only
+
 ```bash
 # Run unit tests only (excludes E2E and integration tests)
 deno task test:unit
 ```
 
 ### Integration Tests
+
 ```bash
 # Run integration tests
 deno task test:integration
 ```
 
 ### End-to-End Tests
+
 ```bash
 # Run E2E tests
 deno task test:e2e
 ```
 
 ### Development Testing
+
 ```bash
 # Run tests in watch mode (excludes E2E)
 deno task test:watch
@@ -82,6 +88,7 @@ Tests individual React components in isolation:
 - **ChatContainer.test.tsx** - Chat container layout and state management
 
 **Key Features:**
+
 - Uses React Testing Library for component testing
 - JSDOM environment for DOM simulation
 - Mock user interactions with userEvent
@@ -96,6 +103,7 @@ Tests integration between hooks and services:
 - **useChat.integration.ts** - Tests useChat hook with real AI client service
 
 **Key Features:**
+
 - Tests complete data flow from hook to service
 - Mocked external API responses
 - State management validation
@@ -110,6 +118,7 @@ Tests service layer methods in isolation:
 - **aiClient.test.ts** - Tests ChatAIClient service methods
 
 **Key Features:**
+
 - Mocked fetch responses
 - Error scenario testing
 - API contract validation
@@ -125,6 +134,7 @@ Tests complete user flows from frontend through backend to external services:
 - **frontend-integration.e2e.ts** - Frontend integration with real backend
 
 **Key Features:**
+
 - Real AI API server integration
 - External API mocking using FetchMockManager
 - Complete request flow validation
@@ -153,11 +163,11 @@ Define how external requests should be handled:
 const scenario = {
   name: "Successful AI response",
   isRequestExpected: (context, metadata) => {
-    return metadata.isExternalApi && metadata.service === 'openai';
+    return metadata.isExternalApi && metadata.service === "openai";
   },
   generateResponse: (context, metadata) => {
     return RequestAnalyzer.generateSuccessResponse(context, metadata);
-  }
+  },
 };
 ```
 
@@ -191,14 +201,14 @@ Automatically classifies requests as internal vs external:
 ### Component Tests
 
 ```typescript
-import { describe, it, beforeEach } from "@std/testing/bdd";
+import { beforeEach, describe, it } from "@std/testing/bdd";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MyComponent } from "../MyComponent.tsx";
 
 describe("MyComponent", () => {
   beforeEach(() => {
-    document.body.innerHTML = '';
+    document.body.innerHTML = "";
   });
 
   it("should render correctly", () => {
@@ -211,7 +221,7 @@ describe("MyComponent", () => {
 ### Service Tests
 
 ```typescript
-import { describe, it, beforeEach, afterEach } from "@std/testing/bdd";
+import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
 import { mockFetch } from "../../test-utils/setup.ts";
 import { MyService } from "../MyService.ts";
 
@@ -220,7 +230,7 @@ describe("MyService", () => {
 
   beforeEach(() => {
     restoreFetch = mockFetch({
-      '/api/endpoint': { success: true, data: 'response' }
+      "/api/endpoint": { success: true, data: "response" },
     });
   });
 
@@ -231,7 +241,7 @@ describe("MyService", () => {
   it("should call API correctly", async () => {
     const service = new MyService();
     const result = await service.method();
-    assertEquals(result, 'response');
+    assertEquals(result, "response");
   });
 });
 ```
@@ -239,7 +249,7 @@ describe("MyService", () => {
 ### E2E Tests
 
 ```typescript
-import { describe, it, before, after } from "@std/testing/bdd";
+import { after, before, describe, it } from "@std/testing/bdd";
 import { FetchMockManager } from "./utils/external-mock.ts";
 import { createSuccessfulAIScenario } from "./utils/test-setup.ts";
 
@@ -269,15 +279,15 @@ describe("E2E: Feature Flow", () => {
 ```typescript
 const messages = [
   {
-    role: 'user' as const,
-    content: 'Hello, how are you?',
-    timestamp: new Date('2025-01-01T10:00:00Z')
+    role: "user" as const,
+    content: "Hello, how are you?",
+    timestamp: new Date("2025-01-01T10:00:00Z"),
   },
   {
-    role: 'assistant' as const,
-    content: 'Hello! I\'m doing well, thank you.',
-    timestamp: new Date('2025-01-01T10:00:01Z')
-  }
+    role: "assistant" as const,
+    content: "Hello! I'm doing well, thank you.",
+    timestamp: new Date("2025-01-01T10:00:01Z"),
+  },
 ];
 ```
 
@@ -288,34 +298,39 @@ const mockClient = createMockAIClient({
   generateText: async () => ({
     content: "Test response",
     model: "gpt-4.1-nano",
-    usage: { promptTokens: 10, completionTokens: 8, totalTokens: 18 }
-  })
+    usage: { promptTokens: 10, completionTokens: 8, totalTokens: 18 },
+  }),
 });
 ```
 
 ## Best Practices
 
 ### 1. Test Isolation
+
 - Clean up DOM between tests
 - Reset mocks and state
 - Use fresh instances for each test
 
 ### 2. Descriptive Test Names
+
 - Use "should" statements
 - Describe the expected behavior
 - Include context when relevant
 
 ### 3. Arrange-Act-Assert Pattern
+
 - **Arrange**: Set up test data and mocks
 - **Act**: Execute the code under test
 - **Assert**: Verify the expected outcome
 
 ### 4. Error Testing
+
 - Test both success and failure scenarios
 - Verify error messages and handling
 - Test edge cases and boundary conditions
 
 ### 5. Async Testing
+
 - Use proper async/await patterns
 - Wait for state changes with waitFor
 - Handle promise rejections appropriately
@@ -358,7 +373,7 @@ console.log("Console logs:", consoleMock.logs);
 The test suite aims for comprehensive coverage:
 
 - **Components**: All user interactions and edge cases
-- **Services**: All methods and error scenarios  
+- **Services**: All methods and error scenarios
 - **Hooks**: State management and side effects
 - **E2E**: Critical user journeys and error flows
 

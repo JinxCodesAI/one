@@ -4,7 +4,7 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 import { AIService } from "./ai-service.ts";
-import type { ServiceConfig, GenerateTextRequest } from "../types.ts";
+import type { GenerateTextRequest, ServiceConfig } from "../types.ts";
 
 // Mock configuration for testing
 const mockConfig: ServiceConfig = {
@@ -50,7 +50,7 @@ Deno.test("AIService - validateRequest validates valid request", () => {
   const service = new AIService(mockConfig);
   const request: GenerateTextRequest = {
     messages: [
-      { role: "user", content: "Hello, world!" }
+      { role: "user", content: "Hello, world!" },
     ],
   };
 
@@ -67,7 +67,7 @@ Deno.test("AIService - validateRequest throws for empty messages", () => {
   assertThrows(
     () => service.validateRequest(request),
     Error,
-    "At least one message is required"
+    "At least one message is required",
   );
 });
 
@@ -78,7 +78,7 @@ Deno.test("AIService - validateRequest throws for missing messages", () => {
   assertThrows(
     () => service.validateRequest(request),
     Error,
-    "Messages array is required"
+    "Messages array is required",
   );
 });
 
@@ -86,14 +86,14 @@ Deno.test("AIService - validateRequest throws for invalid role", () => {
   const service = new AIService(mockConfig);
   const request = {
     messages: [
-      { role: "invalid", content: "Hello" }
+      { role: "invalid", content: "Hello" },
     ],
   } as unknown as GenerateTextRequest;
 
   assertThrows(
     () => service.validateRequest(request),
     Error,
-    "Invalid message role"
+    "Invalid message role",
   );
 });
 
@@ -101,14 +101,14 @@ Deno.test("AIService - validateRequest throws for missing content", () => {
   const service = new AIService(mockConfig);
   const request: GenerateTextRequest = {
     messages: [
-      { role: "user", content: "" }
+      { role: "user", content: "" },
     ],
   };
 
   assertThrows(
     () => service.validateRequest(request),
     Error,
-    "Message content is required and must be a string"
+    "Message content is required and must be a string",
   );
 });
 
@@ -116,7 +116,7 @@ Deno.test("AIService - validateRequest throws for invalid model", () => {
   const service = new AIService(mockConfig);
   const request: GenerateTextRequest = {
     messages: [
-      { role: "user", content: "Hello" }
+      { role: "user", content: "Hello" },
     ],
     model: "nonexistent-model",
   };
@@ -124,7 +124,7 @@ Deno.test("AIService - validateRequest throws for invalid model", () => {
   assertThrows(
     () => service.validateRequest(request),
     Error,
-    "Invalid model: nonexistent-model"
+    "Invalid model: nonexistent-model",
   );
 });
 
@@ -132,7 +132,7 @@ Deno.test("AIService - validateRequest throws for invalid maxTokens", () => {
   const service = new AIService(mockConfig);
   const request: GenerateTextRequest = {
     messages: [
-      { role: "user", content: "Hello" }
+      { role: "user", content: "Hello" },
     ],
     maxTokens: 5000,
   };
@@ -140,7 +140,7 @@ Deno.test("AIService - validateRequest throws for invalid maxTokens", () => {
   assertThrows(
     () => service.validateRequest(request),
     Error,
-    "maxTokens must be between 1 and 4096"
+    "maxTokens must be between 1 and 4096",
   );
 });
 
@@ -148,7 +148,7 @@ Deno.test("AIService - validateRequest throws for invalid temperature", () => {
   const service = new AIService(mockConfig);
   const request: GenerateTextRequest = {
     messages: [
-      { role: "user", content: "Hello" }
+      { role: "user", content: "Hello" },
     ],
     temperature: 1.5,
   };
@@ -156,14 +156,14 @@ Deno.test("AIService - validateRequest throws for invalid temperature", () => {
   assertThrows(
     () => service.validateRequest(request),
     Error,
-    "temperature must be between 0 and 1"
+    "temperature must be between 0 and 1",
   );
 });
 
 Deno.test("AIService - getHealth returns health status", () => {
   const service = new AIService(mockConfig);
   const health = service.getHealth();
-  
+
   assertEquals(typeof health.status, "string");
   assertEquals(Array.isArray(health.models), true);
   assertEquals(health.models.length, 2);

@@ -21,14 +21,14 @@ async function cleanup() {
   isShuttingDown = true;
 
   console.log("\n🛑 Shutting down all services...");
-  
+
   for (const proc of processes) {
     try {
       console.log(`  Stopping ${proc.name}...`);
-      
+
       // Try graceful shutdown first
       proc.process.kill("SIGTERM");
-      
+
       // Wait a bit for graceful shutdown
       const timeout = setTimeout(() => {
         try {
@@ -37,16 +37,16 @@ async function cleanup() {
           // Process might already be dead
         }
       }, 3000);
-      
+
       await proc.process.status;
       clearTimeout(timeout);
-      
+
       console.log(`  ✅ ${proc.name} stopped`);
     } catch (error) {
       console.log(`  ⚠️ ${proc.name} may have already stopped`);
     }
   }
-  
+
   console.log("🏁 All services stopped");
   Deno.exit(0);
 }
@@ -56,10 +56,15 @@ async function cleanup() {
  * --- MODIFIED ---
  * Added an optional `cwd` parameter to explicitly set the working directory for the command.
  */
-async function startService(name: string, command: string[], port: number, cwd?: string): Promise<void> {
+async function startService(
+  name: string,
+  command: string[],
+  port: number,
+  cwd?: string,
+): Promise<void> {
   try {
     console.log(`🚀 Starting ${name}...`);
-    
+
     // --- MODIFIED ---
     // The `cwd` option is passed directly to Deno.Command. This ensures the process
     // starts in the correct directory, which is crucial for tools like Vite.
@@ -69,18 +74,18 @@ async function startService(name: string, command: string[], port: number, cwd?:
       stdout: "piped",
       stderr: "piped",
     }).spawn();
-    
+
     processes.push({ name, process, port });
-    
+
     // Handle process output
     const decoder = new TextDecoder();
-    
+
     // Pipe stdout
     (async () => {
       for await (const chunk of process.stdout) {
         const text = decoder.decode(chunk);
         // Prefix output with service name
-        const lines = text.split('\n');
+        const lines = text.split("\n");
         for (const line of lines) {
           if (line.trim()) {
             console.log(`[${name}] ${line}`);
@@ -88,12 +93,12 @@ async function startService(name: string, command: string[], port: number, cwd?:
         }
       }
     })();
-    
+
     // Pipe stderr
     (async () => {
       for await (const chunk of process.stderr) {
         const text = decoder.decode(chunk);
-        const lines = text.split('\n');
+        const lines = text.split("\n");
         for (const line of lines) {
           if (line.trim()) {
             console.error(`[${name}] error: ${line}`);
@@ -101,9 +106,8 @@ async function startService(name: string, command: string[], port: number, cwd?:
         }
       }
     })();
-    
+
     console.log(`✅ ${name} started on port ${port}`);
-    
   } catch (error) {
     console.error(`❌ Failed to start ${name}:`, error.message);
     throw error;
@@ -132,7 +136,7 @@ async function main() {
     }
     globalThis.addEventListener("unload", cleanup);
   }
-  
+
   try {
     console.log("🚀 Starting all services concurrently...");
     console.log("📡 AI API will be available at: http://localhost:8000");
@@ -146,7 +150,7 @@ async function main() {
       const cacheProcess = new Deno.Command("deno", {
         args: ["cache", "web/ai-chat/src/main.tsx"],
       }).outputSync();
-      if(cacheProcess.status.success) {
+      if (cacheProcess.status.success) {
         console.log("✅ Deno dependencies cached");
       } else {
         console.warn("⚠️  Could not cache Deno dependencies.");
@@ -161,11 +165,11 @@ async function main() {
     await startService(
       "AI-API",
       ["deno", "task", "--cwd", "internal/ai-api", "dev"],
-      8000
+      8000,
     );
 
     // Small delay to let API start first
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Start AI Chat service
     // --- MODIFIED ---
@@ -176,18 +180,17 @@ async function main() {
       "AI-Chat",
       ["npx", "vite"],
       3000,
-      "web/ai-chat" 
+      "web/ai-chat",
     );
-    
+
     console.log("");
     console.log("🎉 All services started successfully!");
     console.log("🌐 Open http://localhost:3000 in your browser");
     console.log("");
-    
+
     // Wait for all processes to complete (they shouldn't unless there's an error)
-    const promises = processes.map(proc => proc.process.status);
+    const promises = processes.map((proc) => proc.process.status);
     await Promise.race(promises);
-    
   } catch (error) {
     console.error("❌ Error starting services:", error.message);
     await cleanup();

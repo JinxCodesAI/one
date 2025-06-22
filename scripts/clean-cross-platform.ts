@@ -8,7 +8,7 @@ const pathsToClean = [
   "internal/ai-api/dist",
   "web/ai-chat/dist",
   "web/ai-chat/node_modules",
-  "node_modules/.cache"
+  "node_modules/.cache",
 ];
 
 async function cleanPath(path: string): Promise<void> {
@@ -34,11 +34,11 @@ async function cleanPath(path: string): Promise<void> {
 
 async function main() {
   console.log("🧹 Starting cleanup...");
-  
+
   for (const path of pathsToClean) {
     await cleanPath(path);
   }
-  
+
   console.log("✨ Cleanup completed!");
 }
 

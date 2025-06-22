@@ -10,7 +10,7 @@ interface TestProject {
   name: string;
   path: string;
   hasTests: boolean;
-  runner: "deno" | "node"; 
+  runner: "deno" | "node";
 }
 
 // --- MODIFIED ---
@@ -18,17 +18,24 @@ interface TestProject {
 const projects: TestProject[] = [
   { name: "AI API", path: "internal/ai-api", hasTests: true, runner: "deno" },
   { name: "AI Chat", path: "web/ai-chat", hasTests: true, runner: "node" },
-  { name: "Testing Infrastructure", path: "packages/testing-infrastructure", hasTests: false, runner: "deno" }
+  {
+    name: "Testing Infrastructure",
+    path: "packages/testing-infrastructure",
+    hasTests: false,
+    runner: "deno",
+  },
 ];
 
 async function runTest(project: TestProject): Promise<boolean> {
   if (!project.hasTests) {
-    console.log(`\nℹ️ Skipping tests for ${project.name} (no tests configured)`);
+    console.log(
+      `\nℹ️ Skipping tests for ${project.name} (no tests configured)`,
+    );
     return true;
   }
 
   console.log(`\n🔬 Testing ${project.name} with ${project.runner} runner...`);
-  
+
   try {
     // --- MODIFIED ---
     // The command is now chosen based on the `runner` property.
@@ -44,7 +51,7 @@ async function runTest(project: TestProject): Promise<boolean> {
       stdout: "piped",
       stderr: "piped",
     }).spawn();
-    
+
     // --- MODIFIED ---
     // Replaced the manual, inefficient piping with the recommended `pipeTo` method.
     // This properly streams the output from the child process to the main process.
@@ -52,8 +59,12 @@ async function runTest(project: TestProject): Promise<boolean> {
     const errorPromise = process.stderr.pipeTo(Deno.stderr.writable);
 
     // Wait for the process to finish and for the streams to be fully piped.
-    const [status] = await Promise.all([process.status, outputPromise, errorPromise]);
-    
+    const [status] = await Promise.all([
+      process.status,
+      outputPromise,
+      errorPromise,
+    ]);
+
     if (status.success) {
       console.log(`\n✅ ${project.name} tests passed`);
       return true;
@@ -69,16 +80,17 @@ async function runTest(project: TestProject): Promise<boolean> {
 
 async function main() {
   console.log("🔬 Running unit tests for all projects...");
-  
+
   let allPassed = true;
-  
+
   // Running tests sequentially to keep output clean
   for (const project of projects) {
     if (!await runTest(project)) {
       allPassed = false;
     }
-_  }
-  
+    _;
+  }
+
   console.log("\n" + "=".repeat(50));
   if (allPassed) {
     console.log("✅ All unit tests completed successfully!");

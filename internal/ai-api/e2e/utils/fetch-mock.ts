@@ -25,14 +25,20 @@ export interface RequestContext {
 }
 
 export interface RequestMetadata {
-  provider: 'openai' | 'google' | 'openrouter' | 'unknown';
+  provider: "openai" | "google" | "openrouter" | "unknown";
   model?: string;
   endpoint: string;
   isApiCall: boolean;
 }
 
-export type RequestValidationHandler = (context: RequestContext, metadata: RequestMetadata) => boolean;
-export type ResponseGenerationHandler = (context: RequestContext, metadata: RequestMetadata) => MockResponse;
+export type RequestValidationHandler = (
+  context: RequestContext,
+  metadata: RequestMetadata,
+) => boolean;
+export type ResponseGenerationHandler = (
+  context: RequestContext,
+  metadata: RequestMetadata,
+) => MockResponse;
 
 export interface MockScenario {
   name: string;
@@ -55,13 +61,13 @@ export class RequestAnalyzer {
     const pathname = url.pathname;
 
     // Determine provider based on hostname
-    let provider: RequestMetadata['provider'] = 'unknown';
-    if (hostname.includes('api.openai.com')) {
-      provider = 'openai';
-    } else if (hostname.includes('generativelanguage.googleapis.com')) {
-      provider = 'google';
-    } else if (hostname.includes('openrouter.ai')) {
-      provider = 'openrouter';
+    let provider: RequestMetadata["provider"] = "unknown";
+    if (hostname.includes("api.openai.com")) {
+      provider = "openai";
+    } else if (hostname.includes("generativelanguage.googleapis.com")) {
+      provider = "google";
+    } else if (hostname.includes("openrouter.ai")) {
+      provider = "openrouter";
     }
 
     // Extract model information
@@ -69,26 +75,34 @@ export class RequestAnalyzer {
     let endpoint = pathname;
     let isApiCall = false;
 
-    if (provider === 'openai' && pathname.includes('/chat/completions')) {
+    if (provider === "openai" && pathname.includes("/chat/completions")) {
       isApiCall = true;
-      endpoint = '/chat/completions';
+      endpoint = "/chat/completions";
       // Model is in the request body for OpenAI
-      if (context.body && typeof context.body === 'object' && 'model' in context.body) {
+      if (
+        context.body && typeof context.body === "object" &&
+        "model" in context.body
+      ) {
         model = (context.body as any).model;
       }
-    } else if (provider === 'google' && pathname.includes(':generateContent')) {
+    } else if (provider === "google" && pathname.includes(":generateContent")) {
       isApiCall = true;
       // Extract model from URL path like /v1beta/models/gemini-2.5-flash:generateContent
       const modelMatch = pathname.match(/\/models\/([^:]+):/);
       if (modelMatch) {
         model = modelMatch[1];
-        endpoint = '/models/:model:generateContent';
+        endpoint = "/models/:model:generateContent";
       }
-    } else if (provider === 'openrouter' && pathname.includes('/chat/completions')) {
+    } else if (
+      provider === "openrouter" && pathname.includes("/chat/completions")
+    ) {
       isApiCall = true;
-      endpoint = '/chat/completions';
+      endpoint = "/chat/completions";
       // Model is in the request body for OpenRouter
-      if (context.body && typeof context.body === 'object' && 'model' in context.body) {
+      if (
+        context.body && typeof context.body === "object" &&
+        "model" in context.body
+      ) {
         model = (context.body as any).model;
       }
     }
@@ -97,24 +111,27 @@ export class RequestAnalyzer {
       provider,
       model,
       endpoint,
-      isApiCall
+      isApiCall,
     };
   }
 
   /**
    * Generate a realistic response based on provider and request
    */
-  static generateSuccessResponse(context: RequestContext, metadata: RequestMetadata): MockResponse {
+  static generateSuccessResponse(
+    context: RequestContext,
+    metadata: RequestMetadata,
+  ): MockResponse {
     const baseResponse: MockResponse = {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
       body: {},
-      delay: 0
+      delay: 0,
     };
 
     switch (metadata.provider) {
-      case 'openai':
-      case 'openrouter':
+      case "openai":
+      case "openrouter":
         baseResponse.body = {
           id: `chatcmpl-test${Date.now()}`,
           object: "chat.completion",
@@ -124,37 +141,37 @@ export class RequestAnalyzer {
             index: 0,
             message: {
               role: "assistant",
-              content: metadata.provider === 'openai'
-            ? "Hello! This is a mocked OpenAI response."
-            : metadata.provider === 'openrouter'
-            ? "Hello! This is a mocked OpenRouter/Anthropic response."
-            : `Hello! This is a mocked ${metadata.provider} response.`
+              content: metadata.provider === "openai"
+                ? "Hello! This is a mocked OpenAI response."
+                : metadata.provider === "openrouter"
+                ? "Hello! This is a mocked OpenRouter/Anthropic response."
+                : `Hello! This is a mocked ${metadata.provider} response.`,
             },
-            finish_reason: "stop"
+            finish_reason: "stop",
           }],
           usage: {
             prompt_tokens: 10,
             completion_tokens: 8,
-            total_tokens: 18
-          }
+            total_tokens: 18,
+          },
         };
         break;
 
-      case 'google':
+      case "google":
         baseResponse.body = {
           candidates: [{
             content: {
               parts: [{
-                text: "Hello! This is a mocked Google Gemini response."
-              }]
+                text: "Hello! This is a mocked Google Gemini response.",
+              }],
             },
-            finishReason: "STOP"
+            finishReason: "STOP",
           }],
           usageMetadata: {
             promptTokenCount: 10,
             candidatesTokenCount: 8,
-            totalTokenCount: 18
-          }
+            totalTokenCount: 18,
+          },
         };
         break;
 
@@ -168,33 +185,38 @@ export class RequestAnalyzer {
   /**
    * Generate an error response based on provider
    */
-  static generateErrorResponse(context: RequestContext, metadata: RequestMetadata, errorType: 'rate_limit' | 'invalid_request' | 'server_error' = 'server_error'): MockResponse {
+  static generateErrorResponse(
+    context: RequestContext,
+    metadata: RequestMetadata,
+    errorType: "rate_limit" | "invalid_request" | "server_error" =
+      "server_error",
+  ): MockResponse {
     const baseResponse: MockResponse = {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
       body: {},
-      delay: 0
+      delay: 0,
     };
 
     switch (metadata.provider) {
-      case 'openai':
-      case 'openrouter':
-        if (errorType === 'rate_limit') {
+      case "openai":
+      case "openrouter":
+        if (errorType === "rate_limit") {
           baseResponse.status = 429;
           baseResponse.body = {
             error: {
               message: "Rate limit exceeded",
               type: "rate_limit_error",
-              code: "rate_limit_exceeded"
-            }
+              code: "rate_limit_exceeded",
+            },
           };
-        } else if (errorType === 'invalid_request') {
+        } else if (errorType === "invalid_request") {
           baseResponse.status = 400;
           baseResponse.body = {
             error: {
               message: "Invalid request",
               type: "invalid_request_error",
-              code: "invalid_request"
-            }
+              code: "invalid_request",
+            },
           };
         } else {
           baseResponse.status = 500;
@@ -202,30 +224,30 @@ export class RequestAnalyzer {
             error: {
               message: "Internal server error",
               type: "server_error",
-              code: "server_error"
-            }
+              code: "server_error",
+            },
           };
         }
         break;
 
-      case 'google':
-        if (errorType === 'rate_limit') {
+      case "google":
+        if (errorType === "rate_limit") {
           baseResponse.status = 429;
           baseResponse.body = {
             error: {
               code: 429,
               message: "Quota exceeded",
-              status: "RESOURCE_EXHAUSTED"
-            }
+              status: "RESOURCE_EXHAUSTED",
+            },
           };
-        } else if (errorType === 'invalid_request') {
+        } else if (errorType === "invalid_request") {
           baseResponse.status = 400;
           baseResponse.body = {
             error: {
               code: 400,
               message: "Invalid request",
-              status: "INVALID_ARGUMENT"
-            }
+              status: "INVALID_ARGUMENT",
+            },
           };
         } else {
           baseResponse.status = 500;
@@ -233,8 +255,8 @@ export class RequestAnalyzer {
             error: {
               code: 500,
               message: "Internal error",
-              status: "INTERNAL"
-            }
+              status: "INTERNAL",
+            },
           };
         }
         break;
@@ -257,7 +279,14 @@ export class RequestAnalyzer {
 export class FetchMockManager {
   private originalFetch: typeof globalThis.fetch;
   private currentScenario: MockScenario;
-  private requestLog: Array<{ url: string; timestamp: number; method: string; metadata: RequestMetadata }> = [];
+  private requestLog: Array<
+    {
+      url: string;
+      timestamp: number;
+      method: string;
+      metadata: RequestMetadata;
+    }
+  > = [];
   private isActive = false;
 
   constructor(scenario: MockScenario) {
@@ -270,13 +299,15 @@ export class FetchMockManager {
    */
   start(): void {
     if (this.isActive) {
-      console.warn('[FETCH-MOCK] Already active, stopping previous instance');
+      console.warn("[FETCH-MOCK] Already active, stopping previous instance");
       this.stop();
     }
 
     globalThis.fetch = this.createMockFetch();
     this.isActive = true;
-    console.log(`[FETCH-MOCK] Started with scenario: ${this.currentScenario.name}`);
+    console.log(
+      `[FETCH-MOCK] Started with scenario: ${this.currentScenario.name}`,
+    );
   }
 
   /**
@@ -286,7 +317,9 @@ export class FetchMockManager {
     if (this.isActive) {
       globalThis.fetch = this.originalFetch;
       this.isActive = false;
-      console.log(`[FETCH-MOCK] Stopped. Intercepted ${this.requestLog.length} requests`);
+      console.log(
+        `[FETCH-MOCK] Stopped. Intercepted ${this.requestLog.length} requests`,
+      );
     }
   }
 
@@ -295,13 +328,22 @@ export class FetchMockManager {
    */
   setScenario(scenario: MockScenario): void {
     this.currentScenario = scenario;
-    console.log(`[FETCH-MOCK] Switched to scenario: ${this.currentScenario.name}`);
+    console.log(
+      `[FETCH-MOCK] Switched to scenario: ${this.currentScenario.name}`,
+    );
   }
 
   /**
    * Get request log for debugging
    */
-  getRequestLog(): Array<{ url: string; timestamp: number; method: string; metadata: RequestMetadata }> {
+  getRequestLog(): Array<
+    {
+      url: string;
+      timestamp: number;
+      method: string;
+      metadata: RequestMetadata;
+    }
+  > {
     return [...this.requestLog];
   }
 
@@ -315,9 +357,16 @@ export class FetchMockManager {
   /**
    * Extract request context from fetch parameters
    */
-  private extractRequestContext(input: string | Request | URL, init?: RequestInit): RequestContext {
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-    const method = init?.method || 'GET';
+  private extractRequestContext(
+    input: string | Request | URL,
+    init?: RequestInit,
+  ): RequestContext {
+    const url = typeof input === "string"
+      ? input
+      : input instanceof URL
+      ? input.href
+      : input.url;
+    const method = init?.method || "GET";
 
     // Extract headers
     const headers: Record<string, string> = {};
@@ -339,7 +388,9 @@ export class FetchMockManager {
     let body: unknown;
     if (init?.body) {
       try {
-        body = typeof init.body === 'string' ? JSON.parse(init.body) : init.body;
+        body = typeof init.body === "string"
+          ? JSON.parse(init.body)
+          : init.body;
       } catch {
         body = init.body;
       }
@@ -352,7 +403,10 @@ export class FetchMockManager {
    * Create the mock fetch function using two-phase request handling
    */
   private createMockFetch(): typeof globalThis.fetch {
-    return async (input: string | Request | URL, init?: RequestInit): Promise<Response> => {
+    return async (
+      input: string | Request | URL,
+      init?: RequestInit,
+    ): Promise<Response> => {
       // Extract request context
       const context = this.extractRequestContext(input, init);
 
@@ -364,41 +418,57 @@ export class FetchMockManager {
         url: context.url,
         timestamp: Date.now(),
         method: context.method,
-        metadata
+        metadata,
       });
 
       // Check if this is a local request (to our test server)
-      if (context.url.includes('localhost') || context.url.includes('127.0.0.1')) {
-        console.log(`[FETCH-MOCK] Passing through local request: ${context.method} ${context.url}`);
+      if (
+        context.url.includes("localhost") || context.url.includes("127.0.0.1")
+      ) {
+        console.log(
+          `[FETCH-MOCK] Passing through local request: ${context.method} ${context.url}`,
+        );
         return this.originalFetch(input, init);
       }
 
       // Phase 1: Request Validation
-      const isExpected = this.currentScenario.isRequestExpected(context, metadata);
+      const isExpected = this.currentScenario.isRequestExpected(
+        context,
+        metadata,
+      );
 
       if (!isExpected) {
         const error = new Error(
           `[FETCH-MOCK] Unexpected external request: ${context.method} ${context.url}\n` +
-          `Provider: ${metadata.provider}, Model: ${metadata.model || 'unknown'}, Endpoint: ${metadata.endpoint}\n` +
-          `This request was not expected by the current test scenario: ${this.currentScenario.name}`
+            `Provider: ${metadata.provider}, Model: ${
+              metadata.model || "unknown"
+            }, Endpoint: ${metadata.endpoint}\n` +
+            `This request was not expected by the current test scenario: ${this.currentScenario.name}`,
         );
         console.error(error.message);
         throw error;
       }
 
       // Phase 2: Response Generation
-      const mockResponse = this.currentScenario.generateResponse(context, metadata);
+      const mockResponse = this.currentScenario.generateResponse(
+        context,
+        metadata,
+      );
 
-      console.log(`[FETCH-MOCK] Mocking ${context.method} ${context.url} -> ${mockResponse.status || 200}`);
+      console.log(
+        `[FETCH-MOCK] Mocking ${context.method} ${context.url} -> ${
+          mockResponse.status || 200
+        }`,
+      );
 
       // Simulate network delay if specified
       if (mockResponse.delay && mockResponse.delay > 0) {
-        await new Promise(resolve => setTimeout(resolve, mockResponse.delay));
+        await new Promise((resolve) => setTimeout(resolve, mockResponse.delay));
       }
 
       return new Response(JSON.stringify(mockResponse.body), {
         status: mockResponse.status || 200,
-        headers: mockResponse.headers || { 'Content-Type': 'application/json' }
+        headers: mockResponse.headers || { "Content-Type": "application/json" },
       });
     };
   }

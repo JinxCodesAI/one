@@ -2,7 +2,7 @@
  * Chat container component that manages the chat interface
  */
 
-import React, { useRef, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { MessageList } from "./MessageList.tsx";
 import { MessageInput } from "./MessageInput.tsx";
 import { ErrorMessage } from "./ErrorMessage.tsx";
@@ -23,7 +23,7 @@ export function ChatContainer({
   error,
   onSendMessage,
   onRetry,
-  onDismissError
+  onDismissError,
 }: ChatContainerProps): React.ReactElement {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -36,47 +36,57 @@ export function ChatContainer({
   }, [messages]);
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%'
-    }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+      }}
+    >
       {/* Messages area */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '1rem',
-        backgroundColor: '#ffffff'
-      }}>
+      <div
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "1rem",
+          backgroundColor: "#ffffff",
+        }}
+      >
         {/* Welcome message when no messages */}
         {messages.length === 0 && !isLoading && !error && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '100%',
-            textAlign: 'center',
-            color: '#6b7280'
-          }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              textAlign: "center",
+              color: "#6b7280",
+            }}
+          >
             <div>
-              <h2 style={{
-                fontSize: '1.5rem',
-                fontWeight: '600',
-                margin: '0 0 0.5rem 0',
-                color: '#374151'
-              }}>
+              <h2
+                style={{
+                  fontSize: "1.5rem",
+                  fontWeight: "600",
+                  margin: "0 0 0.5rem 0",
+                  color: "#374151",
+                }}
+              >
                 Welcome to AI Chat
               </h2>
-              <p style={{
-                fontSize: '0.875rem',
-                margin: 0
-              }}>
+              <p
+                style={{
+                  fontSize: "0.875rem",
+                  margin: 0,
+                }}
+              >
                 Start a conversation by typing a message below
               </p>
             </div>
           </div>
         )}
-        
+
         {/* Messages */}
         {messages.length > 0 && (
           <>
@@ -84,29 +94,33 @@ export function ChatContainer({
             <div ref={messagesEndRef} />
           </>
         )}
-        
+
         {/* Loading indicator */}
         {isLoading && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '1rem',
-            color: '#6b7280',
-            fontSize: '0.875rem'
-          }}>
-            <div style={{
-              width: '1rem',
-              height: '1rem',
-              border: '2px solid #e5e7eb',
-              borderTop: '2px solid #2563eb',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite'
-            }} />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              padding: "1rem",
+              color: "#6b7280",
+              fontSize: "0.875rem",
+            }}
+          >
+            <div
+              style={{
+                width: "1rem",
+                height: "1rem",
+                border: "2px solid #e5e7eb",
+                borderTop: "2px solid #2563eb",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
+              }}
+            />
             AI is thinking...
           </div>
         )}
-        
+
         {/* Error message */}
         {error && (
           <ErrorMessage
@@ -116,9 +130,9 @@ export function ChatContainer({
           />
         )}
       </div>
-      
+
       {/* Input area */}
-      <MessageInput 
+      <MessageInput
         onSendMessage={onSendMessage}
         disabled={isLoading}
       />

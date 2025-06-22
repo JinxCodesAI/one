@@ -1,6 +1,8 @@
 # AI Chat v2
 
-A modern AI chat application built with Vite, Deno, React, and TypeScript. Features a clean interface for conversing with multiple AI models including OpenAI GPT, Google Gemini, and Anthropic Claude.
+A modern AI chat application built with Vite, Deno, React, and TypeScript.
+Features a clean interface for conversing with multiple AI models including
+OpenAI GPT, Google Gemini, and Anthropic Claude.
 
 ## Features
 
@@ -42,7 +44,8 @@ deno task preview
 
 ## Testing
 
-This project includes a comprehensive test suite with unit tests, integration tests, and end-to-end tests.
+This project includes a comprehensive test suite with unit tests, integration
+tests, and end-to-end tests.
 
 ### Quick Start
 
@@ -114,7 +117,9 @@ e2e/                     # End-to-end tests
 
 ## Configuration
 
-The application connects to the AI API service at `http://localhost:8000` by default. Make sure the AI API service is running before starting the application.
+The application connects to the AI API service at `http://localhost:8000` by
+default. Make sure the AI API service is running before starting the
+application.
 
 ## Available Scripts
 

@@ -1,17 +1,21 @@
 # ADR: Docker Compose Strategy for Development and Production
 
-**Status**: Proposed  
-**Date**: 2025-06-21  
-**Authors**: Development Team  
-**Reviewers**: DevOps Team, Architecture Team  
+**Status**: Proposed\
+**Date**: 2025-06-21\
+**Authors**: Development Team\
+**Reviewers**: DevOps Team, Architecture Team
 
 ## Context
 
-The current project has Docker support for cross-compilation (AI API service) but lacks Docker Compose orchestration for development and production environments. We need to evaluate whether Docker Compose is necessary and beneficial for our monorepo architecture.
+The current project has Docker support for cross-compilation (AI API service)
+but lacks Docker Compose orchestration for development and production
+environments. We need to evaluate whether Docker Compose is necessary and
+beneficial for our monorepo architecture.
 
 ## Current State Analysis
 
 ### Existing Docker Infrastructure
+
 - ✅ **AI API**: `Dockerfile.build` for cross-compilation (Windows → Linux)
 - ✅ **Build Script**: `build-linux.ps1` for automated binary creation
 - ✅ **Production Deployment**: Systemd service configuration
@@ -19,6 +23,7 @@ The current project has Docker support for cross-compilation (AI API service) bu
 - ❌ **No Development Containers**: Services run directly with Deno
 
 ### Current Development Workflow
+
 ```bash
 # Current approach - native Deno execution
 just dev-all          # Starts both services natively
@@ -27,6 +32,7 @@ just dev-chat         # AI Chat on port 3000
 ```
 
 ### Current Production Deployment
+
 1. **Cross-compile** AI API using Docker
 2. **Deploy binary** to Linux server
 3. **Run as systemd service**
@@ -37,6 +43,7 @@ just dev-chat         # AI Chat on port 3000
 ### Option 1: Add Full Docker Compose (Recommended)
 
 **Pros:**
+
 - **Environment Consistency**: Identical dev/prod environments
 - **Dependency Isolation**: No local Deno/Node.js version conflicts
 - **Easy Onboarding**: New developers just run `docker-compose up`
@@ -45,6 +52,7 @@ just dev-chat         # AI Chat on port 3000
 - **External Dependencies**: Easy to add databases, Redis, etc.
 
 **Cons:**
+
 - **Performance Overhead**: Slower than native execution
 - **Complexity**: Additional Docker knowledge required
 - **File Watching**: Hot reload may be slower in containers
@@ -53,32 +61,38 @@ just dev-chat         # AI Chat on port 3000
 ### Option 2: Hybrid Approach (Current + Compose)
 
 **Pros:**
+
 - **Flexibility**: Developers choose native or containerized
 - **Performance**: Native development remains fast
 - **Testing**: Containerized integration testing
 - **Production**: Container-based deployment
 
 **Cons:**
+
 - **Maintenance**: Two development paths to maintain
 - **Inconsistency**: Different environments may have different issues
 
 ### Option 3: Keep Current Approach
 
 **Pros:**
+
 - **Performance**: Fastest development experience
 - **Simplicity**: No Docker complexity for development
 - **Working**: Current system functions well
 
 **Cons:**
+
 - **Environment Drift**: Dev/prod differences
 - **Onboarding**: Requires local Deno installation
 - **Scaling**: Harder to add external dependencies
 
 ## Recommendation: Option 1 (Full Docker Compose)
 
-Based on the analysis, we recommend implementing Docker Compose for the following reasons:
+Based on the analysis, we recommend implementing Docker Compose for the
+following reasons:
 
-1. **Future-Proofing**: As the monorepo grows, containerization becomes essential
+1. **Future-Proofing**: As the monorepo grows, containerization becomes
+   essential
 2. **External Dependencies**: Likely need for databases, caching, message queues
 3. **Team Scaling**: Easier onboarding for new developers
 4. **Production Parity**: Reduces "works on my machine" issues
@@ -90,6 +104,7 @@ Based on the analysis, we recommend implementing Docker Compose for the followin
 #### 1.1 Create Service Dockerfiles
 
 **AI API Dockerfile** (`internal/ai-api/Dockerfile`):
+
 ```dockerfile
 FROM denoland/deno:2.3.6
 
@@ -113,6 +128,7 @@ CMD ["deno", "task", "--cwd", "internal/ai-api", "start"]
 ```
 
 **AI Chat Dockerfile** (`web/ai-chat/Dockerfile`):
+
 ```dockerfile
 FROM denoland/deno:2.3.6
 
@@ -138,8 +154,9 @@ CMD ["deno", "task", "--cwd", "web/ai-chat", "dev", "--host", "0.0.0.0"]
 #### 1.2 Create Docker Compose Configuration
 
 **Development** (`docker-compose.dev.yml`):
+
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   ai-api:
@@ -156,7 +173,15 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["deno", "task", "--cwd", "internal/ai-api", "dev", "--host", "0.0.0.0"]
+    command: [
+      "deno",
+      "task",
+      "--cwd",
+      "internal/ai-api",
+      "dev",
+      "--host",
+      "0.0.0.0",
+    ]
     networks:
       - ai-network
 
@@ -182,8 +207,9 @@ networks:
 ```
 
 **Production** (`docker-compose.prod.yml`):
+
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   ai-api:
@@ -255,6 +281,7 @@ dev-all-native: dev-all
 ### Phase 2: Enhanced Features
 
 #### 2.1 Add External Dependencies
+
 ```yaml
 # Add to docker-compose.dev.yml
 services:
@@ -283,6 +310,7 @@ volumes:
 ```
 
 #### 2.2 Development Tools Container
+
 ```yaml
 services:
   dev-tools:
@@ -292,7 +320,7 @@ services:
     volumes:
       - .:/app
     working_dir: /app
-    command: tail -f /dev/null  # Keep container running
+    command: tail -f /dev/null # Keep container running
     networks:
       - ai-network
 ```
@@ -300,6 +328,7 @@ services:
 ### Phase 3: CI/CD Integration
 
 #### 3.1 GitHub Actions
+
 ```yaml
 # .github/workflows/docker.yml
 name: Docker Build and Test
@@ -321,12 +350,14 @@ jobs:
 ## Migration Strategy
 
 ### For Developers
+
 1. **Optional Initially**: Keep native development as default
 2. **Gradual Adoption**: Introduce Docker commands alongside existing ones
 3. **Documentation**: Clear guides for both approaches
 4. **Training**: Team sessions on Docker Compose usage
 
 ### Implementation Timeline
+
 - **Week 1**: Create basic Dockerfiles and compose files
 - **Week 2**: Update justfile and test Docker development workflow
 - **Week 3**: Add external dependencies and production configurations
@@ -335,6 +366,7 @@ jobs:
 ## Consequences
 
 ### Positive
+
 - **Environment Consistency**: Eliminates "works on my machine" issues
 - **Easy Onboarding**: New developers can start with `just docker-dev`
 - **Scalability**: Easy to add databases, caching, message queues
@@ -342,6 +374,7 @@ jobs:
 - **Isolation**: No conflicts with local development tools
 
 ### Negative
+
 - **Performance**: Slower than native development (especially file watching)
 - **Complexity**: Additional Docker knowledge required
 - **Resource Usage**: Higher memory and CPU usage

@@ -2,7 +2,7 @@
  * Unit tests for ChatAIClient service
  */
 
-import { describe, it, beforeEach, afterEach } from "@std/testing/bdd";
+import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
 import { ChatAIClient, createAIClient } from "../aiClient.ts";
 import { mockFetch } from "../../test-utils/setup.ts";
@@ -13,36 +13,36 @@ describe("ChatAIClient Service", () => {
   let restoreFetch: () => void;
 
   beforeEach(() => {
-    client = new ChatAIClient('http://localhost:8000');
-    
+    client = new ChatAIClient("http://localhost:8000");
+
     // Mock successful responses by default
     restoreFetch = mockFetch({
-      '/generate': {
+      "/generate": {
         success: true,
         data: {
-          content: 'Test AI response',
-          model: 'gpt-4.1-nano',
+          content: "Test AI response",
+          model: "gpt-4.1-nano",
           usage: {
             promptTokens: 10,
             completionTokens: 8,
-            totalTokens: 18
-          }
-        }
+            totalTokens: 18,
+          },
+        },
       },
-      '/models': {
+      "/models": {
         success: true,
         data: {
-          models: ['gpt-4.1-nano', 'gemini-2.5-flash', 'claude-3-sonnet']
-        }
+          models: ["gpt-4.1-nano", "gemini-2.5-flash", "claude-3-sonnet"],
+        },
       },
-      '/health': {
+      "/health": {
         success: true,
         data: {
-          status: 'healthy',
-          models: ['gpt-4.1-nano', 'gemini-2.5-flash'],
-          version: '0.0.1'
-        }
-      }
+          status: "healthy",
+          models: ["gpt-4.1-nano", "gemini-2.5-flash"],
+          version: "0.0.1",
+        },
+      },
     });
   });
 
@@ -57,7 +57,7 @@ describe("ChatAIClient Service", () => {
     });
 
     it("should create client with custom base URL", () => {
-      const customClient = new ChatAIClient('http://custom-url:9000');
+      const customClient = new ChatAIClient("http://custom-url:9000");
       assertExists(customClient);
     });
   });
@@ -65,48 +65,56 @@ describe("ChatAIClient Service", () => {
   describe("generateText", () => {
     it("should generate text successfully", async () => {
       const messages = [
-        { role: 'user' as const, content: 'Hello', timestamp: new Date() }
+        { role: "user" as const, content: "Hello", timestamp: new Date() },
       ];
 
-      const response = await client.generateText(messages, 'gpt-4.1-nano', {
+      const response = await client.generateText(messages, "gpt-4.1-nano", {
         maxTokens: 100,
-        temperature: 0.7
+        temperature: 0.7,
       });
 
-      assertEquals(response.content, 'Test AI response');
-      assertEquals(response.model, 'gpt-4.1-nano');
+      assertEquals(response.content, "Test AI response");
+      assertEquals(response.model, "gpt-4.1-nano");
       assertExists(response.usage);
       assertEquals(response.usage.totalTokens, 18);
     });
 
     it("should handle messages without options", async () => {
       const messages = [
-        { role: 'user' as const, content: 'Hello', timestamp: new Date() }
+        { role: "user" as const, content: "Hello", timestamp: new Date() },
       ];
 
       const response = await client.generateText(messages);
-      assertEquals(response.content, 'Test AI response');
+      assertEquals(response.content, "Test AI response");
     });
 
     it("should handle messages without model", async () => {
       const messages = [
-        { role: 'user' as const, content: 'Hello', timestamp: new Date() }
+        { role: "user" as const, content: "Hello", timestamp: new Date() },
       ];
 
       const response = await client.generateText(messages, undefined, {
-        maxTokens: 100
+        maxTokens: 100,
       });
-      assertEquals(response.content, 'Test AI response');
+      assertEquals(response.content, "Test AI response");
     });
 
     it("should convert app messages to API format", async () => {
       const messages = [
-        { role: 'user' as const, content: 'Hello', timestamp: new Date() },
-        { role: 'assistant' as const, content: 'Hi there!', timestamp: new Date() },
-        { role: 'user' as const, content: 'How are you?', timestamp: new Date() }
+        { role: "user" as const, content: "Hello", timestamp: new Date() },
+        {
+          role: "assistant" as const,
+          content: "Hi there!",
+          timestamp: new Date(),
+        },
+        {
+          role: "user" as const,
+          content: "How are you?",
+          timestamp: new Date(),
+        },
       ];
 
-      await client.generateText(messages, 'gpt-4.1-nano');
+      await client.generateText(messages, "gpt-4.1-nano");
 
       // The conversion happens internally, we just verify it doesn't throw
       assertEquals(true, true);
@@ -115,17 +123,17 @@ describe("ChatAIClient Service", () => {
     it("should handle API error responses", async () => {
       restoreFetch();
       restoreFetch = mockFetch({
-        '/generate': {
+        "/generate": {
           success: false,
           error: {
-            error: 'Rate limit exceeded',
-            code: 'RATE_LIMIT'
-          }
-        }
+            error: "Rate limit exceeded",
+            code: "RATE_LIMIT",
+          },
+        },
       });
 
       const messages = [
-        { role: 'user' as const, content: 'Hello', timestamp: new Date() }
+        { role: "user" as const, content: "Hello", timestamp: new Date() },
       ];
 
       await assertRejects(
@@ -133,64 +141,67 @@ describe("ChatAIClient Service", () => {
           await client.generateText(messages);
         },
         Error,
-        'Rate limit exceeded'
+        "Rate limit exceeded",
       );
     });
 
     it("should handle network errors", async () => {
       restoreFetch();
       globalThis.fetch = async () => {
-        throw new Error('Network error');
+        throw new Error("Network error");
       };
 
       const messages = [
-        { role: 'user' as const, content: 'Hello', timestamp: new Date() }
+        { role: "user" as const, content: "Hello", timestamp: new Date() },
       ];
 
       await assertRejects(
         async () => {
           await client.generateText(messages);
         },
-        Error
+        Error,
       );
     });
 
     it("should handle malformed API responses", async () => {
       restoreFetch();
       globalThis.fetch = async () => {
-        return new Response('invalid json', { status: 200 });
+        return new Response("invalid json", { status: 200 });
       };
 
       const messages = [
-        { role: 'user' as const, content: 'Hello', timestamp: new Date() }
+        { role: "user" as const, content: "Hello", timestamp: new Date() },
       ];
 
       await assertRejects(
         async () => {
           await client.generateText(messages);
         },
-        Error
+        Error,
       );
     });
 
     it("should handle HTTP error status codes", async () => {
       restoreFetch();
       globalThis.fetch = async () => {
-        return new Response(JSON.stringify({
-          success: false,
-          error: { error: 'Server error' }
-        }), { status: 500 });
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: { error: "Server error" },
+          }),
+          { status: 500 },
+        );
       };
 
       const messages = [
-        { role: 'user' as const, content: 'Hello', timestamp: new Date() }
+        { role: "user" as const, content: "Hello", timestamp: new Date() },
       ];
 
       await assertRejects(
         async () => {
           await client.generateText(messages);
         },
-        Error
+        Error,
       );
     });
   });
@@ -201,21 +212,21 @@ describe("ChatAIClient Service", () => {
 
       assertEquals(Array.isArray(models), true);
       assertEquals(models.length, 3);
-      assertEquals(models.includes('gpt-4.1-nano'), true);
-      assertEquals(models.includes('gemini-2.5-flash'), true);
-      assertEquals(models.includes('claude-3-sonnet'), true);
+      assertEquals(models.includes("gpt-4.1-nano"), true);
+      assertEquals(models.includes("gemini-2.5-flash"), true);
+      assertEquals(models.includes("claude-3-sonnet"), true);
     });
 
     it("should handle API error responses", async () => {
       restoreFetch();
       restoreFetch = mockFetch({
-        '/models': {
+        "/models": {
           success: false,
           error: {
-            error: 'Failed to fetch models',
-            code: 'MODELS_ERROR'
-          }
-        }
+            error: "Failed to fetch models",
+            code: "MODELS_ERROR",
+          },
+        },
       });
 
       await assertRejects(
@@ -223,33 +234,33 @@ describe("ChatAIClient Service", () => {
           await client.getModels();
         },
         Error,
-        'Failed to fetch models'
+        "Failed to fetch models",
       );
     });
 
     it("should handle network errors", async () => {
       restoreFetch();
       globalThis.fetch = async () => {
-        throw new Error('Network error');
+        throw new Error("Network error");
       };
 
       await assertRejects(
         async () => {
           await client.getModels();
         },
-        Error
+        Error,
       );
     });
 
     it("should handle empty models list", async () => {
       restoreFetch();
       restoreFetch = mockFetch({
-        '/models': {
+        "/models": {
           success: true,
           data: {
-            models: []
-          }
-        }
+            models: [],
+          },
+        },
       });
 
       const models = await client.getModels();
@@ -262,22 +273,22 @@ describe("ChatAIClient Service", () => {
     it("should get health status successfully", async () => {
       const health = await client.getHealth();
 
-      assertEquals(health.status, 'healthy');
+      assertEquals(health.status, "healthy");
       assertEquals(Array.isArray(health.models), true);
       assertEquals(health.models.length, 2);
-      assertEquals(health.version, '0.0.1');
+      assertEquals(health.version, "0.0.1");
     });
 
     it("should handle API error responses", async () => {
       restoreFetch();
       restoreFetch = mockFetch({
-        '/health': {
+        "/health": {
           success: false,
           error: {
-            error: 'Health check failed',
-            code: 'HEALTH_ERROR'
-          }
-        }
+            error: "Health check failed",
+            code: "HEALTH_ERROR",
+          },
+        },
       });
 
       await assertRejects(
@@ -285,39 +296,39 @@ describe("ChatAIClient Service", () => {
           await client.getHealth();
         },
         Error,
-        'Health check failed'
+        "Health check failed",
       );
     });
 
     it("should handle network errors", async () => {
       restoreFetch();
       globalThis.fetch = async () => {
-        throw new Error('Network error');
+        throw new Error("Network error");
       };
 
       await assertRejects(
         async () => {
           await client.getHealth();
         },
-        Error
+        Error,
       );
     });
 
     it("should handle unhealthy status", async () => {
       restoreFetch();
       restoreFetch = mockFetch({
-        '/health': {
+        "/health": {
           success: true,
           data: {
-            status: 'unhealthy',
+            status: "unhealthy",
             models: [],
-            version: '0.0.1'
-          }
-        }
+            version: "0.0.1",
+          },
+        },
       });
 
       const health = await client.getHealth();
-      assertEquals(health.status, 'unhealthy');
+      assertEquals(health.status, "unhealthy");
       assertEquals(health.models.length, 0);
     });
   });
@@ -329,7 +340,7 @@ describe("ChatAIClient Service", () => {
     });
 
     it("should create client with custom URL", () => {
-      const client = createAIClient('http://custom:8080');
+      const client = createAIClient("http://custom:8080");
       assertExists(client);
     });
   });
@@ -338,31 +349,31 @@ describe("ChatAIClient Service", () => {
     it("should handle undefined response data", async () => {
       restoreFetch();
       restoreFetch = mockFetch({
-        '/generate': {
+        "/generate": {
           success: true,
-          data: undefined
-        }
+          data: undefined,
+        },
       });
 
       const messages = [
-        { role: 'user' as const, content: 'Hello', timestamp: new Date() }
+        { role: "user" as const, content: "Hello", timestamp: new Date() },
       ];
 
       await assertRejects(
         async () => {
           await client.generateText(messages);
         },
-        Error
+        Error,
       );
     });
 
     it("should handle null response data", async () => {
       restoreFetch();
       restoreFetch = mockFetch({
-        '/models': {
+        "/models": {
           success: true,
-          data: null
-        }
+          data: null,
+        },
       });
 
       const models = await client.getModels();
@@ -373,43 +384,46 @@ describe("ChatAIClient Service", () => {
     it("should handle missing error message", async () => {
       restoreFetch();
       restoreFetch = mockFetch({
-        '/generate': {
+        "/generate": {
           success: false,
-          error: {}
-        }
+          error: {},
+        },
       });
 
       const messages = [
-        { role: 'user' as const, content: 'Hello', timestamp: new Date() }
+        { role: "user" as const, content: "Hello", timestamp: new Date() },
       ];
 
       await assertRejects(
         async () => {
           await client.generateText(messages);
         },
-        Error
+        Error,
       );
     });
 
     it("should handle response without success field", async () => {
       restoreFetch();
       globalThis.fetch = async () => {
-        return new Response(JSON.stringify({
-          data: {
-            content: 'Response without success field'
-          }
-        }), { status: 200 });
+        return new Response(
+          JSON.stringify({
+            data: {
+              content: "Response without success field",
+            },
+          }),
+          { status: 200 },
+        );
       };
 
       const messages = [
-        { role: 'user' as const, content: 'Hello', timestamp: new Date() }
+        { role: "user" as const, content: "Hello", timestamp: new Date() },
       ];
 
       await assertRejects(
         async () => {
           await client.generateText(messages);
         },
-        Error
+        Error,
       );
     });
   });
@@ -417,36 +431,44 @@ describe("ChatAIClient Service", () => {
   describe("message format conversion", () => {
     it("should handle system messages", async () => {
       const messages = [
-        { role: 'system' as const, content: 'You are a helpful assistant', timestamp: new Date() },
-        { role: 'user' as const, content: 'Hello', timestamp: new Date() }
+        {
+          role: "system" as const,
+          content: "You are a helpful assistant",
+          timestamp: new Date(),
+        },
+        { role: "user" as const, content: "Hello", timestamp: new Date() },
       ];
 
       const response = await client.generateText(messages);
-      assertEquals(response.content, 'Test AI response');
+      assertEquals(response.content, "Test AI response");
     });
 
     it("should handle empty messages array", async () => {
       const response = await client.generateText([]);
-      assertEquals(response.content, 'Test AI response');
+      assertEquals(response.content, "Test AI response");
     });
 
     it("should handle messages with special characters", async () => {
       const messages = [
-        { role: 'user' as const, content: 'Hello "world" & <test>', timestamp: new Date() }
+        {
+          role: "user" as const,
+          content: 'Hello "world" & <test>',
+          timestamp: new Date(),
+        },
       ];
 
       const response = await client.generateText(messages);
-      assertEquals(response.content, 'Test AI response');
+      assertEquals(response.content, "Test AI response");
     });
 
     it("should handle very long messages", async () => {
-      const longContent = 'A'.repeat(10000);
+      const longContent = "A".repeat(10000);
       const messages = [
-        { role: 'user' as const, content: longContent, timestamp: new Date() }
+        { role: "user" as const, content: longContent, timestamp: new Date() },
       ];
 
       const response = await client.generateText(messages);
-      assertEquals(response.content, 'Test AI response');
+      assertEquals(response.content, "Test AI response");
     });
   });
 });

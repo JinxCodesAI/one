@@ -1,10 +1,13 @@
 # Windows Compatibility Guide
 
-This guide addresses Windows-specific setup and troubleshooting for the AI Chat monorepo.
+This guide addresses Windows-specific setup and troubleshooting for the AI Chat
+monorepo.
 
 ## Overview
 
-The monorepo is fully compatible with Windows, macOS, and Linux. All `just` commands work identically across platforms thanks to cross-platform TypeScript orchestration scripts.
+The monorepo is fully compatible with Windows, macOS, and Linux. All `just`
+commands work identically across platforms thanks to cross-platform TypeScript
+orchestration scripts.
 
 ## Installation on Windows
 
@@ -16,12 +19,14 @@ The monorepo is fully compatible with Windows, macOS, and Linux. All `just` comm
 ### Installing `just` on Windows
 
 #### Option 1: Chocolatey (Recommended)
+
 ```powershell
 # Run PowerShell as Administrator
 choco install just
 ```
 
 #### Option 2: Scoop (No Admin Required)
+
 ```powershell
 # Install Scoop first if you don't have it
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
@@ -32,6 +37,7 @@ scoop install just
 ```
 
 #### Option 3: Cargo (If you have Rust)
+
 ```powershell
 cargo install just
 ```
@@ -54,19 +60,23 @@ deno run --allow-read --allow-write scripts/setup-justfile.ts
 
 ### 1. "Could not find `cygpath` executable" or "could not find the shell" Error
 
-**Problem**: These errors occur when `just` can't find the appropriate shell on Windows.
+**Problem**: These errors occur when `just` can't find the appropriate shell on
+Windows.
 
 **Solution 1 (Recommended)**:
+
 ```powershell
 just setup
 ```
 
 **Solution 2 (If just setup fails)**:
+
 ```powershell
 deno run --allow-read --allow-write scripts/setup-justfile.ts
 ```
 
 **What this does**:
+
 - Detects your operating system automatically
 - Configures PowerShell for Windows, sh for Unix systems
 - Updates the justfile with the correct shell configuration
@@ -77,6 +87,7 @@ deno run --allow-read --allow-write scripts/setup-justfile.ts
 **Problem**: PowerShell may block script execution.
 
 **Solution**:
+
 ```powershell
 # Check current policy
 Get-ExecutionPolicy
@@ -90,6 +101,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 **Problem**: "Access to the path 'C:\ProgramData\chocolatey\lib-bad' is denied"
 
 **Solutions**:
+
 1. **Run PowerShell as Administrator** and retry the installation
 2. **Use Scoop instead** (doesn't require admin privileges)
 3. **Clean Chocolatey cache**:
@@ -103,6 +115,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 **Problem**: `just` command not found after installation.
 
 **Solution**:
+
 1. **Restart your terminal** after installation
 2. **Check PATH**:
    ```powershell
@@ -152,7 +165,8 @@ just docker-clean     # Clean up
 
 ### Cross-Platform Service Orchestration
 
-The `just dev-all` command uses a TypeScript script (`scripts/dev-all-cross-platform.ts`) that:
+The `just dev-all` command uses a TypeScript script
+(`scripts/dev-all-cross-platform.ts`) that:
 
 - ✅ **Works on Windows, macOS, and Linux**
 - ✅ **Handles Ctrl+C gracefully** on all platforms
@@ -163,6 +177,7 @@ The `just dev-all` command uses a TypeScript script (`scripts/dev-all-cross-plat
 ### Terminal Compatibility
 
 The project works with:
+
 - ✅ **PowerShell** (recommended)
 - ✅ **Command Prompt**
 - ✅ **Windows Terminal**
@@ -174,12 +189,14 @@ The project works with:
 ### Native vs Docker Development
 
 **Native Development (Recommended)**:
+
 - ✅ **Faster**: Direct Deno execution
 - ✅ **Better hot reload**: Instant file change detection
 - ✅ **Lower resource usage**: No container overhead
 - ✅ **Easier debugging**: Native Windows debugging tools
 
 **Docker Development (Optional)**:
+
 - ✅ **Environment consistency**: Same as production
 - ✅ **Isolation**: No local dependency conflicts
 - ⚠️ **Slower**: Container overhead
@@ -265,4 +282,5 @@ You know everything is working when:
 - ✅ AI Chat loads and shows "Loading models..." (expected without API keys)
 - ✅ Ctrl+C cleanly shuts down all services
 
-The monorepo is designed to work seamlessly on Windows with the same developer experience as macOS and Linux!
+The monorepo is designed to work seamlessly on Windows with the same developer
+experience as macOS and Linux!

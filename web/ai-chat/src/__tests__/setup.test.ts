@@ -20,17 +20,17 @@ describe("Test Setup", () => {
   });
 
   it("should be able to create DOM elements", () => {
-    const div = document.createElement('div');
-    div.textContent = 'Test element';
+    const div = document.createElement("div");
+    div.textContent = "Test element";
 
     assertExists(div);
-    assertEquals(div.textContent, 'Test element');
+    assertEquals(div.textContent, "Test element");
   });
 
   it("should have testing environment configured", () => {
     // Verify that our test environment is properly set up
-    assertEquals(typeof globalThis.ResizeObserver, 'function');
-    assertEquals(typeof globalThis.IntersectionObserver, 'function');
-    assertEquals(typeof globalThis.matchMedia, 'function');
+    assertEquals(typeof globalThis.ResizeObserver, "function");
+    assertEquals(typeof globalThis.IntersectionObserver, "function");
+    assertEquals(typeof globalThis.matchMedia, "function");
   });
 });

@@ -1,10 +1,12 @@
 # Testing Guide
 
-This document provides comprehensive information about testing in the One monorepo.
+This document provides comprehensive information about testing in the One
+monorepo.
 
 ## Quick Start
 
 ### Run All Tests
+
 ```bash
 # Run all tests across all workspace projects
 just test
@@ -17,6 +19,7 @@ just test-e2e
 ```
 
 ### Run Tests for Specific Projects
+
 ```bash
 # AI-API (unit + E2E)
 just test-api
@@ -29,6 +32,7 @@ just test-chat
 ```
 
 ### Run Specific Test Types
+
 ```bash
 # Unit tests only (all projects)
 just test-unit
@@ -44,6 +48,7 @@ cd web/ai-chat && deno task test:e2e        # ai-chat E2E tests
 ```
 
 ### Watch Mode
+
 ```bash
 # Watch unit tests for AI-API
 just test-watch-api
@@ -53,6 +58,7 @@ just test-watch-chat
 ```
 
 ### Code Quality
+
 ```bash
 # Run all checks (lint + test)
 just check
@@ -69,6 +75,7 @@ just fmt
 The monorepo contains the following active projects with tests:
 
 ### 1. AI-API (`internal/ai-api/`)
+
 - **Unit Tests**: Core service logic, configuration, SDK client
 - **E2E Tests**: Complete API flows with external provider mocking
 - **Test Commands**:
@@ -76,6 +83,7 @@ The monorepo contains the following active projects with tests:
   - `deno task test:e2e` - E2E tests
 
 ### 2. ai-chat (`web/ai-chat/`)
+
 - **Unit Tests**: React components, hooks, services
 - **Integration Tests**: Service integration testing
 - **E2E Tests**: UI automation with browser testing
@@ -89,6 +97,7 @@ The monorepo contains the following active projects with tests:
   - `deno task test:watch` - Watch mode
 
 ### 3. Testing Infrastructure (`packages/testing-infrastructure/`)
+
 - **Purpose**: Shared testing utilities and infrastructure
 - **No Tests**: This package provides testing tools for other projects
 - **Features**: Fetch mocking, server setup, UI automation, scenarios
@@ -97,17 +106,19 @@ The monorepo contains the following active projects with tests:
 
 ### Shared Testing Infrastructure
 
-All projects use the shared testing infrastructure from `@one/testing-infrastructure`:
+All projects use the shared testing infrastructure from
+`@one/testing-infrastructure`:
 
 ```typescript
-import { 
-  FetchMockManager, 
+import {
   createSuccessScenario,
-  createUITestEnvironment 
+  createUITestEnvironment,
+  FetchMockManager,
 } from "@one/testing-infrastructure";
 ```
 
 **Benefits**:
+
 - ✅ No code duplication between projects
 - ✅ Consistent testing patterns
 - ✅ Centralized maintenance
@@ -176,7 +187,8 @@ cd web/ai-chat && deno task test:e2e
 ### Getting Help
 
 1. Check test logs for specific error messages
-2. Review the testing infrastructure documentation in `packages/testing-infrastructure/README.md`
+2. Review the testing infrastructure documentation in
+   `packages/testing-infrastructure/README.md`
 3. Look at example tests in `packages/testing-infrastructure/examples/`
 4. Use the migration guide in `packages/testing-infrastructure/MIGRATION.md`
 
@@ -193,12 +205,14 @@ cd web/ai-chat && deno task test:e2e
 ## Adding New Tests
 
 ### For New Features
+
 1. Add unit tests for core logic
 2. Add integration tests for service interactions
 3. Add E2E tests for user workflows
 4. Use shared testing infrastructure utilities
 
 ### For New Projects
+
 1. Add project to workspace in root `deno.json`
 2. Add test tasks following the established patterns
 3. Update this documentation
@@ -207,6 +221,8 @@ cd web/ai-chat && deno task test:e2e
 ## Performance
 
 - **Unit Tests**: Fast execution (< 5 seconds)
-- **E2E Tests**: Slower due to server startup and browser automation (30-60 seconds)
+- **E2E Tests**: Slower due to server startup and browser automation (30-60
+  seconds)
 - **Total Test Suite**: Typically completes in under 2 minutes
-- **Parallel Execution**: Projects are tested sequentially to avoid resource conflicts
+- **Parallel Execution**: Projects are tested sequentially to avoid resource
+  conflicts

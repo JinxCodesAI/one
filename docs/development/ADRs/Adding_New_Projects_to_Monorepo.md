@@ -1,23 +1,29 @@
 # ADR: Adding New Projects to the Monorepo
 
-**Status**: Active  
-**Date**: 2025-06-21  
-**Authors**: Development Team  
-**Reviewers**: Architecture Team  
+**Status**: Active\
+**Date**: 2025-06-21\
+**Authors**: Development Team\
+**Reviewers**: Architecture Team
 
 ## Context
 
-With the implementation of the `just`-based task system, we need clear guidelines for adding new projects to the monorepo. This ADR provides a comprehensive step-by-step process to ensure consistency, maintainability, and proper integration with our existing infrastructure.
+With the implementation of the `just`-based task system, we need clear
+guidelines for adding new projects to the monorepo. This ADR provides a
+comprehensive step-by-step process to ensure consistency, maintainability, and
+proper integration with our existing infrastructure.
 
 ## Decision
 
-We will follow a standardized process for adding new projects that integrates with our `justfile`-based task orchestration, workspace configuration, and testing infrastructure.
+We will follow a standardized process for adding new projects that integrates
+with our `justfile`-based task orchestration, workspace configuration, and
+testing infrastructure.
 
 ## Implementation Guide
 
 ### Step 1: Project Structure Setup
 
 #### 1.1 Choose Project Location
+
 ```bash
 # For internal services (APIs, microservices)
 internal/<project-name>/
@@ -30,6 +36,7 @@ packages/<project-name>/
 ```
 
 #### 1.2 Create Project Directory Structure
+
 ```bash
 mkdir -p <project-location>/<project-name>
 cd <project-location>/<project-name>
@@ -74,11 +81,12 @@ Create `<project-name>/deno.json` with standard configuration:
 ### Step 3: Update Root Workspace Configuration
 
 #### 3.1 Add to Root `deno.json` Workspace
+
 ```json
 {
   "workspace": [
     "./internal/ai-api",
-    "./web/ai-chat", 
+    "./web/ai-chat",
     "./packages/testing-infrastructure",
     "./<project-location>/<project-name>"
   ]
@@ -86,6 +94,7 @@ Create `<project-name>/deno.json` with standard configuration:
 ```
 
 #### 3.2 Add Shared Dependencies (if needed)
+
 Only add to root `imports` if the dependency is used by multiple projects:
 
 ```json
@@ -104,6 +113,7 @@ Only add to root `imports` if the dependency is used by multiple projects:
 ### Step 4: Update `justfile` Task Orchestration
 
 #### 4.1 Add Development Commands
+
 ```makefile
 # Add to justfile
 dev-<project-name>:
@@ -111,9 +121,11 @@ dev-<project-name>:
     @deno task --cwd <project-location>/<project-name> dev
 ```
 
-**Note**: Use `@echo` and simple commands for cross-platform compatibility. Avoid bash-specific syntax to ensure Windows compatibility.
+**Note**: Use `@echo` and simple commands for cross-platform compatibility.
+Avoid bash-specific syntax to ensure Windows compatibility.
 
 #### 4.2 Add Testing Commands
+
 ```makefile
 # Update existing test commands
 test-unit:
@@ -140,6 +152,7 @@ test-<project-name>:
 ```
 
 #### 4.3 Add Linting and Formatting
+
 ```makefile
 # Update existing commands
 lint:
@@ -160,19 +173,21 @@ fmt:
 ### Step 5: Testing Infrastructure Integration
 
 #### 5.1 Use Shared Testing Infrastructure
+
 ```typescript
 // In your test files
-import { 
+import {
+  FetchMockManager,
   setupServerTestEnvironment,
   setupUITestEnvironment,
-  FetchMockManager 
 } from "@one/testing-infrastructure";
 ```
 
 #### 5.2 Create E2E Tests
+
 ```typescript
 // e2e/basic.e2e.ts
-import { describe, it, before, after } from "@std/testing/bdd";
+import { after, before, describe, it } from "@std/testing/bdd";
 import { assert } from "@std/assert";
 import { setupServerTestEnvironment } from "@one/testing-infrastructure";
 
@@ -182,7 +197,7 @@ describe("<Project Name> E2E Tests", () => {
   before(async () => {
     const { cleanup: cleanupFn } = await setupServerTestEnvironment({
       port: 8080, // Use different port for each service
-      providers: ['openai'] // If AI integration needed
+      providers: ["openai"], // If AI integration needed
     });
     cleanup = cleanupFn;
   });
@@ -201,30 +216,30 @@ describe("<Project Name> E2E Tests", () => {
 ### Step 6: Documentation Updates
 
 #### 6.1 Update Root README.md
+
 Add project description to the project structure section:
 
 ```markdown
 ## Project Structure
-
 ```
-.
-├── internal/
-│   ├── ai-api/              # Backend API service
-│   └── <project-name>/      # [Description of new project]
-├── web/
-│   ├── ai-chat/             # Frontend React application  
-│   └── <project-name>/      # [Description of new project]
-├── packages/
-│   ├── testing-infrastructure/  # Shared testing utilities
-│   └── <project-name>/      # [Description of new project]
+
+. ├── internal/ │ ├── ai-api/ # Backend API service │ └── <project-name>/ #
+[Description of new project] ├── web/ │ ├── ai-chat/ # Frontend React
+application\
+│ └── <project-name>/ # [Description of new project] ├── packages/ │ ├──
+testing-infrastructure/ # Shared testing utilities │ └── <project-name>/ #
+[Description of new project]
+
 ```
 ```
 
 #### 6.2 Update DEVELOPMENT.md
+
 Add development commands:
 
 ```markdown
 ### Development Commands
+
 - `just dev-all` - Start all services concurrently
 - `just dev-api` - Start only AI API service
 - `just dev-chat` - Start only AI Chat service
@@ -232,16 +247,19 @@ Add development commands:
 ```
 
 #### 6.3 Update TESTING.md
+
 Add testing information:
 
-```markdown
+````markdown
 ### Run Tests for Specific Projects
+
 ```bash
 # <Project Name> (unit + E2E)
 just test-<project-name>
 ```
-```
+````
 
+````
 ### Step 7: Environment Configuration
 
 #### 7.1 Create `.env.example`
@@ -255,9 +273,10 @@ HOST=0.0.0.0
 # Add project-specific environment variables
 # API_KEY=your-api-key-here
 # DATABASE_URL=your-database-url-here
-```
+````
 
 #### 7.2 Update Root `.gitignore` (if needed)
+
 ```gitignore
 # Add project-specific ignores
 <project-location>/<project-name>/.env
@@ -284,6 +303,7 @@ After adding a new project, verify:
 ## Consequences
 
 ### Positive
+
 - **Consistency**: All projects follow the same structure and conventions
 - **Maintainability**: Clear process reduces configuration drift
 - **Integration**: Automatic integration with existing tooling
@@ -291,12 +311,14 @@ After adding a new project, verify:
 - **Documentation**: Systematic documentation updates
 
 ### Negative
+
 - **Initial Setup**: Requires following multiple steps
 - **Maintenance**: Need to keep this ADR updated as tooling evolves
 
 ## Examples
 
 See existing projects for reference:
+
 - **API Service**: `internal/ai-api/`
 - **Web Application**: `web/ai-chat/`
 - **Shared Package**: `packages/testing-infrastructure/`

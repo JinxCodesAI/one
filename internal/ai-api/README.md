@@ -1,13 +1,16 @@
 # AI API Service
 
-A unified AI API service built with Deno that provides both SDK and HTTP interfaces for interacting with multiple AI providers (OpenAI, Anthropic) without managing provider-specific details.
+A unified AI API service built with Deno that provides both SDK and HTTP
+interfaces for interacting with multiple AI providers (OpenAI, Anthropic)
+without managing provider-specific details.
 
 ## Features
 
 - **Unified Interface**: Single API for multiple AI providers
 - **SDK Integration**: Deno-compatible SDK for direct integration
 - **HTTP API**: RESTful endpoints for any language/platform
-- **Model Abstraction**: Friendly model names mapped to provider-specific identifiers
+- **Model Abstraction**: Friendly model names mapped to provider-specific
+  identifiers
 - **Configuration Management**: Environment variable-based configuration
 - **Type Safety**: Full TypeScript support with comprehensive type definitions
 - **Error Handling**: Graceful error handling with meaningful messages
@@ -51,9 +54,9 @@ const client = createSimpleClient();
 
 const response = await client.generateText({
   messages: [
-    { role: "user", content: "Hello, how are you?" }
+    { role: "user", content: "Hello, how are you?" },
   ],
-  model: "gpt-4o"
+  model: "gpt-4o",
 });
 
 console.log(response.content);
@@ -79,10 +82,11 @@ curl -X POST http://localhost:8000/generate \
 Generate text using AI models.
 
 **Request Body:**
+
 ```json
 {
   "messages": [
-    {"role": "user", "content": "Your message here"}
+    { "role": "user", "content": "Your message here" }
   ],
   "model": "gpt-3.5-turbo",
   "maxTokens": 1000,
@@ -91,6 +95,7 @@ Generate text using AI models.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -111,6 +116,7 @@ Generate text using AI models.
 Get available models.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -125,6 +131,7 @@ Get available models.
 Check service health.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -139,20 +146,24 @@ Check service health.
 
 ## Available Models
 
-The service provides friendly model names that map to provider-specific identifiers:
+The service provides friendly model names that map to provider-specific
+identifiers:
 
 **OpenAI Models:**
+
 - `gpt-4.1-nano` → OpenAI GPT-4.1 Nano (default)
 - `gpt-4.1-mini` → OpenAI GPT-4.1 Mini
 - `gpt-4.1` → OpenAI GPT-4.1
 - `gpt-4o` → OpenAI GPT-4o
 
 **Google Models:**
+
 - `gemini-2.5-flash-lite` → Google Gemini 2.5 Flash Lite
 - `gemini-2.5-flash` → Google Gemini 2.5 Flash
 - `gemini-2.5-pro` → Google Gemini 2.5 Pro
 
 **Anthropic Models (via OpenRouter):**
+
 - `anthropic/claude-3.5-sonnet` → Anthropic Claude 3.5 Sonnet
 - `anthropic/claude-3.5-haiku` → Anthropic Claude 3.5 Haiku
 
@@ -160,14 +171,14 @@ The service provides friendly model names that map to provider-specific identifi
 
 ### Environment Variables
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `PORT` | Server port | No | `8000` |
-| `HOST` | Server host | No | `0.0.0.0` |
-| `OPENAI_API_KEY` | OpenAI API key | Yes* | - |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Google Generative AI API key | Yes* | - |
-| `OPENROUTER_API_KEY` | OpenRouter API key | Yes* | - |
-| `AI_DEFAULT_MODEL` | Default model name | No | `gpt-4.1-nano` |
+| Variable                       | Description                  | Required | Default        |
+| ------------------------------ | ---------------------------- | -------- | -------------- |
+| `PORT`                         | Server port                  | No       | `8000`         |
+| `HOST`                         | Server host                  | No       | `0.0.0.0`      |
+| `OPENAI_API_KEY`               | OpenAI API key               | Yes*     | -              |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Google Generative AI API key | Yes*     | -              |
+| `OPENROUTER_API_KEY`           | OpenRouter API key           | Yes*     | -              |
+| `AI_DEFAULT_MODEL`             | Default model name           | No       | `gpt-4.1-nano` |
 
 *At least one provider API key is required.
 
@@ -228,6 +239,7 @@ The service provides consistent error responses:
 ```
 
 Common error codes:
+
 - `GENERATION_ERROR`: Text generation failed
 - `NOT_FOUND`: Endpoint not found
 - `INTERNAL_ERROR`: Server error

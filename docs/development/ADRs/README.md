@@ -1,10 +1,14 @@
 # Architecture Decision Records (ADRs)
 
-This directory contains Architecture Decision Records (ADRs) that document important architectural and technical decisions made for this project.
+This directory contains Architecture Decision Records (ADRs) that document
+important architectural and technical decisions made for this project.
 
 ## What are ADRs?
 
-Architecture Decision Records are documents that capture important architectural decisions made along with their context and consequences. They help teams understand why certain decisions were made and provide guidance for future development.
+Architecture Decision Records are documents that capture important architectural
+decisions made along with their context and consequences. They help teams
+understand why certain decisions were made and provide guidance for future
+development.
 
 ## Current ADRs
 
@@ -12,25 +16,33 @@ Architecture Decision Records are documents that capture important architectural
 
 1. **[Adding New Projects to Monorepo](./Adding_New_Projects_to_Monorepo.md)**
    - **Status**: Active
-   - **Summary**: Comprehensive guide for adding new projects to the monorepo with proper integration into the `just`-based task system
-   - **Key Points**: Step-by-step process, workspace configuration, testing integration, documentation updates
+   - **Summary**: Comprehensive guide for adding new projects to the monorepo
+     with proper integration into the `just`-based task system
+   - **Key Points**: Step-by-step process, workspace configuration, testing
+     integration, documentation updates
 
 2. **[Docker Compose Strategy](./Docker_Compose_Strategy.md)**
    - **Status**: Proposed
-   - **Summary**: Evaluation and implementation plan for Docker Compose in development and production environments
-   - **Key Points**: Native vs containerized development, implementation phases, migration strategy
+   - **Summary**: Evaluation and implementation plan for Docker Compose in
+     development and production environments
+   - **Key Points**: Native vs containerized development, implementation phases,
+     migration strategy
 
 ### Testing
 
 3. **[Testing Guide Comprehensive](./Testing_Guide_Comprehensive.md)**
    - **Status**: Active
-   - **Summary**: Comprehensive testing strategy including unit tests, integration tests, and E2E tests
-   - **Key Points**: BDD-style testing, shared testing infrastructure, E2E testing with browser automation
+   - **Summary**: Comprehensive testing strategy including unit tests,
+     integration tests, and E2E tests
+   - **Key Points**: BDD-style testing, shared testing infrastructure, E2E
+     testing with browser automation
 
 4. **[E2E Testing Guide](./E2E_Testing_Guide.md)**
    - **Status**: Active
-   - **Summary**: Detailed guide for implementing end-to-end tests across the monorepo
-   - **Key Points**: Browser automation, fetch mocking, UI interaction testing, shared testing utilities
+   - **Summary**: Detailed guide for implementing end-to-end tests across the
+     monorepo
+   - **Key Points**: Browser automation, fetch mocking, UI interaction testing,
+     shared testing utilities
 
 ## ADR Template
 
@@ -39,27 +51,33 @@ When creating new ADRs, use this template:
 ```markdown
 # ADR: [Title]
 
-**Status**: [Proposed | Active | Deprecated | Superseded]  
-**Date**: YYYY-MM-DD  
-**Authors**: [Author names]  
-**Reviewers**: [Reviewer names]  
+**Status**: [Proposed | Active | Deprecated | Superseded]\
+**Date**: YYYY-MM-DD\
+**Authors**: [Author names]\
+**Reviewers**: [Reviewer names]
 
 ## Context
+
 [Describe the context and problem statement]
 
 ## Decision
+
 [Describe the decision made]
 
 ## Implementation
+
 [Describe how the decision will be implemented]
 
 ## Consequences
+
 [Describe the positive and negative consequences]
 
 ## Alternatives Considered
+
 [List alternatives that were considered]
 
 ## Related Documents
+
 [Link to related ADRs, specifications, or documentation]
 ```
 
@@ -92,12 +110,12 @@ When creating new ADRs, use this template:
 
 ## Implementation Status
 
-| ADR | Status | Implementation | Notes |
-|-----|--------|----------------|-------|
-| Adding New Projects | Active | ✅ Complete | Integrated with justfile system |
-| Docker Compose Strategy | Proposed | 🚧 Partial | Basic setup created, full implementation pending |
-| Testing Guide | Active | ✅ Complete | Comprehensive testing infrastructure in place |
-| E2E Testing Guide | Active | ✅ Complete | Browser automation and mocking implemented |
+| ADR                     | Status   | Implementation | Notes                                            |
+| ----------------------- | -------- | -------------- | ------------------------------------------------ |
+| Adding New Projects     | Active   | ✅ Complete    | Integrated with justfile system                  |
+| Docker Compose Strategy | Proposed | 🚧 Partial     | Basic setup created, full implementation pending |
+| Testing Guide           | Active   | ✅ Complete    | Comprehensive testing infrastructure in place    |
+| E2E Testing Guide       | Active   | ✅ Complete    | Browser automation and mocking implemented       |
 
 ## Related Documentation
 
@@ -119,6 +137,7 @@ When making significant architectural decisions:
 ## Questions?
 
 For questions about ADRs or architectural decisions, please:
+
 - Review existing ADRs for similar decisions
 - Discuss in team architecture meetings
 - Create GitHub issues for clarification

@@ -1,6 +1,6 @@
 /**
  * Basic Server E2E Test Example
- * 
+ *
  * This example shows how to set up a basic server E2E test using the shared
  * testing infrastructure. It demonstrates:
  * - Setting up mock scenarios
@@ -9,14 +9,14 @@
  * - Proper cleanup
  */
 
-import { describe, it, before, after } from "@std/testing/bdd";
+import { after, before, describe, it } from "@std/testing/bdd";
 import { assertEquals, assertExists } from "@std/assert";
-import { 
-  FetchMockManager, 
-  createServerTestEnvironment,
+import {
   createServerTestConfig,
+  createServerTestEnvironment,
   createSuccessScenario,
-  type ServerTestEnvironment
+  FetchMockManager,
+  type ServerTestEnvironment,
 } from "@one/testing-infrastructure";
 
 // These would be imported from your actual project
@@ -25,19 +25,19 @@ import {
 
 // Mock implementations for this example
 const startServer = async () => ({
-  stop: async () => console.log('Server stopped')
+  stop: async () => console.log("Server stopped"),
 });
 
 const createClient = (baseUrl: string) => ({
   generateText: async (messages: any[], model: string) => ({
     content: "Mocked response",
     model,
-    usage: { totalTokens: 10 }
+    usage: { totalTokens: 10 },
   }),
   getHealth: async () => ({
     status: "healthy",
-    models: ["gpt-4.1-nano", "gemini-2.5-flash"]
-  })
+    models: ["gpt-4.1-nano", "gemini-2.5-flash"],
+  }),
 });
 
 describe("Basic Server E2E Test Example", () => {
@@ -47,11 +47,11 @@ describe("Basic Server E2E Test Example", () => {
   before(async () => {
     // 1. Create a mock scenario for successful AI responses
     const scenario = createSuccessScenario(
-      ['openai', 'google'], // Providers to mock
+      ["openai", "google"], // Providers to mock
       {
         openai: "Hello from OpenAI!",
-        google: "Hello from Google!"
-      }
+        google: "Hello from Google!",
+      },
     );
 
     // 2. Start the mock manager
@@ -62,7 +62,7 @@ describe("Basic Server E2E Test Example", () => {
     testEnv = await createServerTestEnvironment(
       startServer,
       createClient,
-      createServerTestConfig()
+      createServerTestConfig(),
     );
   });
 
@@ -74,10 +74,10 @@ describe("Basic Server E2E Test Example", () => {
 
   it("should generate text with OpenAI", async () => {
     const client = testEnv.client as ReturnType<typeof createClient>;
-    
+
     const response = await client.generateText(
       [{ role: "user", content: "Hello" }],
-      "gpt-4.1-nano"
+      "gpt-4.1-nano",
     );
 
     assertExists(response);
@@ -88,7 +88,7 @@ describe("Basic Server E2E Test Example", () => {
 
   it("should return health status", async () => {
     const client = testEnv.client as ReturnType<typeof createClient>;
-    
+
     const health = await client.getHealth();
 
     assertExists(health);
@@ -99,22 +99,24 @@ describe("Basic Server E2E Test Example", () => {
 
   it("should log intercepted requests", async () => {
     const client = testEnv.client as ReturnType<typeof createClient>;
-    
+
     // Clear previous logs
     mockManager.clearRequestLog();
-    
+
     // Make a request
     await client.generateText(
       [{ role: "user", content: "Test" }],
-      "gpt-4.1-nano"
+      "gpt-4.1-nano",
     );
 
     // Check what was intercepted
     const requestLog = mockManager.getRequestLog();
     console.log(`Intercepted ${requestLog.length} requests`);
-    
+
     // You can assert on the requests if needed
-    const externalRequests = requestLog.filter(req => req.metadata.isExternalApi);
+    const externalRequests = requestLog.filter((req) =>
+      req.metadata.isExternalApi
+    );
     assertEquals(externalRequests.length >= 0, true); // May be 0 if no external calls made
   });
 });

@@ -6,8 +6,12 @@
     "playwright": "npm:playwright@^1.40.0",
     "@one/testing-infrastructure": "./packages/testing-infrastructure/src/mod.ts"
   },
-  "nodeModulesDir":"auto",
-  "workspace": ["./internal/ai-api", "./web/ai-chat", "./packages/testing-infrastructure"],
+  "nodeModulesDir": "auto",
+  "workspace": [
+    "./internal/ai-api",
+    "./web/ai-chat",
+    "./packages/testing-infrastructure"
+  ],
   "compilerOptions": {
     "lib": ["deno.ns", "es2022", "dom"]
   }

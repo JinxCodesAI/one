@@ -7,20 +7,20 @@
  */
 
 import { load } from "@std/dotenv";
-import { AIServer } from './server/server.ts';
-import { getConfig, printConfigSummary } from './config/config.ts';
+import { AIServer } from "./server/server.ts";
+import { getConfig, printConfigSummary } from "./config/config.ts";
 
 // Export SDK functionality
-export { AIClient, createClient, createSimpleClient } from './sdk/client.ts';
-export { AIService } from './core/ai-service.ts';
-export * from './types.ts';
+export { AIClient, createClient, createSimpleClient } from "./sdk/client.ts";
+export { AIService } from "./core/ai-service.ts";
+export * from "./types.ts";
 
 /**
  * Start the AI API server
  */
 export async function startServer(): Promise<AIServer> {
   try {
-    console.log('Starting AI API Service...');
+    console.log("Starting AI API Service...");
 
     // Load environment variables from .env file
     await load({ export: true });
@@ -35,10 +35,10 @@ export async function startServer(): Promise<AIServer> {
 
     return server;
   } catch (error) {
-    console.error('Failed to start AI API service:', error);
+    console.error("Failed to start AI API service:", error);
 
     // In test environment, throw error instead of exiting
-    if (Deno.env.get('NODE_ENV') === 'test') {
+    if (Deno.env.get("NODE_ENV") === "test") {
       throw error;
     }
 
@@ -61,10 +61,10 @@ if (import.meta.main) {
   };
 
   // Listen for shutdown signals (Windows only supports SIGINT)
-  Deno.addSignalListener('SIGINT', () => handleShutdown('SIGINT'));
+  Deno.addSignalListener("SIGINT", () => handleShutdown("SIGINT"));
 
   // Only add SIGTERM listener on non-Windows platforms
-  if (Deno.build.os !== 'windows') {
-    Deno.addSignalListener('SIGTERM', () => handleShutdown('SIGTERM'));
+  if (Deno.build.os !== "windows") {
+    Deno.addSignalListener("SIGTERM", () => handleShutdown("SIGTERM"));
   }
 }

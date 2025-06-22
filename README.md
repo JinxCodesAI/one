@@ -1,8 +1,11 @@
 # AI Chat Monorepo
 
-A modern AI chat application built with Deno, featuring a React frontend and a robust API backend that supports multiple AI providers.
+A modern AI chat application built with Deno, featuring a React frontend and a
+robust API backend that supports multiple AI providers.
 
-> **🪟 Windows Users**: After installing `just`, you MUST run `just setup` (or `deno run --allow-read --allow-write scripts/setup-justfile.ts` if that fails) to configure the shell. This fixes "could not find the shell" errors.
+> **🪟 Windows Users**: After installing `just`, you MUST run `just setup` (or
+> `deno run --allow-read --allow-write scripts/setup-justfile.ts` if that fails)
+> to configure the shell. This fixes "could not find the shell" errors.
 
 ## Architecture
 
@@ -29,6 +32,7 @@ A modern AI chat application built with Deno, featuring a React frontend and a r
 #### Install `just` Task Runner
 
 **Windows:**
+
 ```powershell
 # Via Chocolatey (Recommended)
 choco install just
@@ -41,6 +45,7 @@ cargo install just
 ```
 
 **macOS:**
+
 ```bash
 # Via Homebrew (Recommended)
 brew install just
@@ -50,6 +55,7 @@ cargo install just
 ```
 
 **Linux:**
+
 ```bash
 # Via Cargo
 cargo install just
@@ -86,8 +92,9 @@ cp internal/ai-api/.env.example internal/ai-api/.env
 ```
 
 You need at least one AI provider API key:
+
 - **OpenAI**: Set `OPENAI_API_KEY`
-- **Google AI**: Set `GOOGLE_GENERATIVE_AI_API_KEY`  
+- **Google AI**: Set `GOOGLE_GENERATIVE_AI_API_KEY`
 - **OpenRouter**: Set `OPENROUTER_API_KEY`
 
 ### Development Commands
@@ -183,7 +190,7 @@ just docker-prod      # Start all services with Docker Compose (production)
    ```bash
    # Run all tests
    just test
-   
+
    # Run specific test types
    just test-unit
    just test-e2e
@@ -192,12 +199,14 @@ just docker-prod      # Start all services with Docker Compose (production)
 ## Available Services
 
 ### AI API Service (Port 8000)
+
 - RESTful API for AI text generation
 - Support for multiple AI providers
 - Model management and health checks
 - Comprehensive error handling
 
 ### AI Chat Web App (Port 3000)
+
 - Modern React-based chat interface
 - Real-time model switching
 - Message history management
@@ -206,28 +215,34 @@ just docker-prod      # Start all services with Docker Compose (production)
 ## Development Options
 
 ### Native Development (Recommended)
+
 - **Faster**: Direct Deno execution without container overhead
 - **Hot Reload**: Instant file change detection
 - **Resource Efficient**: Lower memory and CPU usage
 - **Debugging**: Easier debugging with native tools
 
 ### Docker Development (Optional)
+
 - **Environment Consistency**: Identical dev/prod environments
 - **Easy Onboarding**: New developers just run `just docker-dev`
 - **Isolation**: No conflicts with local development tools
 - **External Dependencies**: Easy to add databases, Redis, etc.
 
 **When to use Docker:**
+
 - New team members (easier setup)
 - Testing production-like environment
 - Need external dependencies (databases, caching)
 - Debugging environment-specific issues
 
-See [Docker Compose Strategy ADR](docs/development/ADRs/Docker_Compose_Strategy.md) for detailed implementation.
+See
+[Docker Compose Strategy ADR](docs/development/ADRs/Docker_Compose_Strategy.md)
+for detailed implementation.
 
 ## Troubleshooting
 
 ### "Loading models..." Issue
+
 If the AI Chat app shows "Loading models..." permanently:
 
 1. **Check if AI API service is running:**
@@ -240,38 +255,47 @@ If the AI Chat app shows "Loading models..." permanently:
    just dev-api
    ```
 
-3. **Check environment variables:**
-   Make sure you have at least one API key configured in `internal/ai-api/.env`
+3. **Check environment variables:** Make sure you have at least one API key
+   configured in `internal/ai-api/.env`
 
 ### Port Conflicts
+
 - AI API uses port 8000
 - AI Chat uses port 3000
 
 If these ports are in use, you can modify the ports in:
+
 - AI API: `internal/ai-api/.env` (PORT variable)
 - AI Chat: `web/ai-chat/src/server.tsx` (PORT constant)
 
 ### Command Not Found: `just`
-Make sure `just` is installed and in your PATH. See installation instructions above.
+
+Make sure `just` is installed and in your PATH. See installation instructions
+above.
 
 ### Windows-Specific Issues
 
 #### "Could not find `cygpath` executable" or "could not find the shell" Error
+
 These errors occur when `just` can't find the appropriate shell on Windows.
 
 **Solution 1 (Recommended)**:
+
 ```powershell
 just setup
 ```
 
 **Solution 2 (If just setup fails)**:
+
 ```powershell
 deno run --allow-read --allow-write scripts/setup-justfile.ts
 ```
 
-This configures the `justfile` to use PowerShell on Windows and sh on Unix systems.
+This configures the `justfile` to use PowerShell on Windows and sh on Unix
+systems.
 
 #### PowerShell Execution Policy Issues
+
 If you get execution policy errors:
 
 ```powershell
@@ -283,6 +307,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
 #### Chocolatey Permission Issues
+
 If you see "Access to the path 'C:\ProgramData\chocolatey\lib-bad' is denied":
 
 ```powershell
