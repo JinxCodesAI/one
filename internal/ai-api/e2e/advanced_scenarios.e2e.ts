@@ -294,7 +294,7 @@ describe("E2E Advanced: Request Logging", () => {
           context,
           metadata,
         );
-        const body = response.body as Record<string, unknown>;
+        const body = response.body as any;
 
         if (metadata.provider === "openai") {
           body.choices[0].message.content = OPENAI_RESPONSE_CONTENT;
