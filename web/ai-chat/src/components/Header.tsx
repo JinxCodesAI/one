@@ -46,6 +46,7 @@ export function Header(
       </div>
 
       <button
+        type="button"
         onClick={onClearConversation}
         style={{
           padding: "0.5rem 1rem",

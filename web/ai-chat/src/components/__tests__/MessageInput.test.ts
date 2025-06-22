@@ -108,7 +108,7 @@ describe("MessageInput Component Logic", () => {
   });
 
   it("should handle textarea auto-resize logic", () => {
-    const singleLine = "Hello";
+    const _singleLine = "Hello";
     const multiLine = "Line 1\nLine 2\nLine 3\nLine 4";
 
     // Calculate approximate height based on line count
@@ -164,12 +164,12 @@ describe("MessageInput Component Logic", () => {
   it("should handle error recovery logic", () => {
     const originalMessage = "Test message";
     let hasError = false;
-    let currentMessage = originalMessage;
+    const currentMessage = originalMessage;
 
     try {
       // Simulate error during sending
       throw new Error("Send failed");
-    } catch (error) {
+    } catch (_error) {
       hasError = true;
       // On error, message should remain in input
       // currentMessage should not be cleared
@@ -181,7 +181,7 @@ describe("MessageInput Component Logic", () => {
 
   it("should handle message clearing logic", () => {
     let currentMessage = "Test message";
-    let isLoading = false;
+    const isLoading = false;
 
     // Simulate successful send
     if (!isLoading) {
@@ -193,7 +193,7 @@ describe("MessageInput Component Logic", () => {
 
   it("should handle concurrent submission prevention", () => {
     let isSubmitting = false;
-    const message1 = "First message";
+    const _message1 = "First message";
     const message2 = "Second message";
 
     // Start first submission

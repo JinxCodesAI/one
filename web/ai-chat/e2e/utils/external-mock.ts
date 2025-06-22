@@ -23,7 +23,7 @@ export interface RequestMetadata {
 export interface MockResponse {
   status?: number;
   headers?: Record<string, string>;
-  body: any;
+  body: Record<string, unknown>;
   delay?: number; // Network delay simulation in milliseconds
 }
 
@@ -125,7 +125,7 @@ export class RequestAnalyzer {
    * Generate a realistic success response for external services
    */
   static generateSuccessResponse(
-    context: RequestContext,
+    _context: RequestContext,
     metadata: RequestMetadata,
   ): MockResponse {
     const baseResponse = {
@@ -215,7 +215,7 @@ export class RequestAnalyzer {
    * Generate error response for external services
    */
   static generateErrorResponse(
-    context: RequestContext,
+    _context: RequestContext,
     metadata: RequestMetadata,
     errorType: string,
   ): MockResponse {

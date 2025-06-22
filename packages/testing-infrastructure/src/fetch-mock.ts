@@ -120,7 +120,7 @@ export class RequestAnalyzer {
         context.body && typeof context.body === "object" &&
         "model" in context.body
       ) {
-        model = (context.body as any).model;
+        model = (context.body as Record<string, unknown>).model as string;
       }
     } else if (provider === "google" && pathname.includes(":generateContent")) {
       isApiCall = true;
@@ -140,7 +140,7 @@ export class RequestAnalyzer {
         context.body && typeof context.body === "object" &&
         "model" in context.body
       ) {
-        model = (context.body as any).model;
+        model = (context.body as Record<string, unknown>).model as string;
       }
     } else if (provider === "anthropic" && pathname.includes("/messages")) {
       isApiCall = true;
@@ -150,7 +150,7 @@ export class RequestAnalyzer {
         context.body && typeof context.body === "object" &&
         "model" in context.body
       ) {
-        model = (context.body as any).model;
+        model = (context.body as Record<string, unknown>).model as string;
       }
     }
 
@@ -171,7 +171,7 @@ export class RequestAnalyzer {
    * Generate a realistic success response based on provider and request
    */
   static generateSuccessResponse(
-    context: RequestContext,
+    _context: RequestContext,
     metadata: RequestMetadata,
   ): MockResponse {
     const baseResponse: MockResponse = {
@@ -260,7 +260,7 @@ export class RequestAnalyzer {
    * Generate an error response based on provider
    */
   static generateErrorResponse(
-    context: RequestContext,
+    _context: RequestContext,
     metadata: RequestMetadata,
     errorType: "rate_limit" | "invalid_request" | "server_error" =
       "server_error",

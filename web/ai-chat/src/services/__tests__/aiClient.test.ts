@@ -147,8 +147,8 @@ describe("ChatAIClient Service", () => {
 
     it("should handle network errors", async () => {
       restoreFetch();
-      globalThis.fetch = async () => {
-        throw new Error("Network error");
+      globalThis.fetch = () => {
+        return Promise.reject(new Error("Network error"));
       };
 
       const messages = [
@@ -165,8 +165,8 @@ describe("ChatAIClient Service", () => {
 
     it("should handle malformed API responses", async () => {
       restoreFetch();
-      globalThis.fetch = async () => {
-        return new Response("invalid json", { status: 200 });
+      globalThis.fetch = () => {
+        return Promise.resolve(new Response("invalid json", { status: 200 }));
       };
 
       const messages = [
@@ -183,14 +183,14 @@ describe("ChatAIClient Service", () => {
 
     it("should handle HTTP error status codes", async () => {
       restoreFetch();
-      globalThis.fetch = async () => {
-        return new Response(
+      globalThis.fetch = () => {
+        return Promise.resolve(new Response(
           JSON.stringify({
             success: false,
             error: { error: "Server error" },
           }),
           { status: 500 },
-        );
+        ));
       };
 
       const messages = [
@@ -240,8 +240,8 @@ describe("ChatAIClient Service", () => {
 
     it("should handle network errors", async () => {
       restoreFetch();
-      globalThis.fetch = async () => {
-        throw new Error("Network error");
+      globalThis.fetch = () => {
+        return Promise.reject(new Error("Network error"));
       };
 
       await assertRejects(
@@ -302,8 +302,8 @@ describe("ChatAIClient Service", () => {
 
     it("should handle network errors", async () => {
       restoreFetch();
-      globalThis.fetch = async () => {
-        throw new Error("Network error");
+      globalThis.fetch = () => {
+        return Promise.reject(new Error("Network error"));
       };
 
       await assertRejects(
@@ -404,15 +404,15 @@ describe("ChatAIClient Service", () => {
 
     it("should handle response without success field", async () => {
       restoreFetch();
-      globalThis.fetch = async () => {
-        return new Response(
+      globalThis.fetch = () => {
+        return Promise.resolve(new Response(
           JSON.stringify({
             data: {
               content: "Response without success field",
             },
           }),
           { status: 200 },
-        );
+        ));
       };
 
       const messages = [

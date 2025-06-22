@@ -10,7 +10,7 @@
  * - Request logging and debugging
  */
 
-import { after, type before, describe, it } from "@std/testing/bdd";
+import { after, describe, it } from "@std/testing/bdd";
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
 import {
   createErrorScenario,
@@ -23,16 +23,15 @@ import {
   RequestAnalyzer,
   type ServerTestEnvironment,
   TestRetry,
-  type TestTiming,
 } from "@one/testing-infrastructure";
 
 // Mock implementations for this example
-const startServer = async () => ({
-  stop: async () => console.log("Server stopped"),
+const startServer = () => Promise.resolve({
+  stop: () => Promise.resolve(console.log("Server stopped")),
 });
 
 const createClient = (baseUrl: string) => ({
-  generateText: async (messages: any[], model: string) => {
+  generateText: async (messages: Array<{ role: string; content: string }>, model: string) => {
     // This would make actual HTTP requests that get intercepted by mocks
     const response = await fetch(`${baseUrl}/api/generate`, {
       method: "POST",
@@ -218,7 +217,7 @@ describe("Advanced Testing Scenarios", () => {
         name: "Custom validation scenario",
         isRequestExpected: (context, metadata) => {
           // Only allow requests with specific content
-          const body = context.body as any;
+          const body = context.body as Record<string, unknown>;
           return metadata.isExternalApi &&
             body?.messages?.[0]?.content?.includes("allowed");
         },
@@ -326,7 +325,7 @@ describe("Advanced Testing Scenarios", () => {
       let attemptCount = 0;
       const scenario: MockScenario = {
         name: "Flaky scenario",
-        isRequestExpected: (context, metadata) => metadata.isExternalApi,
+        isRequestExpected: (_context, metadata) => metadata.isExternalApi,
         generateResponse: (context, metadata) => {
           attemptCount++;
           if (attemptCount < 3) {

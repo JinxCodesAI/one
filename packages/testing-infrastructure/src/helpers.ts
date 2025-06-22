@@ -13,7 +13,7 @@ export class TestTiming {
   /**
    * Wait for a specified amount of time
    */
-  static async wait(ms: number): Promise<void> {
+  static wait(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
@@ -218,7 +218,7 @@ export class TestAssertions {
    */
   static async assertThrows(
     fn: () => Promise<unknown> | unknown,
-    expectedError?: string | RegExp | (new (...args: any[]) => Error),
+    expectedError?: string | RegExp | (new (...args: unknown[]) => Error),
     message?: string,
   ): Promise<void> {
     let thrown = false;

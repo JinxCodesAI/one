@@ -16,12 +16,21 @@ import type {
   ServiceConfig,
 } from "../types.ts";
 
+// Type for AI provider clients
+type ProviderClient = typeof openai | typeof google | ReturnType<typeof createOpenRouter>;
+
+// Type for AI messages
+interface AIMessage {
+  role: string;
+  content: string;
+}
+
 /**
  * Core AI service class
  */
 export class AIService {
   private config: ServiceConfig;
-  private providerClients: Map<string, any> = new Map();
+  private providerClients: Map<string, ProviderClient> = new Map();
 
   constructor(config: ServiceConfig) {
     this.config = config;
@@ -46,7 +55,7 @@ export class AIService {
   /**
    * Create a provider client based on configuration
    */
-  private createProviderClient(config: ProviderConfig): any {
+  private createProviderClient(config: ProviderConfig): ProviderClient {
     switch (config.name.toLowerCase()) {
       case "openai":
         return openai;
@@ -78,7 +87,7 @@ export class AIService {
   /**
    * Get provider client for a model
    */
-  private getProviderClient(providerName: string): any {
+  private getProviderClient(providerName: string): ProviderClient {
     const client = this.providerClients.get(providerName);
     if (!client) {
       throw new Error(`Provider client not found: ${providerName}`);
@@ -89,7 +98,7 @@ export class AIService {
   /**
    * Convert our Message format to AI library format
    */
-  private convertMessages(messages: Message[]): any[] {
+  private convertMessages(messages: Message[]): AIMessage[] {
     return messages.map((msg) => ({
       role: msg.role,
       content: msg.content,

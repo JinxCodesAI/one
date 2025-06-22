@@ -326,7 +326,7 @@ export class UITestHelpers {
     selector: string,
     timeout = 10000,
     consoleErrors?: string[],
-  ) {
+  ): Promise<Locator> {
     // Check for console errors if provided
     if (consoleErrors) {
       this.checkConsoleErrors(consoleErrors, true);
@@ -417,7 +417,7 @@ export class UITestHelpers {
   /**
    * Get all messages from chat (generic selector)
    */
-  static async getAllMessages(page: Page) {
+  static async getAllMessages(page: Page): Promise<Array<{ role: string; content: string }>> {
     const messages = await page.locator('[data-testid^="message-"]').all();
     const result = [];
 
