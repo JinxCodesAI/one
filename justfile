@@ -6,7 +6,7 @@ set dotenv-load := true
 
 # Shell configuration - defaults to sh for Unix compatibility
 # Windows users should run 'just setup' to configure PowerShell
-set shell := ["sh", "-c"]
+set shell := ["powershell.exe", "-c"]
 
 # Default recipe - show available commands
 default:
