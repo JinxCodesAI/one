@@ -36,7 +36,8 @@ describe("ChatContainer Component Logic", () => {
   });
 
   it("should handle welcome state logic", () => {
-    const messages: Array<{ role: string; content: string; timestamp: Date }> = [];
+    const messages: Array<{ role: string; content: string; timestamp: Date }> =
+      [];
     const isLoading = false;
     const error = null;
 
@@ -61,7 +62,8 @@ describe("ChatContainer Component Logic", () => {
   });
 
   it("should handle loading state logic", () => {
-    const _messages: Array<{ role: string; content: string; timestamp: Date }> = [];
+    const _messages: Array<{ role: string; content: string; timestamp: Date }> =
+      [];
     const isLoading = true;
     const _error = null;
 
@@ -74,7 +76,8 @@ describe("ChatContainer Component Logic", () => {
   });
 
   it("should handle error state logic", () => {
-    const _messages: Array<{ role: string; content: string; timestamp: Date }> = [];
+    const _messages: Array<{ role: string; content: string; timestamp: Date }> =
+      [];
     const _isLoading = false;
     const error = "Something went wrong";
 

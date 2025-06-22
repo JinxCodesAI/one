@@ -184,13 +184,15 @@ describe("ChatAIClient Service", () => {
     it("should handle HTTP error status codes", async () => {
       restoreFetch();
       globalThis.fetch = () => {
-        return Promise.resolve(new Response(
-          JSON.stringify({
-            success: false,
-            error: { error: "Server error" },
-          }),
-          { status: 500 },
-        ));
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              success: false,
+              error: { error: "Server error" },
+            }),
+            { status: 500 },
+          ),
+        );
       };
 
       const messages = [
@@ -405,14 +407,16 @@ describe("ChatAIClient Service", () => {
     it("should handle response without success field", async () => {
       restoreFetch();
       globalThis.fetch = () => {
-        return Promise.resolve(new Response(
-          JSON.stringify({
-            data: {
-              content: "Response without success field",
-            },
-          }),
-          { status: 200 },
-        ));
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              data: {
+                content: "Response without success field",
+              },
+            }),
+            { status: 200 },
+          ),
+        );
       };
 
       const messages = [

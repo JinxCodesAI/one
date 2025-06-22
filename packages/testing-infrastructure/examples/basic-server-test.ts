@@ -24,20 +24,26 @@ import {
 // import { createClient } from "../path/to/your/client.ts";
 
 // Mock implementations for this example
-const startServer = () => Promise.resolve({
-  stop: () => Promise.resolve(console.log("Server stopped")),
-});
+const startServer = () =>
+  Promise.resolve({
+    stop: () => Promise.resolve(console.log("Server stopped")),
+  });
 
 const createClient = (_baseUrl: string) => ({
-  generateText: (_messages: Array<{ role: string; content: string }>, model: string) => Promise.resolve({
-    content: "Mocked response",
-    model,
-    usage: { totalTokens: 10 },
-  }),
-  getHealth: () => Promise.resolve({
-    status: "healthy",
-    models: ["gpt-4.1-nano", "gemini-2.5-flash"],
-  }),
+  generateText: (
+    _messages: Array<{ role: string; content: string }>,
+    model: string,
+  ) =>
+    Promise.resolve({
+      content: "Mocked response",
+      model,
+      usage: { totalTokens: 10 },
+    }),
+  getHealth: () =>
+    Promise.resolve({
+      status: "healthy",
+      models: ["gpt-4.1-nano", "gemini-2.5-flash"],
+    }),
 });
 
 describe("Basic Server E2E Test Example", () => {

@@ -23,9 +23,10 @@ import {
 // import { startServer } from "../path/to/your/api-server.ts";
 
 // Mock server implementation for this example
-const startServer = () => Promise.resolve({
-  stop: () => Promise.resolve(console.log("API Server stopped")),
-});
+const startServer = () =>
+  Promise.resolve({
+    stop: () => Promise.resolve(console.log("API Server stopped")),
+  });
 
 describe("UI E2E Test Example", () => {
   let testEnv: UITestEnvironment;

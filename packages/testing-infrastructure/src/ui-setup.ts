@@ -417,7 +417,9 @@ export class UITestHelpers {
   /**
    * Get all messages from chat (generic selector)
    */
-  static async getAllMessages(page: Page): Promise<Array<{ role: string; content: string }>> {
+  static async getAllMessages(
+    page: Page,
+  ): Promise<Array<{ role: string; content: string }>> {
     const messages = await page.locator('[data-testid^="message-"]').all();
     const result = [];
 

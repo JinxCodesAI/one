@@ -156,7 +156,10 @@ async function main() {
         console.warn("⚠️  Could not cache Deno dependencies.");
       }
     } catch (error) {
-      console.log("⚠️ Dependency resolution warning:", (error as Error).message);
+      console.log(
+        "⚠️ Dependency resolution warning:",
+        (error as Error).message,
+      );
     }
 
     // Start AI API service

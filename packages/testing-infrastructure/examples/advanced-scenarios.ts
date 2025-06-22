@@ -26,12 +26,16 @@ import {
 } from "@one/testing-infrastructure";
 
 // Mock implementations for this example
-const startServer = () => Promise.resolve({
-  stop: () => Promise.resolve(console.log("Server stopped")),
-});
+const startServer = () =>
+  Promise.resolve({
+    stop: () => Promise.resolve(console.log("Server stopped")),
+  });
 
 const createClient = (baseUrl: string) => ({
-  generateText: async (messages: Array<{ role: string; content: string }>, model: string) => {
+  generateText: async (
+    messages: Array<{ role: string; content: string }>,
+    model: string,
+  ) => {
     // This would make actual HTTP requests that get intercepted by mocks
     const response = await fetch(`${baseUrl}/api/generate`, {
       method: "POST",

@@ -9,7 +9,8 @@ import "../../test-utils/setup.ts";
 
 describe("MessageList Component Logic", () => {
   it("should handle empty messages array", () => {
-    const messages: Array<{ role: string; content: string; timestamp: Date }> = [];
+    const messages: Array<{ role: string; content: string; timestamp: Date }> =
+      [];
     assertEquals(messages.length, 0);
   });
 
