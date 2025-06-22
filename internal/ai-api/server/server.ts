@@ -7,7 +7,6 @@ import type {
   ApiResponse,
   ErrorResponse,
   GenerateTextRequest,
-  GenerateTextResponse,
   HealthResponse,
   ServiceConfig,
 } from "../types.ts";
@@ -28,7 +27,7 @@ export class AIServer {
   /**
    * Start the HTTP server
    */
-  async start(): Promise<void> {
+  start(): Promise<void> {
     const handler = this.createHandler();
 
     this.server = Deno.serve({
@@ -39,6 +38,8 @@ export class AIServer {
     console.log(
       `AI API server running on http://${this.config.host}:${this.config.port}`,
     );
+
+    return Promise.resolve();
   }
 
   /**

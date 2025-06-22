@@ -95,6 +95,8 @@ export function createSuccessfulAIScenario(
       _context: RequestContext,
       metadata: RequestMetadata,
     ) => {
+      return metadata.isExternalApi &&
+        ["openai", "google", "openrouter"].includes(metadata.service);
     },
     generateResponse: (context: RequestContext, metadata: RequestMetadata) => {
       const response = RequestAnalyzer.generateSuccessResponse(

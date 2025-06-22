@@ -3,7 +3,7 @@
  */
 
 import { beforeEach, describe, it } from "@std/testing/bdd";
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals } from "@std/assert";
 import { createMockMessages } from "../../test-utils/setup.ts";
 import "../../test-utils/setup.ts";
 
@@ -36,7 +36,7 @@ describe("ChatContainer Component Logic", () => {
   });
 
   it("should handle welcome state logic", () => {
-    const messages: any[] = [];
+    const messages: Array<{ role: string; content: string; timestamp: Date }> = [];
     const isLoading = false;
     const error = null;
 
@@ -61,9 +61,9 @@ describe("ChatContainer Component Logic", () => {
   });
 
   it("should handle loading state logic", () => {
-    const messages: any[] = [];
+    const _messages: Array<{ role: string; content: string; timestamp: Date }> = [];
     const isLoading = true;
-    const error = null;
+    const _error = null;
 
     // Should show loading indicator when loading
     assertEquals(isLoading, true);
@@ -74,8 +74,8 @@ describe("ChatContainer Component Logic", () => {
   });
 
   it("should handle error state logic", () => {
-    const messages: any[] = [];
-    const isLoading = false;
+    const _messages: Array<{ role: string; content: string; timestamp: Date }> = [];
+    const _isLoading = false;
     const error = "Something went wrong";
 
     // Should show error when error exists

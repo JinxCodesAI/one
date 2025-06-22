@@ -74,7 +74,7 @@ describe("Chat Integration Logic", () => {
 
   it("should handle message sending logic", async () => {
     const mockClient = createMockAIClient();
-    const messages: any[] = [];
+    const messages: Array<{ role: "user" | "assistant"; content: string; timestamp: Date }> = [];
     let isLoading = false;
     let error: string | null = null;
 

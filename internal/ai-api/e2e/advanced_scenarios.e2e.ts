@@ -14,7 +14,6 @@ import { before, describe, it } from "@std/testing/bdd";
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
 import {
   createErrorScenario,
-  type createMixedScenario,
   createSlowResponseScenario,
   createSuccessScenario,
   FetchMockManager,
@@ -295,7 +294,7 @@ describe("E2E Advanced: Request Logging", () => {
           context,
           metadata,
         );
-        const body = response.body as any;
+        const body = response.body as Record<string, unknown>;
 
         if (metadata.provider === "openai") {
           body.choices[0].message.content = OPENAI_RESPONSE_CONTENT;

@@ -42,7 +42,7 @@ async function cleanup() {
       clearTimeout(timeout);
 
       console.log(`  ✅ ${proc.name} stopped`);
-    } catch (error) {
+    } catch (_error) {
       console.log(`  ⚠️ ${proc.name} may have already stopped`);
     }
   }
@@ -56,7 +56,7 @@ async function cleanup() {
  * --- MODIFIED ---
  * Added an optional `cwd` parameter to explicitly set the working directory for the command.
  */
-async function startService(
+function startService(
   name: string,
   command: string[],
   port: number,
@@ -109,7 +109,7 @@ async function startService(
 
     console.log(`✅ ${name} started on port ${port}`);
   } catch (error) {
-    console.error(`❌ Failed to start ${name}:`, error.message);
+    console.error(`❌ Failed to start ${name}:`, (error as Error).message);
     throw error;
   }
 }
@@ -156,7 +156,7 @@ async function main() {
         console.warn("⚠️  Could not cache Deno dependencies.");
       }
     } catch (error) {
-      console.log("⚠️ Dependency resolution warning:", error.message);
+      console.log("⚠️ Dependency resolution warning:", (error as Error).message);
     }
 
     // Start AI API service
@@ -192,7 +192,7 @@ async function main() {
     const promises = processes.map((proc) => proc.process.status);
     await Promise.race(promises);
   } catch (error) {
-    console.error("❌ Error starting services:", error.message);
+    console.error("❌ Error starting services:", (error as Error).message);
     await cleanup();
     Deno.exit(1);
   }
