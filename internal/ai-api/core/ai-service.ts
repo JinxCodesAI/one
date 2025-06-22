@@ -16,14 +16,9 @@ import type {
   ServiceConfig,
 } from "../types.ts";
 
-// Type for AI provider clients
-type ProviderClient = typeof openai | typeof google | ReturnType<typeof createOpenRouter>;
-
-// Type for AI messages
-interface AIMessage {
-  role: string;
-  content: string;
-}
+// Type for AI provider clients - using function type for compatibility
+// deno-lint-ignore no-explicit-any
+type ProviderClient = any;
 
 /**
  * Core AI service class
@@ -98,7 +93,8 @@ export class AIService {
   /**
    * Convert our Message format to AI library format
    */
-  private convertMessages(messages: Message[]): AIMessage[] {
+  // deno-lint-ignore no-explicit-any
+  private convertMessages(messages: Message[]): any[] {
     return messages.map((msg) => ({
       role: msg.role,
       content: msg.content,

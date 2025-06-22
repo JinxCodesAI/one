@@ -105,15 +105,17 @@ export function createSuccessfulAIScenario(
       );
 
       // Customize response content based on service
+      // deno-lint-ignore no-explicit-any
+      const body = response.body as any;
       switch (metadata.service) {
         case "openai":
-          response.body.choices[0].message.content = responseContent;
+          body.choices[0].message.content = responseContent;
           break;
         case "google":
-          response.body.candidates[0].content.parts[0].text = responseContent;
+          body.candidates[0].content.parts[0].text = responseContent;
           break;
         case "openrouter":
-          response.body.choices[0].message.content = responseContent;
+          body.choices[0].message.content = responseContent;
           break;
       }
 
@@ -169,15 +171,17 @@ export function createSlowAIScenario(
       response.delay = delay;
 
       // Customize response content
+      // deno-lint-ignore no-explicit-any
+      const body = response.body as any;
       switch (metadata.service) {
         case "openai":
-          response.body.choices[0].message.content = responseContent;
+          body.choices[0].message.content = responseContent;
           break;
         case "google":
-          response.body.candidates[0].content.parts[0].text = responseContent;
+          body.candidates[0].content.parts[0].text = responseContent;
           break;
         case "openrouter":
-          response.body.choices[0].message.content = responseContent;
+          body.choices[0].message.content = responseContent;
           break;
       }
 

@@ -13,7 +13,7 @@
 
 /// <reference lib="deno.ns" />
 
-import { type Browser, chromium, type Page } from "playwright";
+import { type Browser, chromium, type Locator, type Page } from "playwright";
 import type { FetchMockManager, MockScenario } from "./fetch-mock.ts";
 import type { TestServer } from "./server-setup.ts";
 
