@@ -10,7 +10,7 @@
  * - Request logging and debugging
  */
 
-import { after, before, describe, it } from "@std/testing/bdd";
+import { after, type before, describe, it } from "@std/testing/bdd";
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
 import {
   createErrorScenario,
@@ -23,7 +23,7 @@ import {
   RequestAnalyzer,
   type ServerTestEnvironment,
   TestRetry,
-  TestTiming,
+  type TestTiming,
 } from "@one/testing-infrastructure";
 
 // Mock implementations for this example

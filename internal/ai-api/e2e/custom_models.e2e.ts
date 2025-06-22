@@ -11,7 +11,7 @@ import { before, describe, it } from "@std/testing/bdd";
 import { assertEquals, assertExists } from "@std/assert";
 import {
   FetchMockManager,
-  MockScenario,
+  type MockScenario,
   RequestAnalyzer,
 } from "./utils/fetch-mock.ts";
 import {

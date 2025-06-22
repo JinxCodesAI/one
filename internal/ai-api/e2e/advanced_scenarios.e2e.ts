@@ -14,7 +14,7 @@ import { before, describe, it } from "@std/testing/bdd";
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
 import {
   createErrorScenario,
-  createMixedScenario,
+  type createMixedScenario,
   createSlowResponseScenario,
   createSuccessScenario,
   FetchMockManager,
