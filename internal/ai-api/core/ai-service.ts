@@ -16,7 +16,8 @@ import type {
   ServiceConfig,
 } from "../types.ts";
 
-// Type for AI provider clients - using any for compatibility with different provider signatures
+// Type for AI provider clients - using function type for compatibility
+// deno-lint-ignore no-explicit-any
 type ProviderClient = any;
 
 /**
@@ -92,6 +93,7 @@ export class AIService {
   /**
    * Convert our Message format to AI library format
    */
+  // deno-lint-ignore no-explicit-any
   private convertMessages(messages: Message[]): any[] {
     return messages.map((msg) => ({
       role: msg.role,

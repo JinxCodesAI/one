@@ -294,6 +294,7 @@ describe("E2E Advanced: Request Logging", () => {
           context,
           metadata,
         );
+        // deno-lint-ignore no-explicit-any
         const body = response.body as any;
 
         if (metadata.provider === "openai") {

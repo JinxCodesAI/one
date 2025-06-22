@@ -41,6 +41,7 @@ describe("E2E Custom Models: GPT-4.1-mini", () => {
           context,
           metadata,
         );
+        // deno-lint-ignore no-explicit-any
         const body = response.body as any;
         body.choices[0].message.content = GPT_MINI_RESPONSE_CONTENT;
         body.id = "chatcmpl-custom123";
@@ -90,6 +91,7 @@ describe("E2E Custom Models: Gemini 2.5 Flash", () => {
           context,
           metadata,
         );
+        // deno-lint-ignore no-explicit-any
         const body = response.body as any;
         body.candidates[0].content.parts[0].text = GEMINI_RESPONSE_CONTENT;
         return response;

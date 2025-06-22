@@ -105,6 +105,7 @@ export function createSuccessfulAIScenario(
       );
 
       // Customize response content based on service
+      // deno-lint-ignore no-explicit-any
       const body = response.body as any;
       switch (metadata.service) {
         case "openai":
@@ -170,6 +171,7 @@ export function createSlowAIScenario(
       response.delay = delay;
 
       // Customize response content
+      // deno-lint-ignore no-explicit-any
       const body = response.body as any;
       switch (metadata.service) {
         case "openai":
