@@ -7,7 +7,7 @@
 
 ## Context
 
-With the implementation of the `just`-based task system, we need clear
+With the implementation of the `proc-runner`-based service orchestration system, we need clear
 guidelines for adding new projects to the monorepo. This ADR provides a
 comprehensive step-by-step process to ensure consistency, maintainability, and
 proper integration with our existing infrastructure.
@@ -15,7 +15,7 @@ proper integration with our existing infrastructure.
 ## Decision
 
 We will follow a standardized process for adding new projects that integrates
-with our `justfile`-based task orchestration, workspace configuration, and
+with our `proc-runner`-based service orchestration, workspace configuration, and
 testing infrastructure.
 
 ## Implementation Guide
@@ -110,65 +110,49 @@ Only add to root `imports` if the dependency is used by multiple projects:
 }
 ```
 
-### Step 4: Update `justfile` Task Orchestration
+### Step 4: Update Service Orchestration
 
-#### 4.1 Add Development Commands
+#### 4.1 Add to `proc.jsonc` Configuration
+
+Add your new service to the root `proc.jsonc` file:
+
+```jsonc
+{
+  "$schema": "https://deno.land/x/proc_runner@v2.5.1/schema.json",
+  "procs": {
+    "ai-api": {
+      "cmd": ["deno", "task", "dev"],
+      "cwd": "internal/ai-api",
+      "desc": "The main Deno-based AI backend API."
+    },
+    "ai-chat": {
+      "cmd": ["deno", "task", "dev"],
+      "cwd": "web/ai-chat",
+      "desc": "The Vite-based React frontend.",
+      "runAfter": ["ai-api"]
+    },
+    "<project-name>": {
+      "cmd": ["deno", "task", "dev"],
+      "cwd": "<project-location>/<project-name>",
+      "desc": "Description of your new project.",
+      "runAfter": ["ai-api"] // Optional: specify dependencies
+    }
+  }
+}
+```
+
+#### 4.2 Add Individual Development Command to `justfile` (Optional)
+
+The main orchestration is handled by `proc-runner`, but you can optionally add individual commands:
 
 ```makefile
-# Add to justfile
+# Add to justfile (optional - for individual service development)
 dev-<project-name>:
     @echo "🚀 Starting <Project Name>..."
     @deno task --cwd <project-location>/<project-name> dev
 ```
 
-**Note**: Use `@echo` and simple commands for cross-platform compatibility.
-Avoid bash-specific syntax to ensure Windows compatibility.
-
-#### 4.2 Add Testing Commands
-
-```makefile
-# Update existing test commands
-test-unit:
-    @echo "🔬 Running unit tests..."
-    @echo "Testing AI API..."
-    @deno task --cwd internal/ai-api test
-    @echo "Testing AI Chat..."
-    @deno task --cwd web/ai-chat test
-    @echo "Testing <Project Name>..."
-    @deno task --cwd <project-location>/<project-name> test
-    @echo "Testing infrastructure..."
-    @deno task --cwd packages/testing-infrastructure test || echo "ℹ️ No tests found in testing-infrastructure (expected)"
-
-test-e2e:
-    @echo "🌐 Running E2E tests..."
-    @deno task --cwd internal/ai-api test:e2e
-    @deno task --cwd web/ai-chat test:e2e
-    @deno task --cwd <project-location>/<project-name> test:e2e
-
-test-<project-name>:
-    @echo "🔧 Testing <Project Name> (unit + E2E)..."
-    @deno task --cwd <project-location>/<project-name> test
-    @deno task --cwd <project-location>/<project-name> test:e2e
-```
-
-#### 4.3 Add Linting and Formatting
-
-```makefile
-# Update existing commands
-lint:
-    @echo "🔍 Linting all projects..."
-    @deno lint internal/ai-api/
-    @deno lint web/ai-chat/
-    @deno lint packages/testing-infrastructure/
-    @deno lint <project-location>/<project-name>/
-
-fmt:
-    @echo "✨ Formatting all projects..."
-    @deno fmt internal/ai-api/
-    @deno fmt web/ai-chat/
-    @deno fmt packages/testing-infrastructure/
-    @deno fmt <project-location>/<project-name>/
-```
+**Note**: The primary development workflow uses `just dev-all` which automatically starts all services via `proc-runner`. Individual service commands are mainly for debugging or isolated development.
 
 ### Step 5: Testing Infrastructure Integration
 
@@ -240,10 +224,13 @@ Add development commands:
 ```markdown
 ### Development Commands
 
-- `just dev-all` - Start all services concurrently
-- `just dev-api` - Start only AI API service
-- `just dev-chat` - Start only AI Chat service
-- `just dev-<project-name>` - Start only <Project Name> service
+- `just dev-all` - Start all services concurrently using proc-runner (primary command)
+- `just dev-api` - Start only AI API service (for debugging)
+- `just dev-chat` - Start only AI Chat service (for debugging)
+
+**Note**: The `dev-all` command uses `proc-runner` to orchestrate all services
+defined in `proc.jsonc`, automatically handling dependencies and startup order.
+Individual service commands are mainly for debugging purposes.
 ```
 
 #### 6.3 Update TESTING.md
@@ -255,7 +242,8 @@ Add testing information:
 
 ```bash
 # <Project Name> (unit + E2E)
-just test-<project-name>
+cd <project-location>/<project-name> && deno task test
+cd <project-location>/<project-name> && deno task test:e2e
 ```
 ````
 
@@ -288,17 +276,17 @@ HOST=0.0.0.0
 
 After adding a new project, verify:
 
-- [ ] `just --list` shows new project commands
-- [ ] `just dev-<project-name>` starts the project
-- [ ] `just test-<project-name>` runs project tests
-- [ ] `just test-unit` includes new project
-- [ ] `just test-e2e` includes new project E2E tests
-- [ ] `just lint` lints new project
-- [ ] `just fmt` formats new project
+- [ ] `just dev-all` includes new project in orchestration
+- [ ] Project is properly configured in `proc.jsonc`
+- [ ] Service dependencies are correctly specified in `proc.jsonc`
+- [ ] Individual `just dev-<project-name>` works (if added)
+- [ ] Project tests run correctly with `deno task test`
 - [ ] Workspace imports work correctly
 - [ ] Documentation is updated
 - [ ] E2E tests use shared infrastructure
 - [ ] Project follows naming conventions
+
+**Note**: With `proc-runner`, the primary verification is that `just dev-all` properly starts your service along with its dependencies. Individual testing, linting, and formatting are handled at the project level using `deno task` commands.
 
 ## Consequences
 
@@ -307,6 +295,7 @@ After adding a new project, verify:
 - **Consistency**: All projects follow the same structure and conventions
 - **Maintainability**: Clear process reduces configuration drift
 - **Integration**: Automatic integration with existing tooling
+- **Service Orchestration**: `proc-runner` provides reliable dependency management
 - **Testing**: Shared testing infrastructure reduces duplication
 - **Documentation**: Systematic documentation updates
 
@@ -325,6 +314,6 @@ See existing projects for reference:
 
 ## Related Documents
 
-- [Monorepo Task System Refactor](../technical-debt/originl-task-system-refactor.md)
+- [Introducing proc-runner](../technical-debt/introducing-proc-runner.md)
 - [Testing Guide](./Testing_Guide_Comprehensive.md)
 - [AI API Specification](../ai-api/spec_stage_2.md)

@@ -165,13 +165,13 @@ just docker-clean     # Clean up
 
 ### Cross-Platform Service Orchestration
 
-The `just dev-all` command uses a TypeScript script
-(`scripts/dev-all-cross-platform.ts`) that:
+The `just dev-all` command uses `proc-runner` for reliable service orchestration:
 
 - ✅ **Works on Windows, macOS, and Linux**
 - ✅ **Handles Ctrl+C gracefully** on all platforms
 - ✅ **Provides colored output** with service prefixes
 - ✅ **Manages process lifecycle** properly
+- ✅ **Automatic dependency management** (ai-chat waits for ai-api)
 - ✅ **No bash dependencies** required
 
 ### Terminal Compatibility

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://deno.land/x/proc_runner@v2.5.1/schema.json",
+  "procs": {
+    "ai-api": {
+      "cmd": ["deno", "task", "dev"],
+      "cwd": "internal/ai-api",
+      "desc": "The main Deno-based AI backend API."
+    },
+    "ai-chat": {
+      "cmd": ["deno", "task", "dev"],
+      "cwd": "web/ai-chat",
+      "desc": "The Vite-based React frontend.",
+      "runAfter": ["ai-api"]
+    }
+  }
+}

@@ -4,7 +4,8 @@
     "@std/testing/bdd": "jsr:@std/testing@1/bdd",
     "ai": "npm:ai@^4.3.16",
     "playwright": "npm:playwright@^1.40.0",
-    "@one/testing-infrastructure": "./packages/testing-infrastructure/src/mod.ts"
+    "@one/testing-infrastructure": "./packages/testing-infrastructure/src/mod.ts",
+    "proc-runner": "jsr:@deno/proc-runner@2.5.1"
   },
   "nodeModulesDir": "auto",
   "workspace": [
@@ -12,6 +13,9 @@
     "./web/ai-chat",
     "./packages/testing-infrastructure"
   ],
+  "tasks": {
+    "install": "deno install --allow-scripts"
+  },
   "compilerOptions": {
     "lib": ["deno.ns", "es2022", "dom"]
   }

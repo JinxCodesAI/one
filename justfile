@@ -1,5 +1,5 @@
 # Monorepo Task Runner
-# Replaces complex deno task orchestration with simple, reliable commands
+# Uses proc-runner for reliable service orchestration
 
 # Set environment variables
 set dotenv-load := true
@@ -18,7 +18,16 @@ setup:
     @deno run --allow-read --allow-write scripts/setup-justfile.ts
     @echo "✅ Setup complete! You can now use all just commands."
 
-# Development commands
+# Development commands - much simpler with proc-runner
+dev-all:
+    @echo "🚀 Starting all services with proc-runner..."
+    @echo "📡 AI API will be available at: http://localhost:8000"
+    @echo "🌐 AI Chat will be available at: http://localhost:3000"
+    @echo "Press Ctrl+C to stop all services"
+    @echo ""
+    @deno run --allow-run --allow-read --allow-env -A proc-runner
+
+# Individual service commands (for development)
 dev-api:
     @echo "🚀 Starting AI API server..."
     @deno task --cwd internal/ai-api dev
@@ -27,94 +36,12 @@ dev-chat:
     @echo "🚀 Starting AI Chat app..."
     @deno task --cwd web/ai-chat dev
 
-dev-all:
-    @echo "🚀 Starting all services concurrently..."
-    @echo "📡 AI API will be available at: http://localhost:8000"
-    @echo "🌐 AI Chat will be available at: http://localhost:3000"
-    @echo "Press Ctrl+C to stop all services"
-    @echo ""
-    @deno run --allow-run --allow-read scripts/dev-all-cross-platform.ts
-
-# Testing commands (avoiding --recursive issues)
-test: test-unit test-e2e
-    @echo "✅ All tests completed"
-
-test-unit:
-    @echo "🔬 Running unit tests..."
-    @deno run --allow-run --allow-read scripts/test-unit-cross-platform.ts
-
-test-e2e:
-    @echo "🌐 Running E2E tests..."
-    @deno task --cwd internal/ai-api test:e2e
-    @deno task --cwd web/ai-chat test:e2e
-
-test-api:
-    @echo "🔧 Testing AI API (unit + E2E)..."
-    @deno task --cwd internal/ai-api test
-    @deno task --cwd internal/ai-api test:e2e
-
-test-chat:
-    @echo "💬 Testing AI Chat (unit + E2E)..."
-    @deno task --cwd web/ai-chat test
-    @deno task --cwd web/ai-chat test:e2e
-
-# Linting (avoiding --recursive issues)
-lint:
-    @echo "🔍 Linting all projects..."
-    @deno lint internal/ai-api/
-    @deno lint web/ai-chat/
-    @deno lint packages/testing-infrastructure/
-
-# Formatting
-fmt:
-    @echo "✨ Formatting all projects..."
-    @deno fmt internal/ai-api/
-    @deno fmt web/ai-chat/
-    @deno fmt packages/testing-infrastructure/
-
-# Cleanup
-clean:
-    @echo "🧹 Cleaning build artifacts..."
-    @deno run --allow-read --allow-write scripts/clean-cross-platform.ts
-
-# Clean Deno cache and dependencies (fixes React dependency issues)
-clean-deps:
-    @echo "🧹 Cleaning Deno cache and dependencies..."
-    @deno cache --reload web/ai-chat/src/main.tsx
-    @echo "✅ Dependencies refreshed"
-
-# Installation
+# Utility commands
 install:
     @echo "📦 Installing dependencies..."
-    @deno install --allow-scripts
+    @deno task install
 
-# Check all (lint + test)
-check: lint test
-    @echo "✅ All checks passed"
-
-# Watch commands for development
-test-watch-api:
-    @echo "👀 Watching AI API tests..."
-    @deno task --cwd internal/ai-api test:watch
-
-test-watch-chat:
-    @echo "👀 Watching AI Chat tests..."
-    @deno task --cwd web/ai-chat test:watch
-
-# Production commands
-start-api:
-    @echo "🚀 Starting AI API in production mode..."
-    @deno task --cwd internal/ai-api start
-
-start-chat:
-    @echo "🚀 Starting AI Chat in production mode..."
-    @deno task --cwd web/ai-chat preview
-
-build-chat:
-    @echo "🏗️ Building AI Chat for production..."
-    @deno task --cwd web/ai-chat build
-
-# Docker Compose commands
+# Docker Compose commands (keeping as requested)
 docker-dev:
     @echo "🐳 Starting all services with Docker Compose (development)..."
     @echo "📡 AI API will be available at: http://localhost:8000"
@@ -128,7 +55,8 @@ docker-prod:
 
 docker-stop:
     @echo "🛑 Stopping Docker Compose services..."
-    @deno run --allow-run scripts/docker-stop-cross-platform.ts
+    @docker-compose -f docker-compose.dev.yml down
+    @docker-compose -f docker-compose.prod.yml down
 
 docker-logs:
     @echo "📋 Showing Docker Compose logs..."
@@ -136,4 +64,5 @@ docker-logs:
 
 docker-clean:
     @echo "🧹 Cleaning Docker resources..."
-    @deno run --allow-run scripts/docker-clean-cross-platform.ts
+    @docker system prune -f
+    @docker volume prune -f

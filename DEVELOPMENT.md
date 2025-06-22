@@ -12,8 +12,8 @@ This monorepo contains two main services:
 
 ### Windows Setup Notes
 
-The project is fully compatible with Windows. The `justfile` uses cross-platform
-TypeScript scripts instead of bash to ensure compatibility.
+The project is fully compatible with Windows. The `justfile` uses `proc-runner`
+for reliable cross-platform service orchestration.
 
 **Installation on Windows:**
 
@@ -107,36 +107,25 @@ This will wait for the AI API service to be ready before starting the chat app.
 
 ### Development Commands
 
-- `just dev-all` - Start both services concurrently
-- `just dev-api` - Start only AI API service
-- `just dev-chat` - Start only AI Chat service
+- `just dev-all` - Start both services concurrently using proc-runner (primary command)
+- `just dev-api` - Start only AI API service (for debugging)
+- `just dev-chat` - Start only AI Chat service (for debugging)
 
-### Testing Commands
+**Note**: The primary development workflow uses `just dev-all` which automatically
+starts all services via `proc-runner`, handling dependencies and startup order.
 
-- `just test` - Run all tests (unit + E2E)
-- `just test-unit` - Run unit tests only
-- `just test-e2e` - Run E2E tests only
-- `just test-api` - Run AI API tests (unit + E2E)
-- `just test-chat` - Run AI Chat tests (unit + E2E)
-- `just test-watch-api` - Watch AI API tests
-- `just test-watch-chat` - Watch AI Chat tests
+### Docker Commands
 
-### Code Quality Commands
-
-- `just lint` - Lint all projects
-- `just fmt` - Format all projects
-- `just check` - Run lint + test
-
-### Production Commands
-
-- `just build-chat` - Build AI Chat for production
-- `just start-api` - Start AI API in production mode
-- `just start-chat` - Start AI Chat in production mode
+- `just docker-dev` - Start all services with Docker Compose (development)
+- `just docker-prod` - Start all services with Docker Compose (production)
+- `just docker-stop` - Stop Docker services
+- `just docker-logs` - View Docker logs
+- `just docker-clean` - Clean Docker resources
 
 ### Utility Commands
 
-- `just install` - Install dependencies
-- `just clean` - Clean build artifacts
+- `just setup` - Configure justfile for your OS (required for Windows)
+- `just install` - Install dependencies (runs `deno install`)
 
 ### Individual Project Tasks
 
@@ -209,33 +198,36 @@ If these ports are in use, you can modify the ports in:
 
 3. **Testing workflow:**
    ```bash
-   # Run all tests
-   just test
+   # Run tests for individual projects
+   cd internal/ai-api && deno task test
+   cd web/ai-chat && deno task test
 
-   # Run specific test types
-   just test-unit
-   just test-e2e
+   # Run E2E tests
+   cd internal/ai-api && deno task test:e2e
+   cd web/ai-chat && deno task test:e2e
 
    # Watch tests during development
-   just test-watch-api
-   just test-watch-chat
+   cd internal/ai-api && deno task test:watch
+   cd web/ai-chat && deno task test:watch
    ```
 
 4. **Code quality:**
    ```bash
-   # Format and lint code
-   just fmt
-   just lint
-
-   # Run all checks
-   just check
+   # Format and lint individual projects
+   cd internal/ai-api && deno fmt && deno lint
+   cd web/ai-chat && deno fmt && deno lint
+   cd packages/testing-infrastructure && deno fmt && deno lint
    ```
 
 5. **Working on individual services:**
    ```bash
    # API only
-   deno task dev:api
+   just dev-api
+   # or
+   cd internal/ai-api && deno task dev
 
    # Chat only (requires API to be running)
-   deno task dev:chat
+   just dev-chat
+   # or
+   cd web/ai-chat && deno task dev
    ```

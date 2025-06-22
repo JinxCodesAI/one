@@ -104,35 +104,24 @@ You need at least one AI provider API key:
 just setup            # Configure justfile for your OS (required for Windows)
 
 # Native Development (Recommended - Faster)
-just dev-api          # Start AI API server
-just dev-chat         # Start AI Chat app
-just dev-all          # Start both services concurrently
+just dev-all          # Start both services concurrently using proc-runner
+just dev-api          # Start AI API server only (for debugging)
+just dev-chat         # Start AI Chat app only (for debugging)
 
 # Docker Development (Optional - Environment Consistency)
 just docker-dev       # Start all services with Docker Compose
 just docker-stop      # Stop Docker services
 just docker-logs      # View Docker logs
 just docker-clean     # Clean Docker resources
-
-# Testing
-just test             # Run all tests
-just test-unit        # Run unit tests only
-just test-e2e         # Run E2E tests only
-
-# Code Quality
-just lint             # Lint all projects
-just fmt              # Format all projects
-just clean            # Clean build artifacts
-just check            # Run lint + test
 ```
 
 ### Production Commands
 
 ```bash
-# Native Production
-just build-chat       # Build AI Chat for production
-just start-api        # Start AI API in production mode
-just start-chat       # Start AI Chat in production mode
+# Native Production (use individual project commands)
+cd web/ai-chat && deno task build     # Build AI Chat for production
+cd internal/ai-api && deno task start # Start AI API in production mode
+cd web/ai-chat && deno task preview   # Start AI Chat in production mode
 
 # Docker Production
 just docker-prod      # Start all services with Docker Compose (production)
@@ -188,12 +177,13 @@ just docker-prod      # Start all services with Docker Compose (production)
 
 3. **Testing:**
    ```bash
-   # Run all tests
-   just test
+   # Run tests for individual projects
+   cd internal/ai-api && deno task test
+   cd web/ai-chat && deno task test
 
-   # Run specific test types
-   just test-unit
-   just test-e2e
+   # Run E2E tests
+   cd internal/ai-api && deno task test:e2e
+   cd web/ai-chat && deno task test:e2e
    ```
 
 ## Available Services
@@ -320,10 +310,11 @@ scoop install just
 
 ## Contributing
 
-1. Run tests before committing: `just test`
-2. Format code: `just fmt`
-3. Lint code: `just lint`
+1. Run tests before committing: `cd <project> && deno task test`
+2. Format code: `cd <project> && deno fmt`
+3. Lint code: `cd <project> && deno lint`
 4. Use the shared testing infrastructure for new tests
+5. Primary development workflow: `just dev-all`
 
 ## Documentation
 
