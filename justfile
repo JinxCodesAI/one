@@ -25,7 +25,7 @@ dev-all:
     @echo "🌐 AI Chat will be available at: http://localhost:3000"
     @echo "Press Ctrl+C to stop all services"
     @echo ""
-    @deno run --allow-run --allow-read --allow-env -A proc-runner
+    @deno run -A https://deno.land/x/proc_runner@v2.5.1/cli.ts
 
 # Individual service commands (for development)
 dev-api:
