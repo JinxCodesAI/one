@@ -5,6 +5,7 @@
     "preview": "deno run -A --node-modules-dir=auto npm:vite preview",
     "serve": "deno run --allow-net --allow-read jsr:@std/http@1/file-server dist/",
     "test": "deno test --allow-net --allow-env --allow-read --allow-write src/",
+    "dreamer:test": "dreamer ../../ test",
     "test:unit": "deno test --allow-net --allow-env --allow-read --allow-write --ignore='src/**/*.integration.ts' --ignore='src/**/*.e2e.ts' src/",
     "test:integration": "deno test --allow-net --allow-env --allow-read --allow-write src/**/*.integration.ts",
     "test:e2e": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys e2e/**/*.e2e.ts",
