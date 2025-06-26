@@ -2,12 +2,15 @@
  * Core AI service that abstracts provider-specific implementations
  */
 
-import { generateText } from "ai";
+import { generateObject, generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { convertJsonSchemaToZod } from "../utils/json-schema-to-zod.ts";
 
 import type {
+  GenerateObjectRequest,
+  GenerateObjectResponse,
   GenerateTextRequest,
   GenerateTextResponse,
   Message,
@@ -178,6 +181,85 @@ export class AIService {
   }
 
   /**
+   * Generate object using the specified model and schema
+   */
+  async generateObject<T extends Record<string, unknown>>(
+    request: GenerateObjectRequest,
+  ): Promise<GenerateObjectResponse<T>> {
+    try {
+      // Get model mapping
+      const modelMapping = this.getModelMapping(request.model);
+
+      // Get provider client
+      const providerClient = this.getProviderClient(modelMapping.provider);
+
+      // Convert messages to AI library format
+      const messages = this.convertMessages(request.messages);
+
+      // Get provider configuration
+      const providerConfig = this.config.providers.find((p) =>
+        p.name === modelMapping.provider
+      );
+      if (!providerConfig) {
+        throw new Error(
+          `Provider configuration not found: ${modelMapping.provider}`,
+        );
+      }
+
+      // Create model with provider-specific configuration
+      let model;
+      switch (modelMapping.provider.toLowerCase()) {
+        case "openai":
+          model = providerClient(modelMapping.modelId, {
+            apiKey: providerConfig.apiKey,
+            baseURL: providerConfig.baseUrl,
+          });
+          break;
+        case "google":
+          model = providerClient(modelMapping.modelId, {
+            apiKey: providerConfig.apiKey,
+          });
+          break;
+        case "openrouter":
+          model = providerClient(modelMapping.modelId);
+          break;
+        default:
+          throw new Error(`Unsupported provider: ${modelMapping.provider}`);
+      }
+
+      // Generate object using the AI library
+      const zodSchema = convertJsonSchemaToZod(request.schema);
+      const result = await generateObject({
+        model,
+        messages,
+        schema: zodSchema,
+        mode: "json",
+        maxTokens: request.maxTokens,
+        temperature: request.temperature,
+      });
+
+      // Return formatted response
+      return {
+        object: result.object as T,
+        model: modelMapping.name,
+        usage: result.usage
+          ? {
+            promptTokens: result.usage.promptTokens,
+            completionTokens: result.usage.completionTokens,
+            totalTokens: result.usage.totalTokens,
+          }
+          : undefined,
+      };
+    } catch (error) {
+      console.error("Error generating object:", error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : String(error);
+      throw new Error(`Object generation failed: ${errorMessage}`);
+    }
+  }
+
+  /**
    * Get available models
    */
   getAvailableModels(): string[] {
@@ -218,6 +300,60 @@ export class AIService {
       if (!message.content || typeof message.content !== "string") {
         throw new Error("Message content is required and must be a string");
       }
+    }
+
+    if (
+      request.model && !this.config.models.find((m) => m.name === request.model)
+    ) {
+      throw new Error(`Invalid model: ${request.model}`);
+    }
+
+    if (
+      request.maxTokens && (request.maxTokens < 1 || request.maxTokens > 4096)
+    ) {
+      throw new Error("maxTokens must be between 1 and 4096");
+    }
+
+    if (
+      request.temperature &&
+      (request.temperature < 0 || request.temperature > 1)
+    ) {
+      throw new Error("temperature must be between 0 and 1");
+    }
+  }
+
+  /**
+   * Validate a generate object request
+   */
+  validateGenerateObjectRequest(request: GenerateObjectRequest): void {
+    if (!request.messages || !Array.isArray(request.messages)) {
+      throw new Error("Messages array is required");
+    }
+
+    if (request.messages.length === 0) {
+      throw new Error("At least one message is required");
+    }
+
+    for (const message of request.messages) {
+      if (
+        !message.role || !["user", "assistant", "system"].includes(message.role)
+      ) {
+        throw new Error("Invalid message role");
+      }
+      if (!message.content || typeof message.content !== "string") {
+        throw new Error("Message content is required and must be a string");
+      }
+    }
+
+    if (!request.schema || typeof request.schema !== "object") {
+      throw new Error("Schema object is required");
+    }
+
+    try {
+      convertJsonSchemaToZod(request.schema);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Invalid schema: ${errorMessage}`);
     }
 
     if (

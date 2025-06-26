@@ -4,7 +4,7 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 import { AIService } from "./ai-service.ts";
-import type { GenerateTextRequest, ServiceConfig } from "../types.ts";
+import type { GenerateObjectRequest, GenerateTextRequest, ServiceConfig } from "../types.ts";
 
 // Mock configuration for testing
 const mockConfig: ServiceConfig = {
@@ -157,6 +157,57 @@ Deno.test("AIService - validateRequest throws for invalid temperature", () => {
     () => service.validateRequest(request),
     Error,
     "temperature must be between 0 and 1",
+  );
+});
+
+Deno.test("AIService - validateGenerateObjectRequest validates valid request", () => {
+  const service = new AIService(mockConfig);
+  const request: GenerateObjectRequest = {
+    messages: [
+      { role: "user", content: "Generate a JSON object." },
+    ],
+    schema: {
+      type: "object",
+      properties: {
+        name: { type: "string" },
+      },
+    },
+  };
+
+  // Should not throw
+  service.validateGenerateObjectRequest(request);
+});
+
+Deno.test("AIService - validateGenerateObjectRequest throws for missing schema", () => {
+  const service = new AIService(mockConfig);
+  const request = {
+    messages: [
+      { role: "user", content: "Generate a JSON object." },
+    ],
+  } as unknown as GenerateObjectRequest;
+
+  assertThrows(
+    () => service.validateGenerateObjectRequest(request),
+    Error,
+    "Schema object is required",
+  );
+});
+
+Deno.test("AIService - validateGenerateObjectRequest throws for unsupported schema type", () => {
+  const service = new AIService(mockConfig);
+  const request: GenerateObjectRequest = {
+    messages: [
+      { role: "user", content: "Generate a JSON object." },
+    ],
+    schema: {
+      type: "unsupportedType",
+    },
+  };
+
+  assertThrows(
+    () => service.validateGenerateObjectRequest(request),
+    Error,
+    "Unsupported JSON schema type: unsupportedType",
   );
 });
 

@@ -6,6 +6,8 @@ import { AIService } from "../core/ai-service.ts";
 import type {
   ApiResponse,
   ErrorResponse,
+  GenerateObjectRequest,
+  GenerateObjectResponse,
   GenerateTextRequest,
   HealthResponse,
   ServiceConfig,
@@ -86,6 +88,10 @@ export class AIServer {
           return this.handleGetModels(corsHeaders);
         }
 
+        if (url.pathname === "/generate-object" && method === "POST") {
+          return await this.handleGenerateObject(request, corsHeaders);
+        }
+
         // 404 for unknown routes
         return this.createErrorResponse(
           { error: "Not Found", code: "NOT_FOUND" },
@@ -152,6 +158,47 @@ export class AIServer {
       return this.createSuccessResponse(result, corsHeaders);
     } catch (error) {
       console.error("Text generation error:", error);
+
+      // Determine appropriate status code
+      let status = 500;
+      const errorMessage = error instanceof Error
+        ? error.message
+        : String(error);
+      if (
+        errorMessage.includes("Invalid") || errorMessage.includes("required")
+      ) {
+        status = 400;
+      }
+
+      return this.createErrorResponse(
+        { error: errorMessage, code: "GENERATION_ERROR" },
+        status,
+        corsHeaders,
+      );
+    }
+  }
+
+  /**
+   * Handle object generation requests
+   */
+  private async handleGenerateObject(
+    request: Request,
+    corsHeaders: Record<string, string>,
+  ): Promise<Response> {
+    try {
+      // Parse request body
+      const body = await request.json();
+      const generateRequest = body as GenerateObjectRequest;
+
+      // Validate request
+      this.aiService.validateGenerateObjectRequest(generateRequest);
+
+      // Generate object
+      const result = await this.aiService.generateObject(generateRequest);
+
+      return this.createSuccessResponse(result, corsHeaders);
+    } catch (error) {
+      console.error("Object generation error:", error);
 
       // Determine appropriate status code
       let status = 500;
