@@ -1,9 +1,7 @@
 # ADR: Docker Compose Strategy for Development and Production
 
-**Status**: Proposed\
-**Date**: 2025-06-21\
-**Authors**: Development Team\
-**Reviewers**: DevOps Team, Architecture Team
+**Status**: Proposed
+**Date**: 2025-06-21
 
 ## Context
 

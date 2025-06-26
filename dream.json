@@ -17,16 +17,16 @@
   },
   "tasks": {
     "test": {
-      "sequential": true,
+      "async": false,
       "required": false
     },
     "dev": {
-      "sequential": false,
+      "async": true,
       "required": true,
       "delay": 5000
     },
     "e2e": {
-      "sequential": true,
+      "async": false,
       "required": false
     }
   }
