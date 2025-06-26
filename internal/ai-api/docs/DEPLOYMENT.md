@@ -12,6 +12,7 @@ powershell -ExecutionPolicy Bypass -File build-linux.ps1
 ```
 
 This will:
+
 1. Build a Docker image with Deno 2.3.6
 2. Compile the application inside the Linux container
 3. Extract the `ai-api-linux` binary to your current directory
@@ -85,6 +86,7 @@ WantedBy=multi-user.target
 ```
 
 Then enable and start the service:
+
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable ai-api
@@ -96,12 +98,15 @@ sudo systemctl status ai-api
 
 ### Windows Compilation Issues
 
-If you encounter npm VFS errors on Windows, use the Docker approach instead of direct compilation.
+If you encounter npm VFS errors on Windows, use the Docker approach instead of
+direct compilation.
 
 ### Binary Size
 
-The compiled binary is approximately 95MB and includes all dependencies. This is normal for Deno compiled applications with npm dependencies.
+The compiled binary is approximately 95MB and includes all dependencies. This is
+normal for Deno compiled applications with npm dependencies.
 
 ### Port Configuration
 
-The default port is 3000. You can change it by setting the `PORT` environment variable.
+The default port is 3000. You can change it by setting the `PORT` environment
+variable.

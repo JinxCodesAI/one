@@ -23,7 +23,7 @@ Deno.test("loadConfig - throws error when no providers configured", () => {
   assertThrows(
     () => loadConfig(),
     Error,
-    "No AI providers configured. Please set at least one of: OPENAI_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY, OPENROUTER_API_KEY"
+    "No AI providers configured. Please set at least one of: OPENAI_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY, OPENROUTER_API_KEY",
   );
 
   // Restore original function
@@ -36,7 +36,7 @@ Deno.test("loadConfig - loads OpenAI configuration", () => {
   Deno.env.get = mockEnvGet;
 
   const config = loadConfig();
-  
+
   assertEquals(config.providers.length, 1);
   assertEquals(config.providers[0].name, "openai");
   assertEquals(config.providers[0].apiKey, "test-key");
@@ -68,9 +68,18 @@ Deno.test("loadConfig - loads multiple providers", () => {
   const config = loadConfig();
 
   assertEquals(config.providers.length, 3);
-  assertEquals(config.providers.find(p => p.name === "openai")?.apiKey, "openai-key");
-  assertEquals(config.providers.find(p => p.name === "google")?.apiKey, "google-key");
-  assertEquals(config.providers.find(p => p.name === "openrouter")?.apiKey, "openrouter-key");
+  assertEquals(
+    config.providers.find((p) => p.name === "openai")?.apiKey,
+    "openai-key",
+  );
+  assertEquals(
+    config.providers.find((p) => p.name === "google")?.apiKey,
+    "google-key",
+  );
+  assertEquals(
+    config.providers.find((p) => p.name === "openrouter")?.apiKey,
+    "openrouter-key",
+  );
 
   Deno.env.get = originalEnvGet;
 });
@@ -83,7 +92,7 @@ Deno.test("loadConfig - uses custom port and host", () => {
   Deno.env.get = mockEnvGet;
 
   const config = loadConfig();
-  
+
   assertEquals(config.port, 3000);
   assertEquals(config.host, "127.0.0.1");
 
@@ -122,7 +131,7 @@ Deno.test("validateConfig - throws for missing providers", () => {
   assertThrows(
     () => validateConfig(config),
     Error,
-    "At least one provider must be configured"
+    "At least one provider must be configured",
   );
 });
 
@@ -145,7 +154,7 @@ Deno.test("validateConfig - throws for invalid port", () => {
   assertThrows(
     () => validateConfig(config),
     Error,
-    "Port must be between 1 and 65535"
+    "Port must be between 1 and 65535",
   );
 });
 
@@ -168,6 +177,6 @@ Deno.test("validateConfig - throws for missing default model", () => {
   assertThrows(
     () => validateConfig(config),
     Error,
-    "Default model 'nonexistent-model' not found in available models"
+    "Default model 'nonexistent-model' not found in available models",
   );
 });

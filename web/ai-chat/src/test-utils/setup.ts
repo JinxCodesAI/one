@@ -3,12 +3,12 @@
  */
 
 // Basic DOM setup for testing
-if (typeof globalThis.document === 'undefined') {
+if (typeof globalThis.document === "undefined") {
   // Minimal DOM setup for testing
   const mockDocument = {
     createElement: (tagName: string) => ({
       tagName: tagName.toUpperCase(),
-      textContent: '',
+      textContent: "",
       style: {},
       setAttribute: () => {},
       getAttribute: () => null,
@@ -21,52 +21,60 @@ if (typeof globalThis.document === 'undefined') {
       closest: () => null,
       parentElement: null,
       children: [],
-      innerHTML: '',
-      outerHTML: '',
-      value: '',
+      innerHTML: "",
+      outerHTML: "",
+      value: "",
       disabled: false,
-      placeholder: '',
+      placeholder: "",
       focus: () => {},
       blur: () => {},
       click: () => {},
       scrollHeight: 100,
-      scrollTop: 0
+      scrollTop: 0,
     }),
     body: {
-      innerHTML: '',
+      innerHTML: "",
       appendChild: () => {},
-      removeChild: () => {}
+      removeChild: () => {},
     },
     querySelector: () => null,
     querySelectorAll: () => [],
     addEventListener: () => {},
-    removeEventListener: () => {}
+    removeEventListener: () => {},
   };
 
-  (globalThis as unknown as { document: typeof mockDocument }).document = mockDocument;
+  (globalThis as unknown as { document: typeof mockDocument }).document =
+    mockDocument;
 }
 
 // Mock CSS properties are handled in the mock document above
 
 // Mock ResizeObserver
-(globalThis as unknown as { ResizeObserver: typeof ResizeObserver }).ResizeObserver = class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-} as typeof ResizeObserver;
+(globalThis as unknown as { ResizeObserver: typeof ResizeObserver })
+  .ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as typeof ResizeObserver;
 
 // Mock IntersectionObserver
-(globalThis as unknown as { IntersectionObserver: typeof IntersectionObserver }).IntersectionObserver = class IntersectionObserver {
-  root = null;
-  rootMargin = '';
-  thresholds = [];
+(globalThis as unknown as { IntersectionObserver: typeof IntersectionObserver })
+  .IntersectionObserver = class IntersectionObserver {
+    root = null;
+    rootMargin = "";
+    thresholds = [];
 
-  constructor(_callback: IntersectionObserverCallback, _options?: IntersectionObserverInit) {}
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-  takeRecords(): IntersectionObserverEntry[] { return []; }
-} as typeof IntersectionObserver;
+    constructor(
+      _callback: IntersectionObserverCallback,
+      _options?: IntersectionObserverInit,
+    ) {}
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords(): IntersectionObserverEntry[] {
+      return [];
+    }
+  } as typeof IntersectionObserver;
 
 // Mock matchMedia
 globalThis.matchMedia = (query: string) => ({
@@ -86,7 +94,7 @@ globalThis.matchMedia = (query: string) => ({
 export function globalTestCleanup() {
   // Clear document body if it exists
   if (globalThis.document?.body) {
-    globalThis.document.body.innerHTML = '';
+    globalThis.document.body.innerHTML = "";
   }
 
   // Clear any timers
@@ -102,16 +110,21 @@ export function globalTestCleanup() {
 export function mockFetch(responses: Record<string, unknown>) {
   const originalFetch = globalThis.fetch;
 
-  globalThis.fetch = (input: string | Request | URL, init?: RequestInit): Promise<Response> => {
-    const url = typeof input === 'string' ? input : input.toString();
+  globalThis.fetch = (
+    input: string | Request | URL,
+    init?: RequestInit,
+  ): Promise<Response> => {
+    const url = typeof input === "string" ? input : input.toString();
 
     // Check if we have a mock response for this URL
     for (const [pattern, response] of Object.entries(responses)) {
       if (url.includes(pattern)) {
-        return Promise.resolve(new Response(JSON.stringify(response), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' }
-        }));
+        return Promise.resolve(
+          new Response(JSON.stringify(response), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
       }
     }
 
@@ -149,24 +162,28 @@ interface MockAIClient {
 /**
  * Create mock AI client for testing
  */
-export function createMockAIClient(overrides: Partial<MockAIClient> = {}): MockAIClient {
+export function createMockAIClient(
+  overrides: Partial<MockAIClient> = {},
+): MockAIClient {
   return {
-    generateText: () => Promise.resolve({
-      content: "Test AI response",
-      model: "gpt-4.1-nano",
-      usage: {
-        promptTokens: 10,
-        completionTokens: 8,
-        totalTokens: 18
-      }
-    }),
+    generateText: () =>
+      Promise.resolve({
+        content: "Test AI response",
+        model: "gpt-4.1-nano",
+        usage: {
+          promptTokens: 10,
+          completionTokens: 8,
+          totalTokens: 18,
+        },
+      }),
     getModels: () => Promise.resolve(["gpt-4.1-nano", "gemini-2.5-flash"]),
-    getHealth: () => Promise.resolve({
-      status: "healthy",
-      models: ["gpt-4.1-nano", "gemini-2.5-flash"],
-      version: "0.0.1"
-    }),
-    ...overrides
+    getHealth: () =>
+      Promise.resolve({
+        status: "healthy",
+        models: ["gpt-4.1-nano", "gemini-2.5-flash"],
+        version: "0.0.1",
+      }),
+    ...overrides,
   };
 }
 
@@ -176,20 +193,21 @@ export function createMockAIClient(overrides: Partial<MockAIClient> = {}): MockA
 export function createMockMessages() {
   return [
     {
-      role: 'user' as const,
-      content: 'Hello, how are you?',
-      timestamp: new Date('2025-01-01T10:00:00Z')
+      role: "user" as const,
+      content: "Hello, how are you?",
+      timestamp: new Date("2025-01-01T10:00:00Z"),
     },
     {
-      role: 'assistant' as const,
-      content: 'Hello! I\'m doing well, thank you for asking. How can I help you today?',
-      timestamp: new Date('2025-01-01T10:00:01Z')
+      role: "assistant" as const,
+      content:
+        "Hello! I'm doing well, thank you for asking. How can I help you today?",
+      timestamp: new Date("2025-01-01T10:00:01Z"),
     },
     {
-      role: 'user' as const,
-      content: 'Can you help me with a coding problem?',
-      timestamp: new Date('2025-01-01T10:00:02Z')
-    }
+      role: "user" as const,
+      content: "Can you help me with a coding problem?",
+      timestamp: new Date("2025-01-01T10:00:02Z"),
+    },
   ];
 }
 
@@ -197,7 +215,7 @@ export function createMockMessages() {
  * Wait for async operations to complete
  */
 export function waitFor(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -210,15 +228,15 @@ export function mockConsole() {
   const warnings: string[] = [];
 
   console.log = (...args: unknown[]) => {
-    logs.push(args.join(' '));
+    logs.push(args.join(" "));
   };
 
   console.error = (...args: unknown[]) => {
-    errors.push(args.join(' '));
+    errors.push(args.join(" "));
   };
 
   console.warn = (...args: unknown[]) => {
-    warnings.push(args.join(' '));
+    warnings.push(args.join(" "));
   };
 
   return {
@@ -227,7 +245,7 @@ export function mockConsole() {
     warnings,
     restore: () => {
       Object.assign(console, originalConsole);
-    }
+    },
   };
 }
 

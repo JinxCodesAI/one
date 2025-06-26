@@ -3,9 +3,13 @@
  * Tests the integration between chat logic and AI client service
  */
 
-import { describe, it, beforeEach, afterEach } from "@std/testing/bdd";
+import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
 import { assertEquals, assertExists } from "@std/assert";
-import { createMockAIClient, mockFetch, mockConsole } from "../../test-utils/setup.ts";
+import {
+  createMockAIClient,
+  mockConsole,
+  mockFetch,
+} from "../../test-utils/setup.ts";
 import "../../test-utils/setup.ts";
 
 describe("Chat Integration Logic", () => {
@@ -15,32 +19,32 @@ describe("Chat Integration Logic", () => {
   beforeEach(() => {
     // Mock successful AI responses
     restoreFetch = mockFetch({
-      '/models': {
+      "/models": {
         success: true,
         data: {
-          models: ['gpt-4.1-nano', 'gemini-2.5-flash', 'claude-3-sonnet']
-        }
+          models: ["gpt-4.1-nano", "gemini-2.5-flash", "claude-3-sonnet"],
+        },
       },
-      '/generate': {
+      "/generate": {
         success: true,
         data: {
-          content: 'Hello! How can I help you today?',
-          model: 'gpt-4.1-nano',
+          content: "Hello! How can I help you today?",
+          model: "gpt-4.1-nano",
           usage: {
             promptTokens: 10,
             completionTokens: 8,
-            totalTokens: 18
-          }
-        }
+            totalTokens: 18,
+          },
+        },
       },
-      '/health': {
+      "/health": {
         success: true,
         data: {
-          status: 'healthy',
-          models: ['gpt-4.1-nano', 'gemini-2.5-flash'],
-          version: '0.0.1'
-        }
-      }
+          status: "healthy",
+          models: ["gpt-4.1-nano", "gemini-2.5-flash"],
+          version: "0.0.1",
+        },
+      },
     });
 
     const consoleMock = mockConsole();
@@ -55,14 +59,14 @@ describe("Chat Integration Logic", () => {
   it("should handle chat state initialization", () => {
     const initialState = {
       messages: [],
-      selectedModel: 'gpt-4.1-nano',
+      selectedModel: "gpt-4.1-nano",
       availableModels: [],
       isLoading: false,
-      error: null
+      error: null,
     };
 
     assertEquals(initialState.messages.length, 0);
-    assertEquals(initialState.selectedModel, 'gpt-4.1-nano');
+    assertEquals(initialState.selectedModel, "gpt-4.1-nano");
     assertEquals(initialState.availableModels.length, 0);
     assertEquals(initialState.isLoading, false);
     assertEquals(initialState.error, null);
@@ -70,15 +74,17 @@ describe("Chat Integration Logic", () => {
 
   it("should handle message sending logic", async () => {
     const mockClient = createMockAIClient();
-    const messages: any[] = [];
+    const messages: Array<
+      { role: "user" | "assistant"; content: string; timestamp: Date }
+    > = [];
     let isLoading = false;
     let error: string | null = null;
 
     // Simulate sending a message
     const userMessage = {
-      role: 'user' as const,
-      content: 'Hello, how are you?',
-      timestamp: new Date()
+      role: "user" as const,
+      content: "Hello, how are you?",
+      timestamp: new Date(),
     };
 
     // Add user message
@@ -88,25 +94,25 @@ describe("Chat Integration Logic", () => {
     try {
       // Call AI service
       const response = await mockClient.generateText();
-      
+
       // Add AI response
       const aiMessage = {
-        role: 'assistant' as const,
+        role: "assistant" as const,
         content: response.content,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
       messages.push(aiMessage);
-      
+
       isLoading = false;
       error = null;
     } catch (err) {
       isLoading = false;
-      error = err instanceof Error ? err.message : 'Unknown error';
+      error = err instanceof Error ? err.message : "Unknown error";
     }
 
     assertEquals(messages.length, 2);
-    assertEquals(messages[0].role, 'user');
-    assertEquals(messages[1].role, 'assistant');
+    assertEquals(messages[0].role, "user");
+    assertEquals(messages[1].role, "assistant");
     assertEquals(isLoading, false);
     assertEquals(error, null);
   });
@@ -120,42 +126,50 @@ describe("Chat Integration Logic", () => {
       availableModels = await mockClient.getModels();
       error = null;
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load models';
+      error = err instanceof Error ? err.message : "Failed to load models";
     }
 
     assertEquals(availableModels.length, 2);
-    assertEquals(availableModels.includes('gpt-4.1-nano'), true);
-    assertEquals(availableModels.includes('gemini-2.5-flash'), true);
+    assertEquals(availableModels.includes("gpt-4.1-nano"), true);
+    assertEquals(availableModels.includes("gemini-2.5-flash"), true);
     assertEquals(error, null);
   });
 
   it("should handle model switching logic", () => {
-    const availableModels = ['gpt-4.1-nano', 'gemini-2.5-flash', 'claude-3-sonnet'];
-    let selectedModel = 'gpt-4.1-nano';
+    const availableModels = [
+      "gpt-4.1-nano",
+      "gemini-2.5-flash",
+      "claude-3-sonnet",
+    ];
+    let selectedModel = "gpt-4.1-nano";
     let error: string | null = null;
 
     // Switch to valid model
-    const newModel = 'gemini-2.5-flash';
+    const newModel = "gemini-2.5-flash";
     if (availableModels.includes(newModel)) {
       selectedModel = newModel;
       error = null;
     } else {
-      error = 'Model not available';
+      error = "Model not available";
     }
 
-    assertEquals(selectedModel, 'gemini-2.5-flash');
+    assertEquals(selectedModel, "gemini-2.5-flash");
     assertEquals(error, null);
   });
 
   it("should handle conversation clearing logic", () => {
     let messages = [
-      { role: 'user' as const, content: 'Hello', timestamp: new Date() },
-      { role: 'assistant' as const, content: 'Hi there!', timestamp: new Date() }
+      { role: "user" as const, content: "Hello", timestamp: new Date() },
+      {
+        role: "assistant" as const,
+        content: "Hi there!",
+        timestamp: new Date(),
+      },
     ];
-    let error: string | null = 'Some error';
+    let error: string | null = "Some error";
 
     assertEquals(messages.length, 2);
-    assertEquals(error, 'Some error');
+    assertEquals(error, "Some error");
 
     // Clear conversation
     messages = [];
@@ -168,45 +182,53 @@ describe("Chat Integration Logic", () => {
   it("should handle retry logic", async () => {
     const mockClient = createMockAIClient();
     type Message = {
-      role: 'user' | 'assistant' | 'system';
+      role: "user" | "assistant" | "system";
       content: string;
       timestamp: Date;
     };
 
     const messages: Message[] = [
-      { role: 'user' as const, content: 'Hello', timestamp: new Date() },
-      { role: 'system' as const, content: 'Error: Failed to send', timestamp: new Date() }
+      { role: "user" as const, content: "Hello", timestamp: new Date() },
+      {
+        role: "system" as const,
+        content: "Error: Failed to send",
+        timestamp: new Date(),
+      },
     ];
 
     // Find last user message for retry
-    const lastUserMessage = messages.filter(m => m.role === 'user').pop();
+    const lastUserMessage = messages.filter((m) => m.role === "user").pop();
     assertExists(lastUserMessage);
 
     // Remove error message
-    const messagesWithoutError: Message[] = messages.filter(m => m.role !== 'system');
+    const messagesWithoutError: Message[] = messages.filter((m) =>
+      m.role !== "system"
+    );
     assertEquals(messagesWithoutError.length, 1);
 
     // Retry with last user message
     try {
       const response = await mockClient.generateText();
       const retryResponse: Message = {
-        role: 'assistant' as const,
+        role: "assistant" as const,
         content: response.content,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       messagesWithoutError.push(retryResponse);
     } catch (err) {
       const errorMessage: Message = {
-        role: 'system' as const,
-        content: `Error: ${err instanceof Error ? err.message : 'Unknown error'}`,
-        timestamp: new Date()
+        role: "system" as const,
+        content: `Error: ${
+          err instanceof Error ? err.message : "Unknown error"
+        }`,
+        timestamp: new Date(),
       };
       messagesWithoutError.push(errorMessage);
     }
 
     assertEquals(messagesWithoutError.length, 2);
-    assertEquals(messagesWithoutError[1].role, 'assistant');
+    assertEquals(messagesWithoutError[1].role, "assistant");
   });
 
   it("should handle message validation", () => {
@@ -244,7 +266,7 @@ describe("Chat Integration Logic", () => {
 
   it("should handle health check integration", async () => {
     const mockClient = createMockAIClient();
-    let healthStatus = 'unknown';
+    let healthStatus = "unknown";
     let availableModels: string[] = [];
 
     try {
@@ -252,11 +274,11 @@ describe("Chat Integration Logic", () => {
       healthStatus = health.status;
       availableModels = health.models;
     } catch (_err) {
-      healthStatus = 'error';
+      healthStatus = "error";
     }
 
-    assertEquals(healthStatus, 'healthy');
+    assertEquals(healthStatus, "healthy");
     assertEquals(availableModels.length, 2);
-    assertEquals(availableModels.includes('gpt-4.1-nano'), true);
+    assertEquals(availableModels.includes("gpt-4.1-nano"), true);
   });
 });

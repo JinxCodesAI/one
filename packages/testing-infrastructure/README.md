@@ -1,6 +1,7 @@
 # Testing Infrastructure
 
-Shared testing utilities for the One monorepo, providing standardized E2E testing infrastructure with fetch mocking, server setup, and UI automation.
+Shared testing utilities for the One monorepo, providing standardized E2E
+testing infrastructure with fetch mocking, server setup, and UI automation.
 
 ## Features
 
@@ -15,11 +16,11 @@ Shared testing utilities for the One monorepo, providing standardized E2E testin
 ### Basic Server E2E Testing
 
 ```typescript
-import { describe, it, before } from "@std/testing/bdd";
-import { 
-  FetchMockManager, 
+import { before, describe, it } from "@std/testing/bdd";
+import {
   createServerTestEnvironment,
-  createSuccessScenario 
+  createSuccessScenario,
+  FetchMockManager,
 } from "@one/testing-infrastructure/server-setup";
 
 describe("My API Tests", () => {
@@ -30,16 +31,16 @@ describe("My API Tests", () => {
     const scenario = createSuccessScenario("openai", "Hello from OpenAI!");
     mockManager = new FetchMockManager(scenario);
     mockManager.start();
-    
+
     testEnv = await createServerTestEnvironment();
   });
 
   it("should work", async () => {
     const response = await testEnv.client.generateText({
       messages: [{ role: "user", content: "Hello" }],
-      model: "gpt-4.1-nano"
+      model: "gpt-4.1-nano",
     });
-    
+
     assertEquals(response.content, "Hello from OpenAI!");
   });
 });
@@ -48,11 +49,11 @@ describe("My API Tests", () => {
 ### UI E2E Testing
 
 ```typescript
-import { describe, it, before } from "@std/testing/bdd";
-import { 
-  createUITestEnvironment,
+import { before, describe, it } from "@std/testing/bdd";
+import {
   createUISuccessScenario,
-  UITestHelpers 
+  createUITestEnvironment,
+  UITestHelpers,
 } from "@one/testing-infrastructure/ui-setup";
 
 describe("UI Tests", () => {
@@ -64,9 +65,16 @@ describe("UI Tests", () => {
   });
 
   it("should send message", async () => {
-    await UITestHelpers.typeText(testEnv.page, '[data-testid="message-input"]', 'Hello');
-    await UITestHelpers.clickElement(testEnv.page, '[data-testid="send-button"]');
-    await UITestHelpers.waitForMessage(testEnv.page, 'assistant');
+    await UITestHelpers.typeText(
+      testEnv.page,
+      '[data-testid="message-input"]',
+      "Hello",
+    );
+    await UITestHelpers.clickElement(
+      testEnv.page,
+      '[data-testid="send-button"]',
+    );
+    await UITestHelpers.waitForMessage(testEnv.page, "assistant");
   });
 });
 ```
@@ -88,15 +96,15 @@ The testing infrastructure is designed with modularity and reusability in mind:
 ```typescript
 import {
   FetchMockManager,
+  type MockScenario,
   RequestAnalyzer,
-  type MockScenario
 } from "@one/testing-infrastructure/fetch-mock";
 
 // Create a custom scenario with specific behavior
 const customScenario: MockScenario = {
   name: "Custom API behavior",
   isRequestExpected: (context, metadata) => {
-    return metadata.isExternalApi && metadata.provider === 'openai';
+    return metadata.isExternalApi && metadata.provider === "openai";
   },
   generateResponse: (context, metadata) => {
     const response = RequestAnalyzer.generateSuccessResponse(context, metadata);
@@ -104,29 +112,32 @@ const customScenario: MockScenario = {
 
     // Customize based on request content
     const requestBody = context.body as any;
-    if (requestBody?.messages?.[0]?.content?.includes('urgent')) {
+    if (requestBody?.messages?.[0]?.content?.includes("urgent")) {
       body.choices[0].message.content = "This is an urgent response!";
       response.delay = 100; // Faster response for urgent requests
     }
 
     return response;
-  }
+  },
 };
 ```
 
 ### Error Testing
 
 ```typescript
-import { createErrorScenario, createMixedScenario } from "@one/testing-infrastructure/scenarios";
+import {
+  createErrorScenario,
+  createMixedScenario,
+} from "@one/testing-infrastructure/scenarios";
 
 // Test rate limiting
-const rateLimitScenario = createErrorScenario('rate_limit', ['openai']);
+const rateLimitScenario = createErrorScenario("rate_limit", ["openai"]);
 
 // Test mixed provider behavior
 const mixedScenario = createMixedScenario({
-  openai: 'success',
-  google: 'error',
-  openrouter: 'slow'
+  openai: "success",
+  google: "error",
+  openrouter: "slow",
 });
 ```
 
@@ -139,7 +150,7 @@ describe("My API Tests", () => {
   const testManager = new ServerTestManager(
     startServer,
     createSimpleClient,
-    createServerTestConfig()
+    createServerTestConfig(),
   );
 
   before(async () => {
@@ -162,9 +173,9 @@ describe("My API Tests", () => {
 
 ```typescript
 import {
+  createUITestConfig,
   createUITestEnvironment,
   UITestHelpers,
-  createUITestConfig
 } from "@one/testing-infrastructure/ui-setup";
 
 describe("Custom UI Tests", () => {
@@ -173,16 +184,16 @@ describe("Custom UI Tests", () => {
   before(async () => {
     const config = createUITestConfig({
       headless: false, // Show browser during development
-      timeout: 60000,  // Longer timeout for complex interactions
+      timeout: 60000, // Longer timeout for complex interactions
       customEnvVars: {
-        'CUSTOM_FEATURE_FLAG': 'enabled'
-      }
+        "CUSTOM_FEATURE_FLAG": "enabled",
+      },
     });
 
     testEnv = await createUITestEnvironment(
       startServer,
       createUISuccessScenario(),
-      config
+      config,
     );
   });
 
@@ -190,12 +201,12 @@ describe("Custom UI Tests", () => {
     const { page } = testEnv;
 
     // Use helper functions for common patterns
-    await UITestHelpers.typeText(page, '[data-testid="input"]', 'Hello');
+    await UITestHelpers.typeText(page, '[data-testid="input"]', "Hello");
     await UITestHelpers.clickElement(page, '[data-testid="submit"]');
-    await UITestHelpers.waitForMessage(page, 'assistant');
+    await UITestHelpers.waitForMessage(page, "assistant");
 
     // Take screenshot for debugging
-    await UITestHelpers.takeScreenshot(page, 'after-interaction');
+    await UITestHelpers.takeScreenshot(page, "after-interaction");
   });
 });
 ```
@@ -219,8 +230,8 @@ import { TestEnvironment } from "@one/testing-infrastructure/helpers";
 
 // Set test environment variables
 TestEnvironment.setEnvVars({
-  'CUSTOM_API_KEY': 'test-key',
-  'DEBUG_MODE': 'true'
+  "CUSTOM_API_KEY": "test-key",
+  "DEBUG_MODE": "true",
 });
 
 // Restore original values after tests
@@ -233,10 +244,14 @@ TestEnvironment.restoreEnvVars();
 import { TestRetry } from "@one/testing-infrastructure/helpers";
 
 it("should handle flaky operations", async () => {
-  const result = await TestRetry.withRetry(async () => {
-    // Some potentially flaky operation
-    return await client.generateText(messages, model);
-  }, 3, 1000); // 3 attempts, 1 second base delay
+  const result = await TestRetry.withRetry(
+    async () => {
+      // Some potentially flaky operation
+      return await client.generateText(messages, model);
+    },
+    3,
+    1000,
+  ); // 3 attempts, 1 second base delay
 
   assertEquals(result.content, expectedContent);
 });
@@ -247,36 +262,43 @@ it("should handle flaky operations", async () => {
 ### From Old Test Structure
 
 **Before:**
+
 ```typescript
 import { FetchMockManager } from "./utils/fetch-mock.ts";
 import { setupTestEnvironment } from "./utils/test-setup.ts";
 
 // Custom scenario setup
-const scenario = { /* complex setup */ };
+const scenario = {/* complex setup */};
 const mockManager = new FetchMockManager(scenario);
 ```
 
 **After:**
+
 ```typescript
 import {
+  createSuccessScenario,
   FetchMockManager,
-  createSuccessScenario
 } from "@one/testing-infrastructure";
 
 // Simple scenario creation
-const scenario = createSuccessScenario(['openai'], { openai: 'Custom response' });
+const scenario = createSuccessScenario(["openai"], {
+  openai: "Custom response",
+});
 const mockManager = new FetchMockManager(scenario);
 ```
 
 ## Best Practices
 
-1. **Use Pre-built Scenarios**: Start with `createSuccessScenario`, `createErrorScenario`, etc.
+1. **Use Pre-built Scenarios**: Start with `createSuccessScenario`,
+   `createErrorScenario`, etc.
 2. **Batch Test Updates**: Use `ServerTestManager` for multiple related tests
-3. **Environment Isolation**: Each test should use unique ports and clean environments
+3. **Environment Isolation**: Each test should use unique ports and clean
+   environments
 4. **Proper Cleanup**: Always call cleanup functions in `after` hooks
 5. **Meaningful Test Data**: Use `TestDataGenerator` for consistent test data
 6. **Error Handling**: Test both success and failure scenarios
-7. **Performance Testing**: Use `createSlowResponseScenario` to test timeout handling
+7. **Performance Testing**: Use `createSlowResponseScenario` to test timeout
+   handling
 
 ## Troubleshooting
 
@@ -285,7 +307,8 @@ const mockManager = new FetchMockManager(scenario);
 1. **Port Conflicts**: Use `generateTestPort()` for unique ports
 2. **Timing Issues**: Use `TestTiming.waitFor()` for async conditions
 3. **Mock Not Working**: Check `isRequestExpected` logic in scenarios
-4. **UI Tests Failing**: Increase timeouts and use `UITestHelpers.takeScreenshot()`
+4. **UI Tests Failing**: Increase timeouts and use
+   `UITestHelpers.takeScreenshot()`
 
 ### Debugging
 
@@ -296,12 +319,14 @@ mockManager.start();
 
 // After tests, check what was intercepted
 const requestLog = mockManager.getRequestLog();
-console.log('Intercepted requests:', requestLog);
+console.log("Intercepted requests:", requestLog);
 ```
 
 ## Avoiding Circular Dependencies
 
-This package is designed to be dependency-free from internal services. It provides generic utilities that can be used by any service in the monorepo without creating circular dependencies.
+This package is designed to be dependency-free from internal services. It
+provides generic utilities that can be used by any service in the monorepo
+without creating circular dependencies.
 
 ### Architecture Principles
 

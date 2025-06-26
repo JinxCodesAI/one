@@ -1,25 +1,35 @@
 # AI API Service Specification - Stage 2
 
 ## Overview
-This document outlines the enhanced functional requirements and architecture for the AI API service built with Deno. This specification represents the mature implementation that provides a unified interface for multiple applications to interact with various AI providers through both SDK and HTTP interfaces.
+
+This document outlines the enhanced functional requirements and architecture for
+the AI API service built with Deno. This specification represents the mature
+implementation that provides a unified interface for multiple applications to
+interact with various AI providers through both SDK and HTTP interfaces.
 
 ## Goals
-- Create a production-ready centralized AI service that abstracts away provider-specific details
-- Provide both SDK and HTTP interfaces for integration with comprehensive error handling
+
+- Create a production-ready centralized AI service that abstracts away
+  provider-specific details
+- Provide both SDK and HTTP interfaces for integration with comprehensive error
+  handling
 - Support synchronous text generation operations with multiple AI providers
 - Implement robust testing infrastructure with E2E testing capabilities
 - Enable cross-platform deployment with containerized build processes
 - Provide comprehensive configuration management and operational monitoring
 
 ## Target Users
+
 - Internal development teams building applications that require AI capabilities
-- Services that need to integrate AI functionality without managing provider relationships
+- Services that need to integrate AI functionality without managing provider
+  relationships
 - DevOps teams requiring reliable deployment and monitoring capabilities
 - QA teams needing comprehensive testing infrastructure
 
 ## Functional Requirements
 
 ### Core Functionality
+
 1. **Multi-Provider Text Generation**
    - Accept text generation requests with messages in conversation format
    - Support OpenAI, Google Gemini, and Anthropic (via OpenRouter) providers
@@ -34,8 +44,10 @@ This document outlines the enhanced functional requirements and architecture for
    - Default model fallback when specific models aren't available
 
 ### Integration Methods
+
 1. **Enhanced SDK Integration**
-   - Provide multiple client creation methods (`createClient`, `createSimpleClient`)
+   - Provide multiple client creation methods (`createClient`,
+     `createSimpleClient`)
    - Support request timeout handling with AbortController
    - Implement comprehensive error handling with network error detection
    - Export modular components for different use cases
@@ -52,6 +64,7 @@ This document outlines the enhanced functional requirements and architecture for
    - Version information in health responses
 
 ### Configuration Management
+
 1. **Environment-Based Configuration**
    - Support multiple provider API keys with automatic provider filtering
    - Provider-specific configuration (OpenAI, Google, OpenRouter)
@@ -64,6 +77,7 @@ This document outlines the enhanced functional requirements and architecture for
    - Support for custom base URLs per provider
 
 ### Testing Infrastructure
+
 1. **Comprehensive E2E Testing**
    - BDD-style test structure using `@std/testing/bdd`
    - Fetch mocking infrastructure for external API testing
@@ -78,9 +92,11 @@ This document outlines the enhanced functional requirements and architecture for
 ## Technical Architecture
 
 ### Enhanced Components
+
 1. **Core AI Service**
    - Uses `npm:ai@^4.3.16` as the primary AI library
-   - Provider-specific packages: `@ai-sdk/openai`, `@ai-sdk/google`, `@openrouter/ai-sdk-provider`
+   - Provider-specific packages: `@ai-sdk/openai`, `@ai-sdk/google`,
+     `@openrouter/ai-sdk-provider`
    - Comprehensive request validation with detailed error messages
    - Provider client management with initialization error handling
 
@@ -103,8 +119,10 @@ This document outlines the enhanced functional requirements and architecture for
    - Health check and operational response types
 
 ### Data Flow Enhancement
+
 1. **Request Processing Pipeline**
-   - Request validation → Model mapping → Provider selection → API call → Response formatting
+   - Request validation → Model mapping → Provider selection → API call →
+     Response formatting
    - Error handling at each stage with appropriate HTTP status codes
    - Usage statistics collection and formatting
    - Provider-specific response transformation
@@ -118,6 +136,7 @@ This document outlines the enhanced functional requirements and architecture for
 ## Deployment Architecture
 
 ### Cross-Platform Build System
+
 1. **Docker-Based Compilation**
    - Cross-compilation support for Linux deployment from Windows
    - Containerized build process using Deno 2.3.6
@@ -131,6 +150,7 @@ This document outlines the enhanced functional requirements and architecture for
    - Service monitoring and restart capabilities
 
 ### Operational Features
+
 1. **Service Management**
    - Graceful shutdown with signal handling (SIGINT, SIGTERM)
    - Platform-specific signal management (Windows vs Unix)
@@ -146,6 +166,7 @@ This document outlines the enhanced functional requirements and architecture for
 ## Model Specifications
 
 ### Supported Models
+
 1. **OpenAI Models**
    - `gpt-4.1-nano` (default) → `gpt-4.1-nano`
    - `gpt-4.1-mini` → `gpt-4.1-mini`
@@ -164,6 +185,7 @@ This document outlines the enhanced functional requirements and architecture for
 ## API Specifications
 
 ### Enhanced Endpoints
+
 1. **POST /generate**
    - Structured request validation with detailed error messages
    - Support for `maxTokens` and `temperature` parameters
@@ -184,6 +206,7 @@ This document outlines the enhanced functional requirements and architecture for
 ## Implementation Considerations
 
 ### Technology Stack
+
 - **Runtime**: Deno 2.3.6
 - **AI Integration**: npm:ai@^4.3.16 with provider-specific packages
 - **HTTP Server**: Deno's built-in `Deno.serve()` API
@@ -191,18 +214,21 @@ This document outlines the enhanced functional requirements and architecture for
 - **Build**: Docker-based cross-compilation
 
 ### Performance and Reliability
+
 - Request timeout handling with AbortController
 - Provider-specific error handling and retry logic
 - Configuration validation at startup
 - Comprehensive logging for debugging and monitoring
 
 ### Security Considerations
+
 - API key management through environment variables
 - CORS configuration for controlled access
 - Input validation and sanitization
 - Error message sanitization to prevent information leakage
 
 ## Development Process
+
 - Test-driven development with comprehensive E2E testing
 - Modular architecture with clear separation of concerns
 - Comprehensive documentation for SDK usage and HTTP endpoints
@@ -210,6 +236,7 @@ This document outlines the enhanced functional requirements and architecture for
 - Automated build and deployment processes
 
 ## Future Expansion Roadmap
+
 - Asynchronous processing capabilities with job queues
 - Additional AI capabilities (image generation, embeddings, audio transcription)
 - Advanced features (request caching, rate limiting, usage analytics)

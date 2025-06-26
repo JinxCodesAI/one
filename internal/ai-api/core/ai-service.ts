@@ -2,26 +2,30 @@
  * Core AI service that abstracts provider-specific implementations
  */
 
-import { generateText } from 'ai';
-import { openai } from '@ai-sdk/openai';
-import { google } from '@ai-sdk/google';
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { google } from "@ai-sdk/google";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 
 import type {
   GenerateTextRequest,
   GenerateTextResponse,
-  ServiceConfig,
-  ProviderConfig,
-  ModelMapping,
   Message,
-} from '../types.ts';
+  ModelMapping,
+  ProviderConfig,
+  ServiceConfig,
+} from "../types.ts";
+
+// Type for AI provider clients - using function type for compatibility
+// deno-lint-ignore no-explicit-any
+type ProviderClient = any;
 
 /**
  * Core AI service class
  */
 export class AIService {
   private config: ServiceConfig;
-  private providerClients: Map<string, any> = new Map();
+  private providerClients: Map<string, ProviderClient> = new Map();
 
   constructor(config: ServiceConfig) {
     this.config = config;
@@ -46,13 +50,13 @@ export class AIService {
   /**
    * Create a provider client based on configuration
    */
-  private createProviderClient(config: ProviderConfig): any {
+  private createProviderClient(config: ProviderConfig): ProviderClient {
     switch (config.name.toLowerCase()) {
-      case 'openai':
+      case "openai":
         return openai;
-      case 'google':
+      case "google":
         return google;
-      case 'openrouter':
+      case "openrouter":
         return createOpenRouter({
           apiKey: config.apiKey,
         });
@@ -66,19 +70,19 @@ export class AIService {
    */
   private getModelMapping(modelName?: string): ModelMapping {
     const targetModel = modelName || this.config.defaultModel;
-    
-    const mapping = this.config.models.find(m => m.name === targetModel);
+
+    const mapping = this.config.models.find((m) => m.name === targetModel);
     if (!mapping) {
       throw new Error(`Model not found: ${targetModel}`);
     }
-    
+
     return mapping;
   }
 
   /**
    * Get provider client for a model
    */
-  private getProviderClient(providerName: string): any {
+  private getProviderClient(providerName: string): ProviderClient {
     const client = this.providerClients.get(providerName);
     if (!client) {
       throw new Error(`Provider client not found: ${providerName}`);
@@ -89,8 +93,9 @@ export class AIService {
   /**
    * Convert our Message format to AI library format
    */
+  // deno-lint-ignore no-explicit-any
   private convertMessages(messages: Message[]): any[] {
-    return messages.map(msg => ({
+    return messages.map((msg) => ({
       role: msg.role,
       content: msg.content,
     }));
@@ -99,38 +104,44 @@ export class AIService {
   /**
    * Generate text using the specified model
    */
-  async generateText(request: GenerateTextRequest): Promise<GenerateTextResponse> {
+  async generateText(
+    request: GenerateTextRequest,
+  ): Promise<GenerateTextResponse> {
     try {
       // Get model mapping
       const modelMapping = this.getModelMapping(request.model);
-      
+
       // Get provider client
       const providerClient = this.getProviderClient(modelMapping.provider);
-      
+
       // Convert messages to AI library format
       const messages = this.convertMessages(request.messages);
-      
+
       // Get provider configuration
-      const providerConfig = this.config.providers.find(p => p.name === modelMapping.provider);
+      const providerConfig = this.config.providers.find((p) =>
+        p.name === modelMapping.provider
+      );
       if (!providerConfig) {
-        throw new Error(`Provider configuration not found: ${modelMapping.provider}`);
+        throw new Error(
+          `Provider configuration not found: ${modelMapping.provider}`,
+        );
       }
 
       // Create model with provider-specific configuration
       let model;
       switch (modelMapping.provider.toLowerCase()) {
-        case 'openai':
+        case "openai":
           model = providerClient(modelMapping.modelId, {
             apiKey: providerConfig.apiKey,
             baseURL: providerConfig.baseUrl,
           });
           break;
-        case 'google':
+        case "google":
           model = providerClient(modelMapping.modelId, {
             apiKey: providerConfig.apiKey,
           });
           break;
-        case 'openrouter':
+        case "openrouter":
           model = providerClient(modelMapping.modelId);
           break;
         default:
@@ -149,15 +160,19 @@ export class AIService {
       return {
         content: result.text,
         model: modelMapping.name,
-        usage: result.usage ? {
-          promptTokens: result.usage.promptTokens,
-          completionTokens: result.usage.completionTokens,
-          totalTokens: result.usage.totalTokens,
-        } : undefined,
+        usage: result.usage
+          ? {
+            promptTokens: result.usage.promptTokens,
+            completionTokens: result.usage.completionTokens,
+            totalTokens: result.usage.totalTokens,
+          }
+          : undefined,
       };
     } catch (error) {
-      console.error('Error generating text:', error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Error generating text:", error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : String(error);
       throw new Error(`Text generation failed: ${errorMessage}`);
     }
   }
@@ -166,7 +181,7 @@ export class AIService {
    * Get available models
    */
   getAvailableModels(): string[] {
-    return this.config.models.map(m => m.name);
+    return this.config.models.map((m) => m.name);
   }
 
   /**
@@ -175,9 +190,9 @@ export class AIService {
   getHealth(): { status: string; models: string[] } {
     const models = this.getAvailableModels();
     const activeProviders = Array.from(this.providerClients.keys());
-    
+
     return {
-      status: activeProviders.length > 0 ? 'healthy' : 'unhealthy',
+      status: activeProviders.length > 0 ? "healthy" : "unhealthy",
       models,
     };
   }
@@ -187,32 +202,41 @@ export class AIService {
    */
   validateRequest(request: GenerateTextRequest): void {
     if (!request.messages || !Array.isArray(request.messages)) {
-      throw new Error('Messages array is required');
+      throw new Error("Messages array is required");
     }
 
     if (request.messages.length === 0) {
-      throw new Error('At least one message is required');
+      throw new Error("At least one message is required");
     }
 
     for (const message of request.messages) {
-      if (!message.role || !['user', 'assistant', 'system'].includes(message.role)) {
-        throw new Error('Invalid message role');
+      if (
+        !message.role || !["user", "assistant", "system"].includes(message.role)
+      ) {
+        throw new Error("Invalid message role");
       }
-      if (!message.content || typeof message.content !== 'string') {
-        throw new Error('Message content is required and must be a string');
+      if (!message.content || typeof message.content !== "string") {
+        throw new Error("Message content is required and must be a string");
       }
     }
 
-    if (request.model && !this.config.models.find(m => m.name === request.model)) {
+    if (
+      request.model && !this.config.models.find((m) => m.name === request.model)
+    ) {
       throw new Error(`Invalid model: ${request.model}`);
     }
 
-    if (request.maxTokens && (request.maxTokens < 1 || request.maxTokens > 4096)) {
-      throw new Error('maxTokens must be between 1 and 4096');
+    if (
+      request.maxTokens && (request.maxTokens < 1 || request.maxTokens > 4096)
+    ) {
+      throw new Error("maxTokens must be between 1 and 4096");
     }
 
-    if (request.temperature && (request.temperature < 0 || request.temperature > 1)) {
-      throw new Error('temperature must be between 0 and 1');
+    if (
+      request.temperature &&
+      (request.temperature < 0 || request.temperature > 1)
+    ) {
+      throw new Error("temperature must be between 0 and 1");
     }
   }
 }

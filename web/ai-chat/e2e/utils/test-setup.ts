@@ -37,7 +37,7 @@ export function createTestConfig(): TestConfig {
   return {
     port,
     aiApiUrl: `http://localhost:${port}`,
-    timeout: 30000
+    timeout: 30000,
   };
 }
 
@@ -46,23 +46,25 @@ export function createTestConfig(): TestConfig {
  */
 export function setupTestEnvironment(config: TestConfig): void {
   // Set test environment variables
-  Deno.env.set('NODE_ENV', 'test');
-  Deno.env.set('PORT', config.port.toString());
-  Deno.env.set('OPENAI_API_KEY', 'test-openai-key');
-  Deno.env.set('GOOGLE_GENERATIVE_AI_API_KEY', 'test-google-key');
-  Deno.env.set('OPENROUTER_API_KEY', 'test-openrouter-key');
+  Deno.env.set("NODE_ENV", "test");
+  Deno.env.set("PORT", config.port.toString());
+  Deno.env.set("OPENAI_API_KEY", "test-openai-key");
+  Deno.env.set("GOOGLE_GENERATIVE_AI_API_KEY", "test-google-key");
+  Deno.env.set("OPENROUTER_API_KEY", "test-openrouter-key");
 }
 
 /**
  * Setup server and client for testing using in-process server
  */
-export async function setupServerAndClient(config: TestConfig): Promise<TestEnvironment> {
+export async function setupServerAndClient(
+  config: TestConfig,
+): Promise<TestEnvironment> {
   // Start the AI API server in the same process
   const server = await startServer();
-  
+
   // Give server time to start
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
+  await new Promise((resolve) => setTimeout(resolve, 200));
+
   // Create clients
   const client = createAIClient(config.aiApiUrl);
   const aiClient = createSimpleClient(config.aiApiUrl, config.timeout);
@@ -71,7 +73,7 @@ export async function setupServerAndClient(config: TestConfig): Promise<TestEnvi
     try {
       await server.stop();
     } catch (error) {
-      console.warn('Error during server cleanup:', error);
+      console.warn("Error during server cleanup:", error);
     }
   };
 
@@ -81,77 +83,109 @@ export async function setupServerAndClient(config: TestConfig): Promise<TestEnvi
 /**
  * Create a mock scenario for successful AI responses
  */
-import type { RequestContext, RequestMetadata } from './external-mock.ts';
-import { RequestAnalyzer } from './external-mock.ts';
+import type { RequestContext, RequestMetadata } from "./external-mock.ts";
+import { RequestAnalyzer } from "./external-mock.ts";
 
-export function createSuccessfulAIScenario(responseContent: string = "Hello! How can I help you today?") {
+export function createSuccessfulAIScenario(
+  responseContent: string = "Hello! How can I help you today?",
+) {
   return {
     name: "Successful AI response",
-    isRequestExpected: (_context: RequestContext, metadata: RequestMetadata) => {
+    isRequestExpected: (
+      _context: RequestContext,
+      metadata: RequestMetadata,
+    ) => {
+      return metadata.isExternalApi &&
+        ["openai", "google", "openrouter"].includes(metadata.service);
     },
     generateResponse: (context: RequestContext, metadata: RequestMetadata) => {
-      const response = RequestAnalyzer.generateSuccessResponse(context, metadata);
+      const response = RequestAnalyzer.generateSuccessResponse(
+        context,
+        metadata,
+      );
 
       // Customize response content based on service
+      // deno-lint-ignore no-explicit-any
+      const body = response.body as any;
       switch (metadata.service) {
-        case 'openai':
-          response.body.choices[0].message.content = responseContent;
+        case "openai":
+          body.choices[0].message.content = responseContent;
           break;
-        case 'google':
-          response.body.candidates[0].content.parts[0].text = responseContent;
+        case "google":
+          body.candidates[0].content.parts[0].text = responseContent;
           break;
-        case 'openrouter':
-          response.body.choices[0].message.content = responseContent;
+        case "openrouter":
+          body.choices[0].message.content = responseContent;
           break;
       }
 
       return response;
-    }
+    },
   };
 }
 
 /**
  * Create a mock scenario for AI service errors
  */
-export function createErrorAIScenario(errorType: string = 'rate_limit') {
+export function createErrorAIScenario(errorType: string = "rate_limit") {
   return {
     name: "AI service error",
-    isRequestExpected: (_context: RequestContext, metadata: RequestMetadata) => {
-      return metadata.isExternalApi && ['openai', 'google', 'openrouter'].includes(metadata.service);
+    isRequestExpected: (
+      _context: RequestContext,
+      metadata: RequestMetadata,
+    ) => {
+      return metadata.isExternalApi &&
+        ["openai", "google", "openrouter"].includes(metadata.service);
     },
     generateResponse: (context: RequestContext, metadata: RequestMetadata) => {
-      return RequestAnalyzer.generateErrorResponse(context, metadata, errorType);
-    }
+      return RequestAnalyzer.generateErrorResponse(
+        context,
+        metadata,
+        errorType,
+      );
+    },
   };
 }
 
 /**
  * Create a mock scenario with network delays
  */
-export function createSlowAIScenario(delay: number = 2000, responseContent: string = "Hello! How can I help you today?") {
+export function createSlowAIScenario(
+  delay: number = 2000,
+  responseContent: string = "Hello! How can I help you today?",
+) {
   return {
     name: "Slow AI response",
-    isRequestExpected: (_context: RequestContext, metadata: RequestMetadata) => {
-      return metadata.isExternalApi && ['openai', 'google', 'openrouter'].includes(metadata.service);
+    isRequestExpected: (
+      _context: RequestContext,
+      metadata: RequestMetadata,
+    ) => {
+      return metadata.isExternalApi &&
+        ["openai", "google", "openrouter"].includes(metadata.service);
     },
     generateResponse: (context: RequestContext, metadata: RequestMetadata) => {
-      const response = RequestAnalyzer.generateSuccessResponse(context, metadata);
+      const response = RequestAnalyzer.generateSuccessResponse(
+        context,
+        metadata,
+      );
       response.delay = delay;
 
       // Customize response content
+      // deno-lint-ignore no-explicit-any
+      const body = response.body as any;
       switch (metadata.service) {
-        case 'openai':
-          response.body.choices[0].message.content = responseContent;
+        case "openai":
+          body.choices[0].message.content = responseContent;
           break;
-        case 'google':
-          response.body.candidates[0].content.parts[0].text = responseContent;
+        case "google":
+          body.candidates[0].content.parts[0].text = responseContent;
           break;
-        case 'openrouter':
-          response.body.choices[0].message.content = responseContent;
+        case "openrouter":
+          body.choices[0].message.content = responseContent;
           break;
       }
 
       return response;
-    }
+    },
   };
 }

@@ -8,7 +8,7 @@
  */
 export interface Message {
   /** The role of the message sender */
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   /** The content of the message */
   content: string;
 }
@@ -114,7 +114,7 @@ export interface ClientConfig {
  */
 export interface HealthResponse {
   /** Service status */
-  status: 'healthy' | 'unhealthy';
+  status: "healthy" | "unhealthy";
   /** Timestamp of the check */
   timestamp: string;
   /** Available models */

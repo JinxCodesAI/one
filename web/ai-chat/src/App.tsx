@@ -7,7 +7,7 @@ import { ChatContainer } from "./components/ChatContainer.tsx";
 import { ModelSelector } from "./components/ModelSelector.tsx";
 import { Header } from "./components/Header.tsx";
 import { useChat } from "./hooks/useChat.ts";
-import './App.css';
+import "./App.css";
 
 export default function App(): React.ReactElement {
   const {
@@ -21,8 +21,8 @@ export default function App(): React.ReactElement {
     changeModel,
     retryLastMessage,
   } = useChat({
-    initialModel: 'gpt-4.1-nano',
-    maxMessages: 50
+    initialModel: "gpt-4.1-nano",
+    maxMessages: 50,
   });
 
   const dismissError = (): void => {

@@ -13,7 +13,7 @@
 
 /// <reference lib="deno.ns" />
 
-import { chromium, type Browser, type Page } from "playwright";
+import { type Browser, chromium, type Locator, type Page } from "playwright";
 import type { FetchMockManager, MockScenario } from "./fetch-mock.ts";
 import type { TestServer } from "./server-setup.ts";
 
@@ -26,11 +26,11 @@ export interface UITestConfig {
   webAppPort: number;
   apiServerUrl: string;
   webAppUrl: string;
-  
+
   // Browser configuration
   timeout: number;
   headless: boolean;
-  
+
   // Optional custom configuration
   customEnvVars?: Record<string, string>;
 }
@@ -53,17 +53,22 @@ export interface UITestEnvironment<TServer extends TestServer = TestServer> {
 /**
  * Web application startup function type
  */
-export type WebAppStartupFunction = (config: UITestConfig) => Promise<Deno.ChildProcess>;
+export type WebAppStartupFunction = (
+  config: UITestConfig,
+) => Promise<Deno.ChildProcess>;
 
 /**
  * API server startup function type
  */
-export type APIServerStartupFunction<TServer extends TestServer = TestServer> = () => Promise<TServer>;
+export type APIServerStartupFunction<TServer extends TestServer = TestServer> =
+  () => Promise<TServer>;
 
 /**
  * Create UI test configuration with unique ports
  */
-export function createUITestConfig(overrides: Partial<UITestConfig> = {}): UITestConfig {
+export function createUITestConfig(
+  overrides: Partial<UITestConfig> = {},
+): UITestConfig {
   const apiServerPort = 8000 + Math.floor(Math.random() * 1000);
   const webAppPort = 5173; // Default Vite port, can be overridden
 
@@ -74,7 +79,7 @@ export function createUITestConfig(overrides: Partial<UITestConfig> = {}): UITes
     webAppUrl: `http://localhost:${webAppPort}`,
     timeout: 30000,
     headless: true, // Set to false to see browser during development
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -83,18 +88,18 @@ export function createUITestConfig(overrides: Partial<UITestConfig> = {}): UITes
  */
 export function setupUITestEnvironment(config: UITestConfig): void {
   // Set test environment variables for API server
-  Deno.env.set('NODE_ENV', 'test');
-  Deno.env.set('PORT', config.apiServerPort.toString());
-  
+  Deno.env.set("NODE_ENV", "test");
+  Deno.env.set("PORT", config.apiServerPort.toString());
+
   // Set common AI provider API keys for testing
-  Deno.env.set('OPENAI_API_KEY', 'test-openai-key');
-  Deno.env.set('GOOGLE_GENERATIVE_AI_API_KEY', 'test-google-key');
-  Deno.env.set('OPENROUTER_API_KEY', 'test-openrouter-key');
-  Deno.env.set('ANTHROPIC_API_KEY', 'test-anthropic-key');
-  
+  Deno.env.set("OPENAI_API_KEY", "test-openai-key");
+  Deno.env.set("GOOGLE_GENERATIVE_AI_API_KEY", "test-google-key");
+  Deno.env.set("OPENROUTER_API_KEY", "test-openrouter-key");
+  Deno.env.set("ANTHROPIC_API_KEY", "test-anthropic-key");
+
   // Set environment variables for web app
-  Deno.env.set('VITE_AI_API_URL', config.apiServerUrl);
-  
+  Deno.env.set("VITE_AI_API_URL", config.apiServerUrl);
+
   // Set any custom environment variables
   if (config.customEnvVars) {
     for (const [key, value] of Object.entries(config.customEnvVars)) {
@@ -106,13 +111,15 @@ export function setupUITestEnvironment(config: UITestConfig): void {
 /**
  * Default web application startup function using Deno task
  */
-export async function defaultWebAppStartup(config: UITestConfig): Promise<Deno.ChildProcess> {
+export async function defaultWebAppStartup(
+  config: UITestConfig,
+): Promise<Deno.ChildProcess> {
   console.log(`Starting web application on port ${config.webAppPort}...`);
 
   const webServerCommand = new Deno.Command("deno", {
     args: ["task", "dev"],
     stdout: "piped",
-    stderr: "piped"
+    stderr: "piped",
   });
 
   const webServerProcess = webServerCommand.spawn();
@@ -126,9 +133,12 @@ export async function defaultWebAppStartup(config: UITestConfig): Promise<Deno.C
 /**
  * Wait for web server to be ready
  */
-export async function waitForWebServer(url: string, timeout: number): Promise<void> {
+export async function waitForWebServer(
+  url: string,
+  timeout: number,
+): Promise<void> {
   const startTime = Date.now();
-  
+
   while (Date.now() - startTime < timeout) {
     try {
       const response = await fetch(url);
@@ -140,59 +150,62 @@ export async function waitForWebServer(url: string, timeout: number): Promise<vo
     } catch {
       // Server not ready yet
     }
-    
-    await new Promise(resolve => setTimeout(resolve, 500));
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
   }
-  
+
   throw new Error(`Web server failed to start within ${timeout}ms`);
 }
 
 /**
  * Setup browser for UI testing
  */
-export async function setupBrowser(config: UITestConfig): Promise<{ browser: Browser, page: Page }> {
-  console.log('Starting browser...');
-  
-  const browser = await chromium.launch({ 
+export async function setupBrowser(
+  config: UITestConfig,
+): Promise<{ browser: Browser; page: Page }> {
+  console.log("Starting browser...");
+
+  const browser = await chromium.launch({
     headless: config.headless,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'] // For CI environments
+    args: ["--no-sandbox", "--disable-setuid-sandbox"], // For CI environments
   });
-  
+
   const page = await browser.newPage();
-  
+
   // Set viewport size
   await page.setViewportSize({ width: 1280, height: 720 });
-  
+
   // Set longer timeout for UI interactions
   page.setDefaultTimeout(config.timeout);
-  
+
   return { browser, page };
 }
 
 /**
  * Setup complete UI test environment
  */
-export async function createUITestEnvironment<TServer extends TestServer = TestServer>(
+export async function createUITestEnvironment<
+  TServer extends TestServer = TestServer,
+>(
   apiServerStartup: APIServerStartupFunction<TServer>,
   mockScenario: MockScenario,
   config: UITestConfig = createUITestConfig(),
-  webAppStartup: WebAppStartupFunction = defaultWebAppStartup
+  webAppStartup: WebAppStartupFunction = defaultWebAppStartup,
 ): Promise<UITestEnvironment<TServer>> {
-  
   setupUITestEnvironment(config);
-  
+
   // 1. Setup mocking for external APIs (must be done before server startup)
   const { FetchMockManager } = await import("./fetch-mock.ts");
   const mockManager = new FetchMockManager(mockScenario);
   mockManager.start();
-  
+
   // 2. Start API server in-process
-  console.log('Starting API server...');
+  console.log("Starting API server...");
   const apiServer = await apiServerStartup();
-  
+
   // 3. Start web application server
   const webServerProcess = await webAppStartup(config);
-  
+
   // 4. Setup browser
   const { browser, page } = await setupBrowser(config);
 
@@ -200,12 +213,12 @@ export async function createUITestEnvironment<TServer extends TestServer = TestS
   const consoleErrors: string[] = [];
   const pageErrors: string[] = [];
 
-  console.log('Setting up console error detection...');
+  console.log("Setting up console error detection...");
 
   // Listen for console messages
-  page.on('console', (msg) => {
+  page.on("console", (msg) => {
     console.log(`[CONSOLE] ${msg.text()}`);
-    if (msg.type() === 'error') {
+    if (msg.type() === "error") {
       const errorText = msg.text();
       consoleErrors.push(errorText);
       console.error(`Console error detected: ${errorText}`);
@@ -214,7 +227,7 @@ export async function createUITestEnvironment<TServer extends TestServer = TestS
   });
 
   // Listen for unhandled page errors (like uncaught exceptions)
-  page.on('pageerror', (error) => {
+  page.on("pageerror", (error) => {
     const errorText = error.message;
     pageErrors.push(errorText);
     console.error(`Page error detected: ${errorText}`);
@@ -226,7 +239,7 @@ export async function createUITestEnvironment<TServer extends TestServer = TestS
   // 6. Navigate to the application and check for console errors
   console.log(`Navigating to ${config.webAppUrl}...`);
   await page.goto(config.webAppUrl);
-  console.log('Waiting for console errors...');
+  console.log("Waiting for console errors...");
 
   // Wait longer for any console errors to appear (React errors can take time)
   await page.waitForTimeout(5000);
@@ -234,29 +247,35 @@ export async function createUITestEnvironment<TServer extends TestServer = TestS
   // Log all errors for debugging
   const allErrors = [...consoleErrors, ...pageErrors];
   if (allErrors.length > 0) {
-    console.log(`Errors detected - Console: ${consoleErrors.length}, Page: ${pageErrors.length}`);
-    console.log('All errors:', allErrors);
+    console.log(
+      `Errors detected - Console: ${consoleErrors.length}, Page: ${pageErrors.length}`,
+    );
+    console.log("All errors:", allErrors);
   }
 
   // Check for critical errors that indicate loading failures
-  const criticalErrors = allErrors.filter(error =>
-    error.includes('TypeError') ||
-    error.includes('ReferenceError') ||
-    error.includes('is undefined') ||
-    error.includes('Cannot read') ||
-    error.includes('Failed to fetch') ||
-    error.includes('Network error') ||
-    error.includes('ReactSharedInternals') ||
-    error.includes('Uncaught')
+  const criticalErrors = allErrors.filter((error) =>
+    error.includes("TypeError") ||
+    error.includes("ReferenceError") ||
+    error.includes("is undefined") ||
+    error.includes("Cannot read") ||
+    error.includes("Failed to fetch") ||
+    error.includes("Network error") ||
+    error.includes("ReactSharedInternals") ||
+    error.includes("Uncaught")
   );
 
   if (criticalErrors.length > 0) {
-    throw new Error(`Website loading failed with critical errors: ${criticalErrors.join('; ')}`);
+    throw new Error(
+      `Website loading failed with critical errors: ${
+        criticalErrors.join("; ")
+      }`,
+    );
   }
-  
+
   const cleanup = async () => {
     try {
-      console.log('Cleaning up UI test environment...');
+      console.log("Cleaning up UI test environment...");
 
       // Close browser
       await browser.close();
@@ -274,11 +293,10 @@ export async function createUITestEnvironment<TServer extends TestServer = TestS
         await webServerProcess.stderr.cancel();
         await webServerProcess.status;
       } catch (error) {
-        console.warn('Error stopping web server:', error);
+        console.warn("Error stopping web server:", error);
       }
-
     } catch (error) {
-      console.warn('Error during UI test cleanup:', error);
+      console.warn("Error during UI test cleanup:", error);
     }
   };
 
@@ -291,7 +309,7 @@ export async function createUITestEnvironment<TServer extends TestServer = TestS
     config,
     consoleErrors,
     pageErrors,
-    cleanup
+    cleanup,
   };
 }
 
@@ -299,46 +317,57 @@ export async function createUITestEnvironment<TServer extends TestServer = TestS
  * UI Test helper functions for common interactions
  */
 export class UITestHelpers {
-  
   /**
    * Wait for element to be visible and return it
    * Also checks for console errors before waiting
    */
-  static async waitForElement(page: Page, selector: string, timeout = 10000, consoleErrors?: string[]) {
+  static async waitForElement(
+    page: Page,
+    selector: string,
+    timeout = 10000,
+    consoleErrors?: string[],
+  ): Promise<Locator> {
     // Check for console errors if provided
     if (consoleErrors) {
       this.checkConsoleErrors(consoleErrors, true);
     }
 
-    await page.waitForSelector(selector, { state: 'visible', timeout });
+    await page.waitForSelector(selector, { state: "visible", timeout });
     return page.locator(selector);
   }
 
   /**
    * Check for console errors and throw if critical errors are found
    */
-  static checkConsoleErrors(consoleErrors: string[], throwOnError = true): string[] {
-    const criticalErrors = consoleErrors.filter(error =>
-      error.includes('TypeError') ||
-      error.includes('ReferenceError') ||
-      error.includes('is undefined') ||
-      error.includes('Cannot read') ||
-      error.includes('Failed to fetch') ||
-      error.includes('Network error') ||
-      error.includes('ReactSharedInternals') ||
-      error.includes('Uncaught')
+  static checkConsoleErrors(
+    consoleErrors: string[],
+    throwOnError = true,
+  ): string[] {
+    const criticalErrors = consoleErrors.filter((error) =>
+      error.includes("TypeError") ||
+      error.includes("ReferenceError") ||
+      error.includes("is undefined") ||
+      error.includes("Cannot read") ||
+      error.includes("Failed to fetch") ||
+      error.includes("Network error") ||
+      error.includes("ReactSharedInternals") ||
+      error.includes("Uncaught")
     );
 
     if (criticalErrors.length > 0) {
-      console.error(`Critical console errors detected: ${criticalErrors.join('; ')}`);
+      console.error(
+        `Critical console errors detected: ${criticalErrors.join("; ")}`,
+      );
       if (throwOnError) {
-        throw new Error(`Website has critical console errors: ${criticalErrors.join('; ')}`);
+        throw new Error(
+          `Website has critical console errors: ${criticalErrors.join("; ")}`,
+        );
       }
     }
 
     return criticalErrors;
   }
-  
+
   /**
    * Type text into an input field
    */
@@ -346,7 +375,7 @@ export class UITestHelpers {
     const element = await this.waitForElement(page, selector);
     await element.fill(text);
   }
-  
+
   /**
    * Click an element
    */
@@ -354,7 +383,7 @@ export class UITestHelpers {
     const element = await this.waitForElement(page, selector);
     await element.click();
   }
-  
+
   /**
    * Select option from dropdown
    */
@@ -362,33 +391,42 @@ export class UITestHelpers {
     const element = await this.waitForElement(page, selector);
     await element.selectOption(value);
   }
-  
+
   /**
    * Get text content of an element
    */
   static async getTextContent(page: Page, selector: string): Promise<string> {
     const element = await this.waitForElement(page, selector);
-    return await element.textContent() || '';
+    return await element.textContent() || "";
   }
-  
+
   /**
    * Wait for message to appear in chat (generic selector)
    */
-  static async waitForMessage(page: Page, role: 'user' | 'assistant', timeout = 10000) {
-    await page.waitForSelector(`[data-testid^="message-"][data-role="${role}"]`, { timeout });
+  static async waitForMessage(
+    page: Page,
+    role: "user" | "assistant",
+    timeout = 10000,
+  ) {
+    await page.waitForSelector(
+      `[data-testid^="message-"][data-role="${role}"]`,
+      { timeout },
+    );
   }
-  
+
   /**
    * Get all messages from chat (generic selector)
    */
-  static async getAllMessages(page: Page) {
+  static async getAllMessages(
+    page: Page,
+  ): Promise<Array<{ role: string; content: string }>> {
     const messages = await page.locator('[data-testid^="message-"]').all();
     const result = [];
 
     for (const message of messages) {
-      const role = await message.getAttribute('data-role');
+      const role = await message.getAttribute("data-role");
       const content = await message.textContent();
-      if(role && content) {
+      if (role && content) {
         result.push({ role, content });
       }
     }
@@ -402,37 +440,44 @@ export class UITestHelpers {
   static async clearConversation(page: Page) {
     try {
       // Look for the Clear Chat button and click it
-      await page.locator('text=Clear Chat').click();
+      await page.locator("text=Clear Chat").click();
 
       // Wait a moment for the clear action to complete
       await page.waitForTimeout(500);
 
       // Verify the conversation was cleared by checking if welcome message appears
-      await page.waitForSelector('text=Start a conversation by typing a message below', { timeout: 5000 });
+      await page.waitForSelector(
+        "text=Start a conversation by typing a message below",
+        { timeout: 5000 },
+      );
     } catch (error) {
-      console.warn('Could not clear conversation:', error);
+      console.warn("Could not clear conversation:", error);
     }
   }
-  
+
   /**
    * Wait for loading state to appear and disappear
    */
-  static async waitForLoadingComplete(page: Page, loadingSelector: string = '[data-testid="loading"]', timeout = 10000) {
+  static async waitForLoadingComplete(
+    page: Page,
+    loadingSelector: string = '[data-testid="loading"]',
+    timeout = 10000,
+  ) {
     try {
       // Wait for loading to appear
       await page.waitForSelector(loadingSelector, { timeout: 2000 });
       // Wait for loading to disappear
-      await page.waitForSelector(loadingSelector, { state: 'hidden', timeout });
+      await page.waitForSelector(loadingSelector, { state: "hidden", timeout });
     } catch {
       // Loading might be too fast to detect, which is fine
     }
   }
-  
+
   /**
    * Take screenshot for debugging
    */
-  static async takeScreenshot(page: Page, name: string = 'debug') {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  static async takeScreenshot(page: Page, name: string = "debug") {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const filename = `screenshot-${name}-${timestamp}.png`;
     await page.screenshot({ path: filename, fullPage: true });
     console.log(`Screenshot saved: ${filename}`);

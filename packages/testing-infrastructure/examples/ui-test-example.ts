@@ -1,6 +1,6 @@
 /**
  * UI E2E Test Example
- * 
+ *
  * This example shows how to set up UI E2E tests using the shared testing
  * infrastructure. It demonstrates:
  * - Browser automation setup
@@ -9,23 +9,24 @@
  * - Screenshot capture for debugging
  */
 
-import { describe, it, before, after } from "@std/testing/bdd";
+import { after, before, describe, it } from "@std/testing/bdd";
 import { assertEquals, assertExists } from "@std/assert";
-import { 
-  createUITestEnvironment,
-  createUITestConfig,
+import {
   createUISuccessScenario,
+  createUITestConfig,
+  createUITestEnvironment,
+  type UITestEnvironment,
   UITestHelpers,
-  type UITestEnvironment
 } from "@one/testing-infrastructure";
 
 // These would be imported from your actual project
 // import { startServer } from "../path/to/your/api-server.ts";
 
 // Mock server implementation for this example
-const startServer = async () => ({
-  stop: async () => console.log('API Server stopped')
-});
+const startServer = () =>
+  Promise.resolve({
+    stop: () => Promise.resolve(console.log("API Server stopped")),
+  });
 
 describe("UI E2E Test Example", () => {
   let testEnv: UITestEnvironment;
@@ -36,25 +37,25 @@ describe("UI E2E Test Example", () => {
       headless: true, // Set to false to see browser during development
       timeout: 30000,
       customEnvVars: {
-        'FEATURE_FLAG_CHAT': 'enabled'
-      }
+        "FEATURE_FLAG_CHAT": "enabled",
+      },
     });
 
     // 2. Create UI success scenario with model-specific responses
     const scenario = createUISuccessScenario(
       "Hello! This is GPT-4.1-nano responding to your message.",
       "Hello! This is Gemini-2.5-flash responding to your message.",
-      "Hello! This is Claude-3.5-sonnet responding to your message."
+      "Hello! This is Claude-3.5-sonnet responding to your message.",
     );
 
     // 3. Setup the complete UI test environment
     testEnv = await createUITestEnvironment(
       startServer,
       scenario,
-      config
+      config,
     );
 
-    console.log('UI test environment ready!');
+    console.log("UI test environment ready!");
   });
 
   after(async () => {
@@ -65,7 +66,10 @@ describe("UI E2E Test Example", () => {
     const { page } = testEnv;
 
     // Check if the main elements are present
-    await UITestHelpers.waitForElement(page, 'text=Start a conversation by typing a message below');
+    await UITestHelpers.waitForElement(
+      page,
+      "text=Start a conversation by typing a message below",
+    );
     await UITestHelpers.waitForElement(page, '[data-testid="model-selector"]');
     await UITestHelpers.waitForElement(page, '[data-testid="message-input"]');
     await UITestHelpers.waitForElement(page, '[data-testid="send-button"]');
@@ -77,24 +81,28 @@ describe("UI E2E Test Example", () => {
     const { page } = testEnv;
 
     // Type a message
-    await UITestHelpers.typeText(page, '[data-testid="message-input"]', 'Hello, how are you?');
+    await UITestHelpers.typeText(
+      page,
+      '[data-testid="message-input"]',
+      "Hello, how are you?",
+    );
 
     // Click send button
     await UITestHelpers.clickElement(page, '[data-testid="send-button"]');
 
     // Wait for assistant response
-    await UITestHelpers.waitForMessage(page, 'assistant');
+    await UITestHelpers.waitForMessage(page, "assistant");
 
     // Get all messages and verify
     const messages = await UITestHelpers.getAllMessages(page);
     assertEquals(messages.length >= 2, true); // User message + assistant response
 
-    const userMessage = messages.find(m => m.role === 'user');
-    const assistantMessage = messages.find(m => m.role === 'assistant');
+    const userMessage = messages.find((m) => m.role === "user");
+    const assistantMessage = messages.find((m) => m.role === "assistant");
 
     assertExists(userMessage);
     assertExists(assistantMessage);
-    assertEquals(userMessage.content.includes('Hello, how are you?'), true);
+    assertEquals(userMessage.content.includes("Hello, how are you?"), true);
 
     console.log("✅ Message exchange completed successfully!");
   });
@@ -106,29 +114,45 @@ describe("UI E2E Test Example", () => {
     await UITestHelpers.clearConversation(page);
 
     // Test OpenAI model
-    await UITestHelpers.selectOption(page, '[data-testid="model-selector"]', 'gpt-4.1-nano');
-    await UITestHelpers.typeText(page, '[data-testid="message-input"]', 'Test OpenAI');
+    await UITestHelpers.selectOption(
+      page,
+      '[data-testid="model-selector"]',
+      "gpt-4.1-nano",
+    );
+    await UITestHelpers.typeText(
+      page,
+      '[data-testid="message-input"]',
+      "Test OpenAI",
+    );
     await UITestHelpers.clickElement(page, '[data-testid="send-button"]');
-    await UITestHelpers.waitForMessage(page, 'assistant');
+    await UITestHelpers.waitForMessage(page, "assistant");
 
     let messages = await UITestHelpers.getAllMessages(page);
-    let assistantMessage = messages.find(m => m.role === 'assistant');
+    let assistantMessage = messages.find((m) => m.role === "assistant");
     assertExists(assistantMessage);
-    assertEquals(assistantMessage.content.includes('GPT-4.1-nano'), true);
+    assertEquals(assistantMessage.content.includes("GPT-4.1-nano"), true);
 
     // Clear conversation
     await UITestHelpers.clearConversation(page);
 
     // Test Google model
-    await UITestHelpers.selectOption(page, '[data-testid="model-selector"]', 'gemini-2.5-flash');
-    await UITestHelpers.typeText(page, '[data-testid="message-input"]', 'Test Google');
+    await UITestHelpers.selectOption(
+      page,
+      '[data-testid="model-selector"]',
+      "gemini-2.5-flash",
+    );
+    await UITestHelpers.typeText(
+      page,
+      '[data-testid="message-input"]',
+      "Test Google",
+    );
     await UITestHelpers.clickElement(page, '[data-testid="send-button"]');
-    await UITestHelpers.waitForMessage(page, 'assistant');
+    await UITestHelpers.waitForMessage(page, "assistant");
 
     messages = await UITestHelpers.getAllMessages(page);
-    assistantMessage = messages.find(m => m.role === 'assistant');
+    assistantMessage = messages.find((m) => m.role === "assistant");
     assertExists(assistantMessage);
-    assertEquals(assistantMessage.content.includes('Gemini-2.5-flash'), true);
+    assertEquals(assistantMessage.content.includes("Gemini-2.5-flash"), true);
 
     console.log("✅ Multiple model testing completed!");
   });
@@ -140,14 +164,18 @@ describe("UI E2E Test Example", () => {
     await UITestHelpers.clearConversation(page);
 
     // Send message and check for loading state
-    await UITestHelpers.typeText(page, '[data-testid="message-input"]', 'Test loading');
+    await UITestHelpers.typeText(
+      page,
+      '[data-testid="message-input"]',
+      "Test loading",
+    );
     await UITestHelpers.clickElement(page, '[data-testid="send-button"]');
 
     // Wait for loading to complete
     await UITestHelpers.waitForLoadingComplete(page);
 
     // Verify response appeared
-    await UITestHelpers.waitForMessage(page, 'assistant');
+    await UITestHelpers.waitForMessage(page, "assistant");
 
     console.log("✅ Loading state handling verified!");
   });
@@ -156,7 +184,7 @@ describe("UI E2E Test Example", () => {
     const { page } = testEnv;
 
     // Take a screenshot of the current state
-    await UITestHelpers.takeScreenshot(page, 'final-state');
+    await UITestHelpers.takeScreenshot(page, "final-state");
 
     console.log("✅ Screenshot captured for debugging!");
   });

@@ -2,15 +2,15 @@
  * Custom hook for managing chat state and functionality
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { aiClient } from "../services/aiClient.ts";
-import type { Message, ChatOptions, UseChatReturn } from "../types.ts";
+import type { ChatOptions, Message, UseChatReturn } from "../types.ts";
 
 /**
  * Custom hook for chat functionality
  */
 export function useChat(options: ChatOptions = {}): UseChatReturn {
-  const { initialModel = 'gpt-4.1-nano', maxMessages = 100 } = options;
+  const { initialModel = "gpt-4.1-nano", maxMessages = 100 } = options;
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedModel, setSelectedModel] = useState(initialModel);
@@ -37,8 +37,8 @@ export function useChat(options: ChatOptions = {}): UseChatReturn {
         setSelectedModel(models[0]);
       }
     } catch (error) {
-      console.error('Failed to load models:', error);
-      setError('Failed to load available models');
+      console.error("Failed to load models:", error);
+      setError("Failed to load available models");
     }
   }, [selectedModel]);
 
@@ -49,50 +49,52 @@ export function useChat(options: ChatOptions = {}): UseChatReturn {
     if (!content.trim() || isLoading) return;
 
     const userMessage: Message = {
-      role: 'user',
+      role: "user",
       content: content.trim(),
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
     setError(null);
     setLastUserMessage(content.trim());
 
     try {
       const allMessages = [...messages, userMessage];
-      
+
       // Limit conversation history to prevent token limits
       const recentMessages = allMessages.slice(-maxMessages);
-      
+
       const response = await aiClient.generateText(
         recentMessages,
         selectedModel,
         {
           maxTokens: 2000,
-          temperature: 0.7
-        }
+          temperature: 0.7,
+        },
       );
 
       const assistantMessage: Message = {
-        role: 'assistant',
+        role: "assistant",
         content: response.content,
         timestamp: new Date(),
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Error sending message:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to send message';
+      console.error("Error sending message:", error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "Failed to send message";
       setError(errorMessage);
-      
+
       // Add error message to chat
       const errorChatMessage: Message = {
-        role: 'system',
+        role: "system",
         content: `Error: ${errorMessage}`,
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorChatMessage]);
+      setMessages((prev) => [...prev, errorChatMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -120,16 +122,19 @@ export function useChat(options: ChatOptions = {}): UseChatReturn {
    */
   const retryLastMessage = useCallback(async () => {
     if (!lastUserMessage) return;
-    
+
     // Remove the last assistant message if it exists and was an error
-    setMessages(prev => {
+    setMessages((prev) => {
       const lastMessage = prev[prev.length - 1];
-      if (lastMessage && (lastMessage.role === 'assistant' || lastMessage.role === 'system')) {
+      if (
+        lastMessage &&
+        (lastMessage.role === "assistant" || lastMessage.role === "system")
+      ) {
         return prev.slice(0, -1);
       }
       return prev;
     });
-    
+
     await sendMessage(lastUserMessage);
   }, [lastUserMessage, sendMessage]);
 

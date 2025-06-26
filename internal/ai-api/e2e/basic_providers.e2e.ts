@@ -7,14 +7,18 @@
  * Migrated to use shared testing infrastructure from @one/testing-infrastructure
  */
 
-import { describe, it, before } from "@std/testing/bdd";
+import { before, describe, it } from "@std/testing/bdd";
 import { assertEquals, assertExists } from "@std/assert";
 import {
-  FetchMockManager,
+  createNoExternalRequestsScenario,
   createSingleProviderSuccessScenario,
-  createNoExternalRequestsScenario
+  FetchMockManager,
 } from "@one/testing-infrastructure";
-import { setupTestEnvironment, setupServerAndClient, createTestConfig } from "./utils/test-setup.ts";
+import {
+  createTestConfig,
+  setupServerAndClient,
+  setupTestEnvironment,
+} from "./utils/test-setup.ts";
 
 describe("E2E Basic: OpenAI Provider", () => {
   const OPENAI_RESPONSE_CONTENT = "Hello! This is a mocked OpenAI response.";
@@ -24,15 +28,19 @@ describe("E2E Basic: OpenAI Provider", () => {
 
   before(() => {
     // Create scenario with custom response content and token count
-    const scenario = createSingleProviderSuccessScenario('openai', OPENAI_RESPONSE_CONTENT);
+    const scenario = createSingleProviderSuccessScenario(
+      "openai",
+      OPENAI_RESPONSE_CONTENT,
+    );
 
     // Customize the scenario to set specific token count
     const originalGenerateResponse = scenario.generateResponse;
     scenario.generateResponse = (context, metadata) => {
       const response = originalGenerateResponse(context, metadata);
       const body = response.body as Record<string, unknown>;
-      if (body.usage && typeof body.usage === 'object') {
-        (body.usage as Record<string, unknown>).total_tokens = EXPECTED_TOTAL_TOKENS;
+      if (body.usage && typeof body.usage === "object") {
+        (body.usage as Record<string, unknown>).total_tokens =
+          EXPECTED_TOTAL_TOKENS;
       }
       if (body.id) {
         body.id = "chatcmpl-test123";
@@ -52,7 +60,7 @@ describe("E2E Basic: OpenAI Provider", () => {
     try {
       const response = await client.generateText({
         messages: [{ role: "user", content: "Hello, how are you?" }],
-        model: "gpt-4.1-nano"
+        model: "gpt-4.1-nano",
       });
 
       assertExists(response);
@@ -61,7 +69,6 @@ describe("E2E Basic: OpenAI Provider", () => {
       assertEquals(response.model, "gpt-4.1-nano");
       assertExists(response.usage);
       assertEquals(response.usage?.totalTokens, EXPECTED_TOTAL_TOKENS);
-
     } finally {
       await cleanup();
       mockManager.stop();
@@ -70,22 +77,27 @@ describe("E2E Basic: OpenAI Provider", () => {
 });
 
 describe("E2E Basic: Google Provider", () => {
-  const GOOGLE_RESPONSE_CONTENT = "Hello! This is a mocked Google Gemini response.";
+  const GOOGLE_RESPONSE_CONTENT =
+    "Hello! This is a mocked Google Gemini response.";
   const EXPECTED_TOTAL_TOKENS = 18;
 
   let mockManager: FetchMockManager;
 
   before(() => {
     // Create scenario with custom response content and token count
-    const scenario = createSingleProviderSuccessScenario('google', GOOGLE_RESPONSE_CONTENT);
+    const scenario = createSingleProviderSuccessScenario(
+      "google",
+      GOOGLE_RESPONSE_CONTENT,
+    );
 
     // Customize the scenario to set specific token count
     const originalGenerateResponse = scenario.generateResponse;
     scenario.generateResponse = (context, metadata) => {
       const response = originalGenerateResponse(context, metadata);
       const body = response.body as Record<string, unknown>;
-      if (body.usageMetadata && typeof body.usageMetadata === 'object') {
-        (body.usageMetadata as Record<string, unknown>).totalTokenCount = EXPECTED_TOTAL_TOKENS;
+      if (body.usageMetadata && typeof body.usageMetadata === "object") {
+        (body.usageMetadata as Record<string, unknown>).totalTokenCount =
+          EXPECTED_TOTAL_TOKENS;
       }
       return response;
     };
@@ -102,7 +114,7 @@ describe("E2E Basic: Google Provider", () => {
     try {
       const response = await client.generateText({
         messages: [{ role: "user", content: "What is the weather like?" }],
-        model: "gemini-2.5-flash"
+        model: "gemini-2.5-flash",
       });
 
       assertExists(response);
@@ -111,7 +123,6 @@ describe("E2E Basic: Google Provider", () => {
       assertEquals(response.model, "gemini-2.5-flash");
       assertExists(response.usage);
       assertEquals(response.usage?.totalTokens, EXPECTED_TOTAL_TOKENS);
-
     } finally {
       await cleanup();
       mockManager.stop();
@@ -120,22 +131,27 @@ describe("E2E Basic: Google Provider", () => {
 });
 
 describe("E2E Basic: OpenRouter Provider", () => {
-  const OPENROUTER_RESPONSE_CONTENT = "Hello! This is a mocked OpenRouter/Anthropic response.";
+  const OPENROUTER_RESPONSE_CONTENT =
+    "Hello! This is a mocked OpenRouter/Anthropic response.";
   const EXPECTED_TOTAL_TOKENS = 18;
 
   let mockManager: FetchMockManager;
 
   before(() => {
     // Create scenario with custom response content and token count
-    const scenario = createSingleProviderSuccessScenario('openrouter', OPENROUTER_RESPONSE_CONTENT);
+    const scenario = createSingleProviderSuccessScenario(
+      "openrouter",
+      OPENROUTER_RESPONSE_CONTENT,
+    );
 
     // Customize the scenario to set specific token count and ID
     const originalGenerateResponse = scenario.generateResponse;
     scenario.generateResponse = (context, metadata) => {
       const response = originalGenerateResponse(context, metadata);
       const body = response.body as Record<string, unknown>;
-      if (body.usage && typeof body.usage === 'object') {
-        (body.usage as Record<string, unknown>).total_tokens = EXPECTED_TOTAL_TOKENS;
+      if (body.usage && typeof body.usage === "object") {
+        (body.usage as Record<string, unknown>).total_tokens =
+          EXPECTED_TOTAL_TOKENS;
       }
       if (body.id) {
         body.id = "gen-test123";
@@ -155,7 +171,7 @@ describe("E2E Basic: OpenRouter Provider", () => {
     try {
       const response = await client.generateText({
         messages: [{ role: "user", content: "Explain quantum computing" }],
-        model: "anthropic/claude-3.5-sonnet"
+        model: "anthropic/claude-3.5-sonnet",
       });
 
       assertExists(response);
@@ -164,7 +180,6 @@ describe("E2E Basic: OpenRouter Provider", () => {
       assertEquals(response.model, "anthropic/claude-3.5-sonnet");
       assertExists(response.usage);
       assertEquals(response.usage?.totalTokens, EXPECTED_TOTAL_TOKENS);
-
     } finally {
       await cleanup();
       mockManager.stop();
@@ -199,7 +214,6 @@ describe("E2E Basic: Health Check", () => {
       assertEquals(health.models.includes("gemini-2.5-flash"), true);
       assertEquals(health.models.includes("anthropic/claude-3.5-sonnet"), true);
       assertExists(health.version);
-
     } finally {
       await cleanup();
       mockManager.stop();
@@ -228,7 +242,7 @@ describe("E2E Basic: Error Handling", () => {
       try {
         await client.generateText({
           messages: [{ role: "user", content: "Hello" }],
-          model: "invalid-model-name"
+          model: "invalid-model-name",
         });
 
         // Should not reach here
@@ -238,7 +252,6 @@ describe("E2E Basic: Error Handling", () => {
         assertExists(error);
         assertEquals(error instanceof Error, true);
       }
-
     } finally {
       await cleanup();
       mockManager.stop();

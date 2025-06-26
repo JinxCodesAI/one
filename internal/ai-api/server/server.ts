@@ -2,15 +2,14 @@
  * HTTP server implementation using Deno's built-in server
  */
 
-import { AIService } from '../core/ai-service.ts';
+import { AIService } from "../core/ai-service.ts";
 import type {
-  GenerateTextRequest,
-  GenerateTextResponse,
-  ErrorResponse,
   ApiResponse,
+  ErrorResponse,
+  GenerateTextRequest,
   HealthResponse,
   ServiceConfig,
-} from '../types.ts';
+} from "../types.ts";
 
 /**
  * HTTP server class
@@ -28,15 +27,19 @@ export class AIServer {
   /**
    * Start the HTTP server
    */
-  async start(): Promise<void> {
+  start(): Promise<void> {
     const handler = this.createHandler();
-    
+
     this.server = Deno.serve({
       port: this.config.port,
       hostname: this.config.host,
     }, handler);
 
-    console.log(`AI API server running on http://${this.config.host}:${this.config.port}`);
+    console.log(
+      `AI API server running on http://${this.config.host}:${this.config.port}`,
+    );
+
+    return Promise.resolve();
   }
 
   /**
@@ -45,7 +48,7 @@ export class AIServer {
   async stop(): Promise<void> {
     if (this.server) {
       await this.server.shutdown();
-      console.log('AI API server stopped');
+      console.log("AI API server stopped");
     }
   }
 
@@ -60,41 +63,41 @@ export class AIServer {
 
         // Add CORS headers
         const corsHeaders = {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
         };
 
         // Handle preflight requests
-        if (method === 'OPTIONS') {
+        if (method === "OPTIONS") {
           return new Response(null, { status: 200, headers: corsHeaders });
         }
 
         // Route requests
-        if (url.pathname === '/health' && method === 'GET') {
+        if (url.pathname === "/health" && method === "GET") {
           return await this.handleHealth(corsHeaders);
         }
 
-        if (url.pathname === '/generate' && method === 'POST') {
+        if (url.pathname === "/generate" && method === "POST") {
           return await this.handleGenerateText(request, corsHeaders);
         }
 
-        if (url.pathname === '/models' && method === 'GET') {
+        if (url.pathname === "/models" && method === "GET") {
           return this.handleGetModels(corsHeaders);
         }
 
         // 404 for unknown routes
         return this.createErrorResponse(
-          { error: 'Not Found', code: 'NOT_FOUND' },
+          { error: "Not Found", code: "NOT_FOUND" },
           404,
-          corsHeaders
+          corsHeaders,
         );
       } catch (error) {
-        console.error('Unhandled server error:', error);
+        console.error("Unhandled server error:", error);
         return this.createErrorResponse(
-          { error: 'Internal Server Error', code: 'INTERNAL_ERROR' },
+          { error: "Internal Server Error", code: "INTERNAL_ERROR" },
           500,
-          { 'Access-Control-Allow-Origin': '*' }
+          { "Access-Control-Allow-Origin": "*" },
         );
       }
     };
@@ -103,23 +106,27 @@ export class AIServer {
   /**
    * Handle health check requests
    */
-  private async handleHealth(corsHeaders: Record<string, string>): Promise<Response> {
+  private async handleHealth(
+    corsHeaders: Record<string, string>,
+  ): Promise<Response> {
     try {
       const health = await this.aiService.getHealth();
       const response: HealthResponse = {
-        status: health.status as 'healthy' | 'unhealthy',
+        status: health.status as "healthy" | "unhealthy",
         timestamp: new Date().toISOString(),
         models: health.models,
-        version: '0.0.1',
+        version: "0.0.1",
       };
 
       return this.createSuccessResponse(response, corsHeaders);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : String(error);
       return this.createErrorResponse(
-        { error: 'Health check failed', details: { message: errorMessage } },
+        { error: "Health check failed", details: { message: errorMessage } },
         500,
-        corsHeaders
+        corsHeaders,
       );
     }
   }
@@ -129,7 +136,7 @@ export class AIServer {
    */
   private async handleGenerateText(
     request: Request,
-    corsHeaders: Record<string, string>
+    corsHeaders: Record<string, string>,
   ): Promise<Response> {
     try {
       // Parse request body
@@ -144,19 +151,23 @@ export class AIServer {
 
       return this.createSuccessResponse(result, corsHeaders);
     } catch (error) {
-      console.error('Text generation error:', error);
-      
+      console.error("Text generation error:", error);
+
       // Determine appropriate status code
       let status = 500;
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage.includes('Invalid') || errorMessage.includes('required')) {
+      const errorMessage = error instanceof Error
+        ? error.message
+        : String(error);
+      if (
+        errorMessage.includes("Invalid") || errorMessage.includes("required")
+      ) {
         status = 400;
       }
 
       return this.createErrorResponse(
-        { error: errorMessage, code: 'GENERATION_ERROR' },
+        { error: errorMessage, code: "GENERATION_ERROR" },
         status,
-        corsHeaders
+        corsHeaders,
       );
     }
   }
@@ -169,11 +180,13 @@ export class AIServer {
       const models = this.aiService.getAvailableModels();
       return this.createSuccessResponse({ models }, corsHeaders);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : String(error);
       return this.createErrorResponse(
-        { error: 'Failed to get models', details: { message: errorMessage } },
+        { error: "Failed to get models", details: { message: errorMessage } },
         500,
-        corsHeaders
+        corsHeaders,
       );
     }
   }
@@ -183,7 +196,7 @@ export class AIServer {
    */
   private createSuccessResponse<T>(
     data: T,
-    headers: Record<string, string> = {}
+    headers: Record<string, string> = {},
   ): Response {
     const response: ApiResponse<T> = {
       success: true,
@@ -193,7 +206,7 @@ export class AIServer {
     return new Response(JSON.stringify(response), {
       status: 200,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       },
     });
@@ -205,7 +218,7 @@ export class AIServer {
   private createErrorResponse(
     error: ErrorResponse,
     status: number,
-    headers: Record<string, string> = {}
+    headers: Record<string, string> = {},
   ): Response {
     const response: ApiResponse<never> = {
       success: false,
@@ -215,7 +228,7 @@ export class AIServer {
     return new Response(JSON.stringify(response), {
       status,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       },
     });

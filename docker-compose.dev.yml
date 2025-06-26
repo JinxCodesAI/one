@@ -1,0 +1,102 @@
+# Docker Compose for Development Environment
+# See docs/development/ADRs/Docker_Compose_Strategy.md for full implementation plan
+
+version: "3.8"
+
+services:
+  ai-api:
+    build:
+      context: .
+      dockerfile: internal/ai-api/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+      - NODE_ENV=development
+    env_file:
+      - internal/ai-api/.env
+    volumes:
+      # Mount source code for hot reload
+      - .:/app
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    command: [
+      "deno",
+      "task",
+      "--cwd",
+      "internal/ai-api",
+      "dev",
+      "--host",
+      "0.0.0.0",
+    ]
+    networks:
+      - ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ai-chat:
+    build:
+      context: .
+      dockerfile: web/ai-chat/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://ai-api:8000
+    volumes:
+      # Mount source code for hot reload
+      - .:/app
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    depends_on:
+      ai-api:
+        condition: service_healthy
+    networks:
+      - ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Future external dependencies (commented out for now)
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - ai-network
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+  # postgres:
+  #   image: postgres:15-alpine
+  #   environment:
+  #     POSTGRES_DB: ai_chat
+  #     POSTGRES_USER: dev
+  #     POSTGRES_PASSWORD: dev
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - ai-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U dev -d ai_chat"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+networks:
+  ai-network:
+    driver: bridge
+
+# volumes:
+#   postgres_data:

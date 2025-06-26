@@ -4,14 +4,14 @@
  * Migrated to use shared testing infrastructure from @one/testing-infrastructure
  */
 
-import { describe, it, before, after } from "@std/testing/bdd";
+import { after, before, describe, it } from "@std/testing/bdd";
 import {
-  createUITestEnvironment,
-  createUITestConfig,
   createUISuccessScenario,
-  UITestHelpers,
+  createUITestConfig,
+  createUITestEnvironment,
   type UITestConfig,
-  type UITestEnvironment
+  type UITestEnvironment,
+  UITestHelpers,
 } from "@one/testing-infrastructure";
 import { startServer } from "../../../internal/ai-api/main.ts";
 
@@ -21,13 +21,17 @@ describe("UI E2E: Simple Application Load Test", () => {
 
   before(async () => {
     testConfig = createUITestConfig();
-    
+
     // Setup a basic scenario (not needed for load test but required by setup)
     const scenario = createUISuccessScenario();
-    
-    testEnvironment = await createUITestEnvironment(startServer, scenario, testConfig);
-    
-    console.log('Simple UI E2E test environment ready!');
+
+    testEnvironment = await createUITestEnvironment(
+      startServer,
+      scenario,
+      testConfig,
+    );
+
+    console.log("Simple UI E2E test environment ready!");
   });
 
   after(async () => {
@@ -36,31 +40,37 @@ describe("UI E2E: Simple Application Load Test", () => {
 
   it("should load the application and show welcome message", async () => {
     const { page } = testEnvironment;
-    
+
     console.log("Step 1: Check if welcome message is visible");
-    await UITestHelpers.waitForElement(page, 'text=Start a conversation by typing a message below');
-    
+    await UITestHelpers.waitForElement(
+      page,
+      "text=Start a conversation by typing a message below",
+    );
+
     console.log("Step 2: Verify model selector is present");
     await UITestHelpers.waitForElement(page, '[data-testid="model-selector"]');
-    
+
     console.log("Step 3: Verify message input is present");
     await UITestHelpers.waitForElement(page, '[data-testid="message-input"]');
-    
+
     console.log("Step 4: Verify send button is present");
     await UITestHelpers.waitForElement(page, '[data-testid="send-button"]');
-    
+
     console.log("✅ Application loaded successfully!");
   });
 
   it("should show correct welcome text", async () => {
     const { page } = testEnvironment;
-    
+
     console.log("Step 1: Check for welcome heading");
-    await UITestHelpers.waitForElement(page, 'text=Welcome to AI Chat');
-    
+    await UITestHelpers.waitForElement(page, "text=Welcome to AI Chat");
+
     console.log("Step 2: Check for instruction text");
-    await UITestHelpers.waitForElement(page, 'text=Start a conversation by typing a message below');
-    
+    await UITestHelpers.waitForElement(
+      page,
+      "text=Start a conversation by typing a message below",
+    );
+
     console.log("✅ Welcome text verification passed!");
   });
 });
