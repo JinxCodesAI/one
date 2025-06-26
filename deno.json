@@ -10,7 +10,7 @@
     "@one/todo-app": "./web/todo-app/src/main.tsx"
   },
   "nodeModulesDir":"auto",
-  "workspace": ["./internal/ai-api", "./internal/profile-service", "./web/ai-chat", "./packages/testing-infrastructure", "./web/integrated-demo", "./web/todo-app"],
+  "workspace": ["./internal/ai-api", "./internal/profile-service", "./web/ai-chat", "./packages/testing-infrastructure", "./web/todo-app"],
   "compilerOptions": {
     "lib": ["deno.ns", "es2022", "dom"]
   }
