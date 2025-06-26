@@ -74,6 +74,30 @@ function mockFetch(
 ): Promise<Response> {
   const urlStr = url.toString();
 
+  if (urlStr.includes("/generate-object")) {
+    return Promise.resolve(
+      new Response(
+        JSON.stringify({
+          success: true,
+          data: {
+            object: {
+              name: "John Doe",
+              age: 30,
+              occupation: "Software Engineer",
+            },
+            model: "gpt-4.1-nano",
+            usage: {
+              promptTokens: 25,
+              completionTokens: 12,
+              totalTokens: 37,
+            },
+          },
+        }),
+        { status: 200 },
+      ),
+    );
+  }
+
   if (urlStr.includes("/generate")) {
     return Promise.resolve(
       new Response(
@@ -178,6 +202,58 @@ Deno.test("AIClient - getHealth returns health status", async () => {
   globalThis.fetch = originalFetch;
 });
 
+Deno.test("AIClient - generateObject returns successful response", async () => {
+  globalThis.fetch = mockFetch;
+
+  const client = new AIClient({
+    baseUrl: "http://localhost:8000",
+  });
+
+  interface PersonProfile extends Record<string, unknown> {
+    name: string;
+    age: number;
+    occupation: string;
+  }
+
+  const response = await client.generateObject<PersonProfile>({
+    messages: [{ role: "user", content: "Generate a person profile" }],
+    schema: {
+      type: "object",
+      properties: {
+        name: { type: "string" },
+        age: { type: "number" },
+        occupation: { type: "string" },
+      },
+      required: ["name", "age", "occupation"],
+    },
+  });
+
+  assertEquals(response.object.name, "John Doe");
+  assertEquals(response.object.age, 30);
+  assertEquals(response.object.occupation, "Software Engineer");
+  assertEquals(response.model, "gpt-4.1-nano");
+  assertEquals(response.usage?.totalTokens, 37);
+
+  globalThis.fetch = originalFetch;
+});
+
+Deno.test("AIClient - generateObject handles network error", async () => {
+  const client = new AIClient({
+    baseUrl: "http://nonexistent-server:9999",
+    timeout: 1000,
+  });
+
+  await assertRejects(
+    () =>
+      client.generateObject({
+        messages: [{ role: "user", content: "Generate data" }],
+        schema: { type: "object", properties: {} },
+      }),
+    Error,
+    // Could be either network error or timeout
+  );
+});
+
 // Test error responses
 function mockErrorFetch(): Promise<Response> {
   return Promise.resolve(
@@ -205,6 +281,26 @@ Deno.test("AIClient - generateText handles API error", async () => {
     () =>
       client.generateText({
         messages: [{ role: "user", content: "Hello" }],
+      }),
+    Error,
+    "Test error message",
+  );
+
+  globalThis.fetch = originalFetch;
+});
+
+Deno.test("AIClient - generateObject handles API error", async () => {
+  globalThis.fetch = mockErrorFetch;
+
+  const client = new AIClient({
+    baseUrl: "http://localhost:8000",
+  });
+
+  await assertRejects(
+    () =>
+      client.generateObject({
+        messages: [{ role: "user", content: "Generate data" }],
+        schema: { type: "object", properties: {} },
       }),
     Error,
     "Test error message",
