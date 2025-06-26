@@ -10,7 +10,7 @@
       "dev": ["./internal/ai-api"],
       "e2e": []
     },
-    "./web/e2e-test-app": {
+    "./web/todo-app": {
       "test": [],
       "dev": ["./internal/ai-api", "./internal/profile-service"],
       "e2e": []

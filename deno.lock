@@ -1408,11 +1408,6 @@
           "npm:vite@^6.1.1"
         ]
       },
-      "web/integrated-demo": {
-        "dependencies": [
-          "npm:playwright@^1.48.0"
-        ]
-      },
       "web/todo-app": {
         "dependencies": [
           "jsr:@std/assert@1",
