@@ -22,7 +22,7 @@ async function loadConfig(): Promise<ProfileServiceConfig> {
 
   const config: ProfileServiceConfig = {
     port: parseInt(Deno.env.get("PORT") || "8080"),
-    databaseUrl: Deno.env.get("DATABASE_URL"),
+    databaseUrl: Deno.env.get("PROFILE_SERVICE_DATABASE_URL"),
     corsOrigins: (Deno.env.get("CORS_ORIGINS") === "" ? [] : (Deno.env.get("CORS_ORIGINS") || "https://*.jinxcodes.ai,http://localhost:*").split(",")),
     cookieDomain: Deno.env.get("COOKIE_DOMAIN") || ".jinxcodes.ai",
     dailyBonusAmount: parseInt(Deno.env.get("DAILY_BONUS_AMOUNT") || "10"),
@@ -71,7 +71,9 @@ async function main(): Promise<void> {
     };
 
     Deno.addSignalListener("SIGINT", handleShutdown);
-    Deno.addSignalListener("SIGTERM", handleShutdown);
+    if (Deno.build.os !== "windows") {
+      Deno.addSignalListener("SIGTERM", handleShutdown);
+    }
 
     console.log("✅ Profile Service started successfully");
     console.log("📡 Ready to handle requests");
