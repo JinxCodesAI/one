@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Profile Service Storage</title>
+    <meta name="robots" content="noindex, nofollow">
+</head>
+<body>
+    <script>
+        /**
+         * Iframe Storage Protocol Implementation
+         * 
+         * This page is loaded in an iframe to provide cross-domain localStorage access
+         * for the profile service anonymous ID management.
+         */
+
+        // Default allowed origins (will be overridden by server-generated version)
+        const DEFAULT_ALLOWED_ORIGINS = [
+            'https://*.jinxcodes.ai',
+            'http://localhost:*',
+            'http://127.0.0.1:*'
+        ];
+
+        function isOriginAllowed(origin, allowedOrigins = DEFAULT_ALLOWED_ORIGINS) {
+            return allowedOrigins.some(allowed => {
+                if (allowed === '*') return true;
+                
+                if (allowed.includes('*')) {
+                    // Handle wildcard patterns
+                    if (allowed.startsWith('*.')) {
+                        const domain = allowed.slice(2);
+                        return origin.endsWith('.' + domain) || origin === domain;
+                    }
+                    
+                    if (allowed.includes(':*')) {
+                        const [protocol, rest] = allowed.split('://');
+                        const [hostname] = rest.split(':');
+                        const originUrl = new URL(origin);
+                        return originUrl.protocol === protocol + ':' && 
+                               originUrl.hostname === hostname;
+                    }
+                }
+                
+                return origin === allowed;
+            });
+        }
+
+        function handleStorageMessage(event) {
+            // Validate origin
+            if (!isOriginAllowed(event.origin)) {
+                console.warn('Storage iframe: Origin not allowed:', event.origin);
+                return;
+            }
+
+            const { type, key, value, requestId } = event.data;
+            
+            if (!requestId) {
+                console.warn('Storage iframe: Missing requestId');
+                return;
+            }
+
+            try {
+                let result;
+                
+                switch (type) {
+                    case 'get':
+                        result = localStorage.getItem(key);
+                        break;
+                        
+                    case 'set':
+                    case 'backup':
+                        localStorage.setItem(key, value);
+                        result = value;
+                        break;
+                        
+                    case 'remove':
+                        localStorage.removeItem(key);
+                        result = null;
+                        break;
+                        
+                    default:
+                        throw new Error('Unknown storage operation: ' + type);
+                }
+                
+                // Send success response
+                event.source.postMessage({
+                    requestId,
+                    success: true,
+                    value: result
+                }, event.origin);
+                
+            } catch (error) {
+                // Send error response
+                event.source.postMessage({
+                    requestId,
+                    success: false,
+                    error: error.message
+                }, event.origin);
+            }
+        }
+
+        // Listen for storage messages
+        window.addEventListener('message', handleStorageMessage);
+        
+        // Signal that the iframe is ready
+        function signalReady() {
+            if (window.parent !== window) {
+                window.parent.postMessage({ 
+                    type: 'storage-ready',
+                    timestamp: Date.now()
+                }, '*');
+            }
+        }
+
+        // Signal ready when DOM is loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', signalReady);
+        } else {
+            signalReady();
+        }
+
+        // Also signal ready after a short delay to handle race conditions
+        setTimeout(signalReady, 100);
+
+        // Debug logging (only in development)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.log('Profile Service Storage iframe ready');
+            
+            // Log storage operations in development
+            const originalHandler = handleStorageMessage;
+            handleStorageMessage = function(event) {
+                console.log('Storage operation:', event.data);
+                return originalHandler(event);
+            };
+        }
+    </script>
+</body>
+</html>

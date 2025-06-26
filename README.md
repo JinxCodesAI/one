@@ -1,23 +1,47 @@
-# AI Chat Monorepo
+# Educational Monorepo - Services & POC Applications
 
-A modern AI chat application built with Deno, featuring a React frontend and a
-robust API backend that supports multiple AI providers.
+An educational monorepo demonstrating modern web development patterns with Deno, featuring reusable services and proof-of-concept applications that showcase different architectural approaches and technologies.
 
 > **🪟 Windows Users**: After installing `just`, you MUST run `just setup` (or
 > `deno run --allow-read --allow-write scripts/setup-justfile.ts` if that fails)
 > to configure the shell. This fixes "could not find the shell" errors.
 
-## Architecture
+## Purpose & Educational Goals
+
+This monorepo serves as a learning platform for:
+- **Microservices Architecture**: Building and consuming independent services
+- **Modern Web Development**: React, TypeScript, and Deno ecosystem
+- **API Design**: RESTful services with SDK-first approach
+- **Testing Strategies**: Unit, integration, and E2E testing patterns
+- **DevOps Practices**: Docker, CI/CD, and development workflows
+- **Code Organization**: Monorepo management and shared tooling
+
+## Architecture Overview
 
 ```
-┌─────────────────┐    HTTP     ┌─────────────────┐
-│   AI Chat       │ ──────────► │   AI API        │
-│   (Port 3000)   │             │   (Port 8000)   │
-│                 │             │                 │
-│ - React UI      │             │ - OpenAI        │
-│ - Chat Interface│             │ - Google AI     │
-│ - Model Selector│             │ - OpenRouter    │
-└─────────────────┘             └─────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    Educational Monorepo                     │
+├─────────────────────────────────────────────────────────────┤
+│  Services (/internal)          │  POC Applications (/web)   │
+│                                 │                           │
+│  ┌─────────────────┐           │  ┌─────────────────┐      │
+│  │   AI API        │           │  │   AI Chat       │      │
+│  │   (Port 8000)   │◄──────────┤  │   (Port 3000)   │      │
+│  │                 │    HTTP   │  │                 │      │
+│  │ - OpenAI        │           │  │ - React UI      │      │
+│  │ - Google AI     │           │  │ - Chat Interface│      │
+│  │ - OpenRouter    │           │  │ - Model Selector│      │
+│  └─────────────────┘           │  └─────────────────┘      │
+│                                 │                           │
+│  ┌─────────────────┐           │  ┌─────────────────┐      │
+│  │ Profile Service │           │  │   Todo App      │      │
+│  │   (Port 8001)   │◄──────────┤  │   (Port 3001)   │      │
+│  │                 │    HTTP   │  │                 │      │
+│  │ - User Profiles │           │  │ - Task Management│      │
+│  │ - SQLite DB     │           │  │ - React UI      │      │
+│  │ - File Storage  │           │  │ - Profile Integration│  │
+│  └─────────────────┘           │  └─────────────────┘      │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ## Quick Start
@@ -86,12 +110,15 @@ just install
 ### Environment Setup
 
 ```bash
-# Configure AI API environment
+# Configure AI API environment (required for AI Chat app)
 cp internal/ai-api/.env.example internal/ai-api/.env
 # Edit internal/ai-api/.env with your API keys
+
+# Profile Service runs without additional configuration
+# (uses SQLite database that's created automatically)
 ```
 
-You need at least one AI provider API key:
+For AI functionality, you need at least one AI provider API key:
 
 - **OpenAI**: Set `OPENAI_API_KEY`
 - **Google AI**: Set `GOOGLE_GENERATIVE_AI_API_KEY`
@@ -142,21 +169,31 @@ just docker-prod      # Start all services with Docker Compose (production)
 
 ```
 .
-├── internal/
-│   └── ai-api/              # Backend API service
-│       ├── config/          # Configuration management
-│       ├── core/            # Core AI service logic
-│       ├── server/          # HTTP server implementation
-│       ├── sdk/             # Client SDK
-│       └── e2e/             # End-to-end tests
-├── web/
-│   └── ai-chat/             # Frontend React application
-│       ├── src/             # Source code
-│       ├── e2e/             # UI E2E tests
-│       └── dist/            # Build output
+├── internal/                    # Reusable Services
+│   ├── ai-api/                 # AI Text Generation Service
+│   │   ├── config/             # Configuration management
+│   │   ├── core/               # Core AI service logic
+│   │   ├── server/             # HTTP server implementation
+│   │   ├── sdk/                # Client SDK for easy integration
+│   │   └── e2e/                # End-to-end tests
+│   └── profile-service/        # User Profile Management Service
+│       ├── database/           # SQLite database and migrations
+│       ├── server/             # HTTP server implementation
+│       ├── sdk/                # Client SDK for easy integration
+│       └── static/             # Static file serving
+├── web/                        # POC Applications (Educational Examples)
+│   ├── ai-chat/               # AI Chat Application
+│   │   ├── src/               # React source code
+│   │   ├── e2e/               # UI E2E tests
+│   │   └── dist/              # Build output
+│   └── todo-app/              # Todo Management Application
+│       ├── src/               # React source code
+│       ├── e2e/               # UI E2E tests
+│       └── dist/              # Build output
 ├── packages/
-│   └── testing-infrastructure/  # Shared testing utilities
-└── docs/                    # Documentation
+│   └── testing-infrastructure/ # Shared testing utilities
+├── docs/                       # Documentation and ADRs
+└── cli/                        # Command-line tools and scripts
 ```
 
 ## Development Workflow
@@ -196,21 +233,88 @@ just docker-prod      # Start all services with Docker Compose (production)
    just test-e2e
    ```
 
-## Available Services
+## Available Services & Applications
 
-### AI API Service (Port 8000)
+### Services (/internal)
 
-- RESTful API for AI text generation
-- Support for multiple AI providers
-- Model management and health checks
-- Comprehensive error handling
+#### AI API Service (Port 8000)
+- **Purpose**: Centralized AI text generation service
+- **Features**:
+  - RESTful API for AI text generation
+  - Support for multiple AI providers (OpenAI, Google AI, OpenRouter)
+  - Model management and health checks
+  - Comprehensive error handling
+  - SDK for easy integration
+- **Educational Focus**: API design, provider abstraction, error handling
 
-### AI Chat Web App (Port 3000)
+#### Profile Service (Port 8001)
+- **Purpose**: User profile management and file storage
+- **Features**:
+  - User profile CRUD operations
+  - SQLite database with migrations
+  - File upload and storage
+  - RESTful API with comprehensive validation
+  - SDK for easy integration
+- **Educational Focus**: Database design, file handling, data validation
 
-- Modern React-based chat interface
-- Real-time model switching
-- Message history management
-- Responsive design
+### POC Applications (/web)
+
+#### AI Chat Application (Port 3000)
+- **Purpose**: Demonstrate AI service integration in a chat interface
+- **Features**:
+  - Modern React-based chat interface
+  - Real-time model switching
+  - Message history management
+  - Responsive design
+- **Educational Focus**: React patterns, API consumption, real-time UI
+
+#### Todo Application (Port 3001)
+- **Purpose**: Showcase profile service integration with task management
+- **Features**:
+  - Task management with user profiles
+  - Profile integration for personalization
+  - Modern React UI with state management
+  - Responsive design
+- **Educational Focus**: Service composition, state management, user experience
+
+## Educational Learning Paths
+
+### For Backend Developers
+1. **Start with Services**: Explore `/internal/ai-api` and `/internal/profile-service`
+   - Learn service architecture patterns
+   - Understand API design principles
+   - Practice SDK development
+   - Study error handling and validation
+
+2. **Database & Storage**: Focus on `/internal/profile-service`
+   - SQLite integration and migrations
+   - File upload and storage patterns
+   - Data validation and sanitization
+
+### For Frontend Developers
+1. **Start with Applications**: Explore `/web/ai-chat` and `/web/todo-app`
+   - Modern React patterns and hooks
+   - API integration strategies
+   - State management approaches
+   - Responsive design principles
+
+2. **Service Integration**: Learn how applications consume services
+   - SDK usage patterns (recommended approach)
+   - Direct REST API calls (alternative approach)
+   - Error handling in UI
+   - Loading states and user feedback
+
+### For Full-Stack Learning
+1. **Follow the Data Flow**: Trace requests from UI → Service → Database
+2. **Build New Features**: Add endpoints to services and consume them in apps
+3. **Create New Applications**: Build additional POC apps using existing services
+4. **Extend Services**: Add new functionality to existing services
+
+### For DevOps & Tooling
+1. **Development Workflow**: Study the `justfile` and development commands
+2. **Testing Strategy**: Explore unit, integration, and E2E test patterns
+3. **Docker Setup**: Understand containerization for development and production
+4. **Monorepo Management**: Learn shared tooling and dependency management
 
 ## Development Options
 
@@ -318,12 +422,50 @@ choco install just
 scoop install just
 ```
 
-## Contributing
+## Contributing & Learning
 
+This is an educational project designed for learning and experimentation. Contributions that enhance the learning experience are welcome!
+
+### Code Quality Standards
 1. Run tests before committing: `just test`
 2. Format code: `just fmt`
 3. Lint code: `just lint`
 4. Use the shared testing infrastructure for new tests
+
+### Educational Contributions
+- **New POC Applications**: Create additional apps in `/web/` that demonstrate different patterns
+- **Service Extensions**: Add new features to existing services with proper documentation
+- **New Services**: Add new services in `/internal/` that other applications can consume
+- **Documentation**: Improve guides, add tutorials, or document architectural decisions
+- **Testing Examples**: Add comprehensive test examples that others can learn from
+
+### Learning-Focused Guidelines
+- **Document Your Approach**: Explain why you chose specific patterns or technologies
+- **Add Comments**: Help others understand complex logic or architectural decisions
+- **Create Examples**: Show multiple ways to solve the same problem
+- **Write Tests**: Demonstrate testing strategies and best practices
+
+## Future Expansion Plans
+
+This monorepo is designed to grow with additional services and applications:
+
+### Planned Services (/internal)
+- **Authentication Service**: JWT-based auth with role management
+- **Notification Service**: Email, SMS, and push notification handling
+- **Analytics Service**: Event tracking and reporting
+- **File Processing Service**: Image/document processing and transformation
+
+### Planned Applications (/web)
+- **Admin Dashboard**: Service management and monitoring interface
+- **E-commerce POC**: Shopping cart with profile and payment integration
+- **Social Media POC**: User interactions with notification service
+- **Analytics Dashboard**: Data visualization using analytics service
+
+### Educational Expansions
+- **Mobile Applications**: React Native or Flutter examples
+- **Desktop Applications**: Electron or Tauri implementations
+- **CLI Tools**: Command-line interfaces for service interaction
+- **Microservice Patterns**: Event-driven architecture examples
 
 ## Documentation
 

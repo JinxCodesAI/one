@@ -5,6 +5,8 @@
 import type {
   ApiResponse,
   ClientConfig,
+  GenerateObjectRequest,
+  GenerateObjectResponse,
   GenerateTextRequest,
   GenerateTextResponse,
   HealthResponse,
@@ -51,6 +53,37 @@ export class AIClient {
         throw error;
       }
       throw new Error(`Text generation failed: ${error}`);
+    }
+  }
+
+  /**
+   * Generate structured object using the AI service
+   */
+  async generateObject<T extends Record<string, unknown>>(
+    request: GenerateObjectRequest,
+  ): Promise<GenerateObjectResponse<T>> {
+    const url = `${this.config.baseUrl}/generate-object`;
+
+    try {
+      const response = await this.makeRequest("POST", url, request);
+      const apiResponse = await response.json() as ApiResponse<
+        GenerateObjectResponse<T>
+      >;
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.error?.error || "Unknown error occurred");
+      }
+
+      if (!apiResponse.data) {
+        throw new Error("No data received from server");
+      }
+
+      return apiResponse.data;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(`Object generation failed: ${error}`);
     }
   }
 
