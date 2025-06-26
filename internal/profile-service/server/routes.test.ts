@@ -20,7 +20,7 @@ describe("ProfileServiceRoutes", () => {
     db = new MemoryDatabaseAdapter();
     config = {
       port: 8080,
-      corsOrigins: ["https://*.jinxcodes.ai"],
+      corsOrigins: ["https://*.jinxcodes.ai", "http://localhost:*"],
       cookieDomain: ".jinxcodes.ai",
       dailyBonusAmount: 10,
       initialCreditsAmount: 100

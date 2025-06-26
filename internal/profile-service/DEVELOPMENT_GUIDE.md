@@ -60,8 +60,15 @@ To use PostgreSQL, you need to set the `DATABASE_URL` environment variable.
 
 The Profile Service is configured via environment variables:
 
-| Variable                 | Default Value                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
-```
+| Variable | Default Value | Description |
+|---|---|---|
+| `PORT` | `8080` | The port on which the service will listen for incoming HTTP requests. |
+| `PROFILE_SERVICE_DATABASE_URL` | (None) | Connection string for the PostgreSQL database. If not set, an in-memory database is used. Example: `postgresql://user:pass@host:port/db` |
+| `CORS_ORIGINS` | `https://*.jinxcodes.ai,http://localhost:*` | Comma-separated list of allowed origins for CORS. Set to an empty string (`""`) to disable CORS. |
+| `COOKIE_DOMAIN` | `.jinxcodes.ai` | The domain for setting the `anon_id` cookie. Should be a top-level domain (e.g., `.yourdomain.com`) for cross-subdomain identity. |
+| `DAILY_BONUS_AMOUNT` | `10` | The amount of credits awarded to a user for claiming the daily bonus. |
+| `INITIAL_CREDITS_AMOUNT` | `100` | The initial amount of credits a new user receives upon their first interaction. |
+
 ## 4. API Usage
 
 The Profile Service exposes a RESTful API. All API endpoints accept authentication via either a `Cookie` (named `anon_id`) or an `X-Anon-Id` header. The `anon_id` is a stable UUID representing the anonymous user.

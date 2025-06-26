@@ -778,11 +778,78 @@ AI_MODELS='[
 
 ### Web Application Integration
 
-**Frontend (JavaScript/TypeScript):**
+**Frontend (TypeScript with SDK - Recommended):**
 
 ```typescript
+import { createSimpleClient } from "@scope/ai-api/client";
+
+// Create AI service wrapper
+class AIService {
+  private client = createSimpleClient("http://localhost:8000");
+
+  async generateText(prompt: string): Promise<string> {
+    try {
+      const response = await this.client.generateText({
+        messages: [{ role: 'user', content: prompt }],
+        model: 'gpt-4o',
+        maxTokens: 500,
+        temperature: 0.7
+      });
+      return response.content;
+    } catch (error) {
+      console.error('AI generation failed:', error);
+      throw new Error('Failed to generate response');
+    }
+  }
+
+  async generateStructuredData<T>(prompt: string, schema: any): Promise<T> {
+    const response = await this.client.generateObject<T>({
+      messages: [{ role: 'user', content: prompt }],
+      schema,
+      model: 'gpt-4o'
+    });
+    return response.object;
+  }
+
+  async getAvailableModels(): Promise<string[]> {
+    return await this.client.getModels();
+  }
+}
+
+// Usage in React component
+const aiService = new AIService();
+
+export function ChatComponent() {
+  const [response, setResponse] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (prompt: string) => {
+    setLoading(true);
+    try {
+      const result = await aiService.generateText(prompt);
+      setResponse(result);
+    } catch (error) {
+      console.error('Error:', error);
+      setResponse('Sorry, something went wrong.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      {/* Your UI components */}
+      {loading ? 'Generating...' : response}
+    </div>
+  );
+}
+```
+
+**Alternative: Direct HTTP API (for non-TypeScript environments):**
+
+```javascript
 // Using fetch API directly
-async function generateText(prompt: string): Promise<string> {
+async function generateText(prompt) {
   const response = await fetch('http://localhost:8000/generate', {
     method: 'POST',
     headers: {
@@ -802,14 +869,6 @@ async function generateText(prompt: string): Promise<string> {
   }
 
   return result.data.content;
-}
-
-// Usage
-try {
-  const response = await generateText('Explain machine learning');
-  console.log(response);
-} catch (error) {
-  console.error('Error:', error.message);
 }
 ```
 
@@ -903,6 +962,8 @@ services:
 ```
 
 ### Python Integration
+
+**Note:** For TypeScript/JavaScript environments, use the SDK (shown above). For Python and other languages, use the HTTP API:
 
 ```python
 import requests

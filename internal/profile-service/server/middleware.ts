@@ -19,6 +19,7 @@ export interface RequestContext {
 export function corsMiddleware(config: ProfileServiceConfig) {
   return (request: Request): Response | null => {
     const origin = request.headers.get("origin");
+    console.log("Origin:", origin);
     const method = request.method;
 
     // Handle preflight requests

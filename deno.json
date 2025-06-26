@@ -4,10 +4,13 @@
     "@std/testing/bdd": "jsr:@std/testing@1/bdd",
     "ai": "npm:ai@^4.3.16",
     "playwright": "npm:playwright@^1.40.0",
-    "@one/testing-infrastructure": "./packages/testing-infrastructure/src/mod.ts"
+    "@one/testing-infrastructure": "./packages/testing-infrastructure/src/mod.ts",
+    "@one/ai-api": "./internal/ai-api/sdk/client.ts",
+    "@one/profile-service": "./internal/profile-service/sdk/client.ts",
+    "@one/todo-app": "./web/todo-app/src/main.tsx"
   },
   "nodeModulesDir":"auto",
-  "workspace": ["./internal/ai-api", "./internal/profile-service", "./web/ai-chat", "./packages/testing-infrastructure"],
+  "workspace": ["./internal/ai-api", "./internal/profile-service", "./web/ai-chat", "./packages/testing-infrastructure", "./web/integrated-demo", "./web/todo-app"],
   "compilerOptions": {
     "lib": ["deno.ns", "es2022", "dom"]
   }
