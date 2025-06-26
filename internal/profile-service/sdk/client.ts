@@ -5,7 +5,7 @@
  * Handles cross-domain identity management via cookies and iframe localStorage.
  */
 
-import { v4 } from "@std/uuid";
+
 import type {
   ProfileSDKConfig,
   UserInfoResponse,
@@ -17,7 +17,7 @@ import type {
 
 export class ProfileServiceClient {
   private config: ProfileSDKConfig;
-  private anonId?: string;
+  private anonId: string | null = null;
   private iframeReady = false;
   private iframe?: HTMLIFrameElement;
   private pendingRequests = new Map<string, {
@@ -36,6 +36,13 @@ export class ProfileServiceClient {
   }
 
   /**
+   * Get the current configuration
+   */
+  getConfig(): ProfileSDKConfig {
+    return this.config;
+  }
+
+  /**
    * Initialize and get the stable anonymous ID
    */
   async getAnonId(): Promise<string> {
@@ -44,17 +51,17 @@ export class ProfileServiceClient {
     }
 
     // Try to get from cookie first
-    this.anonId = this.getCookie(this.config.cookieName);
-    
-    if (this.anonId) {
+    const cookieAnonId = this.getCookie(this.config.cookieName);
+    if (cookieAnonId) {
+      this.anonId = cookieAnonId;
       return this.anonId;
     }
 
     // Fallback to iframe localStorage
     try {
-      this.anonId = await this.getFromIframeStorage(this.config.cookieName);
-      
-      if (this.anonId) {
+      const iframeAnonId = await this.getFromIframeStorage(this.config.cookieName);
+      if (iframeAnonId) {
+        this.anonId = iframeAnonId;
         // Backup to cookie
         this.setCookie(this.config.cookieName, this.anonId);
         return this.anonId;
@@ -64,18 +71,25 @@ export class ProfileServiceClient {
     }
 
     // Generate new ID
-    this.anonId = uuid.generate();
+    this.anonId = crypto.randomUUID();
     
     // Store in both cookie and iframe
-    this.setCookie(this.config.cookieName, this.anonId);
+    this.setCookie(this.config.cookieName, this.anonId as string);
     
     try {
-      await this.setInIframeStorage(this.config.cookieName, this.anonId);
+      await this.setInIframeStorage(this.config.cookieName, this.anonId as string);
     } catch (error) {
       console.warn("Failed to backup anon ID to iframe storage:", error);
     }
 
-    return this.anonId;
+    return this.anonId as string;
+  }
+
+  /**
+   * Set the anonymous ID
+   */
+  setAnonId(anonId: string): void {
+    this.anonId = anonId;
   }
 
   /**
@@ -154,9 +168,9 @@ export class ProfileServiceClient {
     return response.json();
   }
 
-  // Private methods for cookie management
+  // Public methods for cookie management
 
-  private getCookie(name: string): string | null {
+  getCookie(name: string): string | null {
     if (typeof document === "undefined") return null;
     
     const value = `; ${document.cookie}`;
@@ -169,7 +183,7 @@ export class ProfileServiceClient {
     return null;
   }
 
-  private setCookie(name: string, value: string): void {
+  setCookie(name: string, value: string): void {
     if (typeof document === "undefined") return;
     
     const expires = new Date();
@@ -239,7 +253,7 @@ export class ProfileServiceClient {
       throw new Error("Iframe not ready");
     }
 
-    const requestId = uuid.generate();
+    const requestId = crypto.randomUUID();
     const message: StorageMessage = {
       type,
       key,
@@ -264,7 +278,7 @@ export class ProfileServiceClient {
         }
       });
 
-      this.iframe!.contentWindow.postMessage(
+      this.iframe?.contentWindow?.postMessage(
         message,
         new URL(this.config.profileServiceUrl).origin
       );

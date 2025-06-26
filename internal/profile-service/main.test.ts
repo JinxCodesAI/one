@@ -116,7 +116,7 @@ describe("Main Entry Point", () => {
 
       const config = await loadConfig();
 
-      assertEquals(config.corsOrigins, [""]);
+      assertEquals(config.corsOrigins, []);
     });
 
     it("should handle single CORS origin", async () => {

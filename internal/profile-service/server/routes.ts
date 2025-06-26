@@ -4,7 +4,7 @@
  * HTTP route handlers for the profile service API endpoints.
  */
 
-import { v4 } from "@std/uuid";
+
 import type {
   DatabaseAdapter,
   ProfileServiceConfig,
@@ -288,7 +288,7 @@ export class ProfileServiceRoutes {
     }
 
     // Generate new anon ID
-    const anonId = v4.generate();
+    const anonId = crypto.randomUUID();
     await this.db.createUser(anonId);
     await this.db.createCredits(anonId, this.config.initialCreditsAmount);
     await this.db.addCreditLedgerEntry({

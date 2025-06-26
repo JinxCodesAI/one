@@ -147,6 +147,9 @@ describe("MemoryDatabaseAdapter", () => {
         reason: "Initial credits"
       });
       
+      // Add a small delay to ensure distinct timestamps
+      await new Promise(resolve => setTimeout(resolve, 10));
+
       await adapter.addCreditLedgerEntry({
         anonId: testAnonId,
         amount: 10,

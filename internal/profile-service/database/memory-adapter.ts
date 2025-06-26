@@ -101,7 +101,7 @@ export class MemoryDatabaseAdapter implements DatabaseAdapter {
   ): Promise<CreditLedgerEntry> {
     const ledgerEntry: CreditLedgerEntry = {
       ...entry,
-      id: v4.generate(),
+      id: crypto.randomUUID(),
       createdAt: new Date()
     };
 

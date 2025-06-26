@@ -23,7 +23,7 @@ async function loadConfig(): Promise<ProfileServiceConfig> {
   const config: ProfileServiceConfig = {
     port: parseInt(Deno.env.get("PORT") || "8080"),
     databaseUrl: Deno.env.get("DATABASE_URL"),
-    corsOrigins: (Deno.env.get("CORS_ORIGINS") || "https://*.jinxcodes.ai,http://localhost:*").split(","),
+    corsOrigins: (Deno.env.get("CORS_ORIGINS") === "" ? [] : (Deno.env.get("CORS_ORIGINS") || "https://*.jinxcodes.ai,http://localhost:*").split(",")),
     cookieDomain: Deno.env.get("COOKIE_DOMAIN") || ".jinxcodes.ai",
     dailyBonusAmount: parseInt(Deno.env.get("DAILY_BONUS_AMOUNT") || "10"),
     initialCreditsAmount: parseInt(Deno.env.get("INITIAL_CREDITS_AMOUNT") || "100")
