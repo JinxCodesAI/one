@@ -1,0 +1,33 @@
+{
+  "workspace": {
+    "./internal/ai-api": {
+      "test": ["./web/ai-chat"],
+      "dev": [],
+      "e2e": ["./web/ai-chat"]
+    },
+    "./web/ai-chat": {
+      "test": [],
+      "dev": ["./internal/ai-api"],
+      "e2e": []
+    },
+    "./packages/testing-infrastructure": {
+      "test": ["./internal/ai-api", "./web/ai-chat"],
+      "dev": []
+    }
+  },
+  "tasks": {
+    "test": {
+      "async": false,
+      "required": false
+    },
+    "dev": {
+      "async": true,
+      "required": true,
+      "delay": 5000
+    },
+    "e2e": {
+      "async": false,
+      "required": false
+    }
+  }
+}

@@ -124,6 +124,38 @@ export interface HealthResponse {
 }
 
 /**
+ * Request payload for object generation
+ */
+export interface GenerateObjectRequest {
+  /** Array of messages representing the conversation */
+  messages: Message[];
+  /** JSON schema for the expected output object */
+  schema: Record<string, unknown>;
+  /** Optional model name to use for generation */
+  model?: string;
+  /** Optional maximum number of tokens to generate */
+  maxTokens?: number;
+  /** Optional temperature for randomness (0-1) */
+  temperature?: number;
+}
+
+/**
+ * Response from object generation
+ */
+export interface GenerateObjectResponse<T = Record<string, unknown>> {
+  /** The generated object content */
+  object: T;
+  /** The model used for generation */
+  model: string;
+  /** Usage statistics */
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+}
+
+/**
  * HTTP response wrapper
  */
 export interface ApiResponse<T> {

@@ -1,6 +1,10 @@
 # Deno
 .deno/
 
+# VSCode
+.vscode/
+one.code-workspace
+
 # Environment variables
 .env
 .env.local

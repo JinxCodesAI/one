@@ -1,9 +1,7 @@
 # ADR: Adding New Projects to the Monorepo
 
-**Status**: Active\
-**Date**: 2025-06-21\
-**Authors**: Development Team\
-**Reviewers**: Architecture Team
+**Status**: Active
+**Date**: 2025-06-21
 
 ## Context
 
