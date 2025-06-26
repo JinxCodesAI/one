@@ -26,7 +26,7 @@ class ProfileService {
 
   private getProfileServiceUrl(): string {
     // Check for Vite environment variable first
-    if (typeof window !== "undefined") {
+    if (typeof globalThis.window !== "undefined") {
       // @ts-ignore - Vite injects these at build time
       return import.meta.env?.VITE_PROFILE_API_URL || "http://localhost:8080";
     }
@@ -36,8 +36,8 @@ class ProfileService {
   }
 
   private getCookieDomain(): string {
-    if (typeof window !== "undefined") {
-      const hostname = window.location.hostname;
+    if (typeof globalThis.window !== "undefined") {
+      const hostname = globalThis.window.location.hostname;
       
       // For localhost development
       if (hostname === "localhost" || hostname === "127.0.0.1") {
@@ -170,32 +170,21 @@ class ProfileService {
    */
   async spendCredits(amount: number, reason: string): Promise<Credits> {
     try {
-      // Use the adjust credits endpoint to spend credits
-      const response = await fetch(`${this.getProfileServiceUrl()}/api/credits/adjust`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Anon-Id': await this.getAnonId()
-        },
-        body: JSON.stringify({
-          amount: -Math.abs(amount), // Ensure negative for spending
-          reason
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      // Validate input
+      if (amount <= 0) {
+        throw new Error("Amount must be positive");
       }
 
-      const result = await response.json();
-      
-      if (!result.success) {
-        throw new Error(result.error?.message || "Failed to spend credits");
+      if (!reason || reason.trim().length === 0) {
+        throw new Error("Reason is required");
       }
+
+      // Use the SDK's adjustCredits method to spend credits
+      const result = await this.client.adjustCredits(-Math.abs(amount), reason);
 
       return {
-        balance: result.data.balance,
-        ledger: result.data.ledger.map((transaction: unknown) => {
+        balance: result.balance,
+        ledger: result.ledger.map((transaction: unknown) => {
           const t = transaction as Record<string, unknown>;
           return {
             id: t.id as string,
@@ -208,6 +197,35 @@ class ProfileService {
       };
     } catch (error) {
       console.error("Error spending credits:", error);
+
+      // Handle specific error cases
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Re-throw validation errors as-is
+      if (errorMessage === "Amount must be positive" || errorMessage === "Reason is required") {
+        throw error;
+      }
+
+      if (errorMessage.includes("insufficient") || errorMessage.includes("balance")) {
+        throw new Error("Insufficient credits");
+      }
+
+      if (errorMessage.includes("400")) {
+        throw new Error("Invalid request");
+      }
+
+      if (errorMessage.includes("401") || errorMessage.includes("403")) {
+        throw new Error("Authentication failed");
+      }
+
+      if (errorMessage.includes("429")) {
+        throw new Error("Rate limit exceeded");
+      }
+
+      if (errorMessage.includes("500") || errorMessage.includes("502") || errorMessage.includes("503")) {
+        throw new Error("Service temporarily unavailable");
+      }
+
       throw new Error("Failed to spend credits");
     }
   }

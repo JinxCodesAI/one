@@ -69,7 +69,7 @@ Make the tasks diverse and helpful. Focus on practical, achievable goals.`;
           },
           required: ["tasks"]
         },
-        model: "gpt-4o"
+        model: "gpt-4.1-nano"
       });
 
       return response.object.tasks.map((task: any) => ({
@@ -205,7 +205,7 @@ Make the tasks diverse and helpful. Focus on practical, achievable goals.`;
       return await this.client.getModels();
     } catch (error) {
       console.error("Error getting available models:", error);
-      return ["gpt-4o"]; // Fallback to default model
+      return ["gpt-4.1-nano"]; // Fallback to default model
     }
   }
 }
