@@ -3,17 +3,22 @@
   "version": "0.0.1",
   "exports": "./src/main.tsx",
   "tasks": {
-    "dev": "deno run -A --node-modules-dir=auto npm:vite",
+    "dev": "deno task dev:server & deno task dev:frontend",
+    "dev:frontend": "deno run -A --node-modules-dir=auto npm:vite --port 5173",
+    "dev:server": "deno run -A --watch server.ts",
     "build": "deno run -A --node-modules-dir=auto npm:vite build",
     "preview": "deno run -A --node-modules-dir=auto npm:vite preview",
-    "serve": "deno run --allow-net --allow-read jsr:@std/http@1/file-server dist/",
-    "test": "deno test --allow-net --allow-env --allow-read --allow-write src/",
-    "test:unit": "deno test --allow-net --allow-env --allow-read --allow-write --ignore='src/**/*.integration.ts' --ignore='src/**/*.e2e.ts' src/",
-    "test:integration": "deno test --allow-net --allow-env --allow-read --allow-write src/**/*.integration.ts",
+    "serve": "deno run -A server.ts",
+    "serve:static": "deno run --allow-net --allow-read jsr:@std/http@1/file-server dist/",
+    "test": "deno test --allow-net --allow-env --allow-read --allow-write src/ server/",
+    "test:unit": "deno test --allow-net --allow-env --allow-read --allow-write --ignore='src/**/*.integration.ts' --ignore='src/**/*.e2e.ts' --ignore='server/**/*.integration.ts' src/ server/",
+    "test:integration": "deno test --allow-net --allow-env --allow-read --allow-write src/**/*.integration.ts server/**/*.integration.ts",
     "test:e2e": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys e2e/**/*.e2e.ts",
     "test:e2e-ui": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys e2e/**/*.ui.e2e.ts",
-    "test:all": "deno test --allow-net --allow-env --allow-read --allow-write src/ e2e/",
-    "test:watch": "deno test --allow-net --allow-env --allow-read --allow-write --watch --ignore='src/**/*.e2e.ts' src/"
+    "test:all": "deno test --allow-net --allow-env --allow-read --allow-write src/ server/ e2e/",
+    "test:watch": "deno test --allow-net --allow-env --allow-read --allow-write --watch --ignore='src/**/*.e2e.ts' --ignore='server/**/*.e2e.ts' src/ server/",
+    "lint": "deno lint src/ server/",
+    "fmt": "deno fmt src/ server/"
   },
   "compilerOptions": {
     "lib": ["ES2020", "DOM", "DOM.Iterable", "deno.ns"],
@@ -42,6 +47,10 @@
     "@one/profile-service": "../../internal/profile-service/sdk/client.ts",
     "lucide-react": "npm:lucide-react@^0.460.0",
     "clsx": "npm:clsx@^2.1.1",
-    "date-fns": "npm:date-fns@^4.1.0"
+    "date-fns": "npm:date-fns@^4.1.0",
+    "hono": "jsr:@hono/hono@^4.6.11",
+    "hono/deno": "jsr:@hono/hono@^4.6.11/deno",
+    "hono/cors": "jsr:@hono/hono@^4.6.11/cors",
+    "hono/logger": "jsr:@hono/hono@^4.6.11/logger"
   }
 }

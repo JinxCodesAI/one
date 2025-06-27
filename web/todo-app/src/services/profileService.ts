@@ -1,67 +1,68 @@
 /**
  * Profile Service Integration
  * Handles user profiles, credits, and authentication
+ *
+ * Updated to use co-located BFF endpoints with proper anonId management.
+ * The anonId is generated and managed client-side using the profile SDK,
+ * then passed to the BFF via headers.
  */
 
-import {
-  createProfileClient
-} from "@one/profile-service";
+import { getProfileClient } from "@one/profile-service";
 import type { UserProfile, Credits } from "../types.ts";
 
 class ProfileService {
-  private client: ReturnType<typeof createProfileClient>;
+  private baseUrl: string;
+  private profileClient = getProfileClient();
 
   constructor() {
-    // Get profile service URL from environment or use default
-    const profileServiceUrl = this.getProfileServiceUrl();
+    this.baseUrl = '/api/profile';
+  }
 
-    console.log("Profile Service URL:", profileServiceUrl); // Debug log
+  /**
+   * Get the anonId from the profile client SDK
+   */
+  private async getAnonId(): Promise<string> {
+    return await this.profileClient.getAnonId();
+  }
 
-    this.client = createProfileClient({
-      profileServiceUrl,
-      cookieDomain: this.getCookieDomain(),
-      iframeTimeout: 5000
+  /**
+   * Make a request to the BFF Profile endpoints with anonId header
+   */
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    const anonId = await this.getAnonId();
+
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Anon-Id': anonId,
+        ...options.headers,
+      },
+      credentials: 'include', // Include cookies for authentication
+      ...options,
     });
-  }
 
-  private getProfileServiceUrl(): string {
-    // Check for Vite environment variable first
-    if (typeof globalThis.window !== "undefined") {
-      // @ts-ignore - Vite injects these at build time
-      return import.meta.env?.VITE_PROFILE_API_URL || "http://localhost:8080";
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
     }
-    
-    // Fallback for server-side or testing
-    return Deno?.env?.get("PROFILE_API_URL") || "http://localhost:8080";
-  }
 
-  private getCookieDomain(): string {
-    if (typeof globalThis.window !== "undefined") {
-      const hostname = globalThis.window.location.hostname;
-      
-      // For localhost development
-      if (hostname === "localhost" || hostname === "127.0.0.1") {
-        return "localhost";
-      }
-      
-      // For production, extract the domain
-      const parts = hostname.split(".");
-      if (parts.length > 2) {
-        return "." + parts.slice(-2).join(".");
-      }
-      
-      return hostname;
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || 'Request failed');
     }
-    
-    return ".jinxcodes.ai"; // Default for production
+
+    return data.data;
   }
 
   /**
    * Get the current user's anonymous ID
+   * This now uses the client SDK directly instead of the BFF endpoint
    */
-  async getAnonId(): Promise<string> {
+  async getAnonIdPublic(): Promise<string> {
     try {
-      return await this.client.getAnonId();
+      return await this.getAnonId();
     } catch (error) {
       console.error("Error getting anonymous ID:", error);
       throw new Error("Failed to get user ID");
@@ -73,7 +74,7 @@ class ProfileService {
    */
   async getUserProfile(): Promise<UserProfile> {
     try {
-      const profile = await this.client.getUserInfo();
+      const profile = await this.request<UserProfile>('/user-info');
       return {
         anonId: profile.anonId,
         userId: profile.userId,
@@ -93,7 +94,10 @@ class ProfileService {
    */
   async updateUserProfile(updates: { name?: string; avatarUrl?: string }): Promise<UserProfile> {
     try {
-      const profile = await this.client.updateProfile(updates);
+      const profile = await this.request<UserProfile>('/update-profile', {
+        method: 'POST',
+        body: JSON.stringify(updates),
+      });
       return {
         anonId: profile.anonId,
         userId: profile.userId,
@@ -113,7 +117,7 @@ class ProfileService {
    */
   async getUserCredits(): Promise<Credits> {
     try {
-      const credits = await this.client.getCredits();
+      const credits = await this.request<Credits>('/credits');
       return {
         balance: credits.balance,
         ledger: credits.ledger.map((transaction: unknown) => {
@@ -138,7 +142,9 @@ class ProfileService {
    */
   async claimDailyBonus(): Promise<Credits> {
     try {
-      const credits = await this.client.claimDailyBonus();
+      const credits = await this.request<Credits>('/claim-daily-bonus', {
+        method: 'POST',
+      });
       return {
         balance: credits.balance,
         ledger: credits.ledger.map((transaction: unknown) => {
@@ -179,8 +185,14 @@ class ProfileService {
         throw new Error("Reason is required");
       }
 
-      // Use the SDK's adjustCredits method to spend credits
-      const result = await this.client.adjustCredits(-Math.abs(amount), reason);
+      // Use the BFF endpoint to spend credits
+      const result = await this.request<Credits>('/spend-credits', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: Math.abs(amount),
+          reason
+        }),
+      });
 
       return {
         balance: result.balance,

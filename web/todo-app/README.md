@@ -1,6 +1,6 @@
 # AI-Powered Todo App
 
-A modern, intelligent todo application built with React, TypeScript, and Deno that showcases the integration of AI API and Profile Service within the monorepo ecosystem.
+A modern, intelligent todo application built with React, TypeScript, and Deno that showcases the **co-located Backend-For-Frontend (BFF) pattern** for secure integration with AI API and Profile Service within the monorepo ecosystem.
 
 ## ✨ Features
 
@@ -23,11 +23,34 @@ A modern, intelligent todo application built with React, TypeScript, and Deno th
 - 🎁 **Daily Bonuses**: Claim daily credit bonuses
 - 📈 **Transaction History**: Track your credit usage and earnings
 
-### Modern UI/UX
+### Modern UI/UX & Architecture
 - 🎨 **Beautiful Design**: Modern gradient backgrounds and smooth animations
 - 📱 **Responsive**: Works perfectly on desktop, tablet, and mobile
 - ⚡ **Fast Performance**: Built with Vite for lightning-fast development and builds
 - 🌟 **Intuitive Interface**: Clean, user-friendly design
+- 🔒 **Secure Architecture**: Co-located BFF pattern prevents direct client access to internal services
+- 🏗️ **Modern Stack**: React 19, TypeScript, Deno, Hono BFF server
+
+## 🏗️ Architecture
+
+This application implements the **co-located Backend-For-Frontend (BFF) pattern** as outlined in the Frontend Development Guide:
+
+```
+[Browser] → [Frontend (React)] → [Co-located BFF (Hono)] → [Internal Services]
+```
+
+### Key Components
+
+- **Frontend**: React 19 + TypeScript + Vite (port 5173)
+- **BFF Server**: Hono-based proxy server (port 3000)
+- **Internal Services**: AI API (port 8000) + Profile Service (port 8080)
+
+### Security Benefits
+
+- ✅ No direct client access to internal services
+- ✅ API keys and authentication handled server-side
+- ✅ Request validation and rate limiting
+- ✅ Centralized error handling and logging
 
 ## 🚀 Quick Start
 
@@ -39,14 +62,14 @@ A modern, intelligent todo application built with React, TypeScript, and Deno th
 
 ### 1. Start Required Services
 
-First, ensure the AI API and Profile services are running:
+First, ensure the internal services are running:
 
 ```bash
 # Terminal 1: Start AI API Service
 cd internal/ai-api
 deno task dev
 
-# Terminal 2: Start Profile Service  
+# Terminal 2: Start Profile Service
 cd internal/profile-service
 deno task dev
 ```
@@ -57,85 +80,124 @@ deno task dev
 # Navigate to the todo app directory
 cd web/todo-app
 
-# Start the development server
+# Start both frontend and BFF server
 deno task dev
 ```
 
-The app will be available at `http://localhost:3000`
+This will start:
+- **Frontend**: `http://localhost:5173` (Vite dev server)
+- **BFF Server**: `http://localhost:3000` (Hono server)
 
-### 3. Environment Configuration (Optional)
+The frontend automatically proxies API calls to the BFF server.
 
-Create a `.env` file to customize API URLs:
+### 3. Alternative Development Modes
 
 ```bash
-cp .env.example .env
+# Start only the frontend (requires BFF server running separately)
+deno task dev:frontend
+
+# Start only the BFF server
+deno task dev:server
+
+# Build for production
+deno task build
+
+# Serve production build
+deno task serve
 ```
 
-Edit `.env` with your preferred settings:
+### 4. Environment Configuration (Optional)
+
+Configure internal service URLs for the BFF server:
 
 ```env
-VITE_AI_API_URL=http://localhost:8000
-VITE_PROFILE_API_URL=http://localhost:8080
-VITE_DEV_MODE=true
+# .env (for BFF server)
+INTERNAL_AI_API_URL=http://localhost:8000
+INTERNAL_PROFILE_API_URL=http://localhost:8080
+INTERNAL_API_KEY=your-internal-api-key
+NODE_ENV=development
+PORT=3000
 ```
 
-## 🏗️ Architecture
+## 🏗️ Updated Architecture
 
 ### Technology Stack
 
 - **Frontend**: React 19 with TypeScript
 - **Build Tool**: Vite 6.1 with Deno integration
+- **BFF Server**: Hono framework with Deno runtime
 - **Styling**: Modern CSS with custom properties and animations
 - **State Management**: React hooks with local state
 - **Data Persistence**: Browser localStorage with versioning
-- **AI Integration**: Custom SDK for AI API service
-- **Profile Management**: Custom SDK for Profile service
+- **Service Integration**: Co-located BFF pattern with secure proxy
+- **Testing**: Comprehensive test suite (unit, integration, E2E)
 
 ### Project Structure
 
 ```
 web/todo-app/
-├── src/
+├── src/                     # Frontend source code
 │   ├── components/          # React components
-│   │   ├── Header.tsx       # App header with branding
+│   │   ├── common/          # Shared components
+│   │   │   ├── Header.tsx   # App header with branding
+│   │   │   ├── ErrorMessage.tsx # Error display component
+│   │   │   └── LoadingSpinner.tsx # Loading indicator
 │   │   ├── ProfileCard.tsx  # User profile and credits
 │   │   ├── TodoList.tsx     # Todo list container
 │   │   ├── TodoItem.tsx     # Individual todo item
 │   │   ├── TodoForm.tsx     # Create/edit todo form
 │   │   ├── AIAssistant.tsx  # AI task generation
 │   │   ├── FilterBar.tsx    # Search and filtering
-│   │   ├── StatsCard.tsx    # Progress statistics
-│   │   └── ...              # Utility components
-│   ├── services/            # API integration layer
-│   │   ├── aiService.ts     # AI API integration
-│   │   ├── profileService.ts # Profile service integration
+│   │   └── StatsCard.tsx    # Progress statistics
+│   ├── services/            # BFF API integration layer
+│   │   ├── aiService.ts     # AI BFF endpoints (/api/ai/*)
+│   │   ├── profileService.ts # Profile BFF endpoints (/api/profile/*)
 │   │   └── todoService.ts   # Local todo management
 │   ├── types.ts             # TypeScript type definitions
 │   ├── App.tsx              # Main application component
 │   ├── App.css              # Application-specific styles
 │   ├── index.css            # Global styles and utilities
 │   └── main.tsx             # Application entry point
+├── server/                  # Co-located BFF server
+│   ├── api/                 # API route handlers
+│   │   ├── ai.ts            # AI service proxy routes
+│   │   └── profile.ts       # Profile service proxy routes
+│   ├── middleware/          # Server middleware
+│   │   ├── errorHandler.ts  # Error handling middleware
+│   │   └── validation.ts    # Request validation middleware
+│   ├── utils/               # Server utilities
+│   │   └── serviceClient.ts # Internal service communication
+│   └── index.ts             # Main server entry point
 ├── public/                  # Static assets
+├── dist/                    # Build output
 ├── e2e/                     # End-to-end tests
+├── server.ts                # Production server entry point
 ├── deno.json               # Deno configuration and dependencies
 ├── vite.config.ts          # Vite build configuration
 ├── index.html              # HTML template
 └── README.md               # This file
 ```
 
-### Service Integration
+### Service Integration Architecture
 
-The app integrates with two core services:
+The app uses a **co-located BFF pattern** for secure service integration:
 
-1. **AI API Service** (`internal/ai-api`)
-   - Task generation and suggestions
-   - Smart categorization
-   - Completion tips and motivation
+**Frontend → BFF → Internal Services**
 
-2. **Profile Service** (`internal/profile-service`)
-   - User profile management
-   - Credits system and transactions
-   - Cross-domain identity management
+1. **Frontend Services** (`src/services/`)
+   - Make requests to BFF endpoints (`/api/*`)
+   - Handle response transformation and error handling
+   - Maintain same interface for components
+
+2. **BFF Server** (`server/`)
+   - Proxies requests to internal services
+   - Handles authentication and API keys
+   - Provides request validation and rate limiting
+   - Serves static frontend assets in production
+
+3. **Internal Services** (accessed via BFF only)
+   - **AI API Service**: Task generation, categorization, suggestions
+   - **Profile Service**: User profiles, credits, transactions
 
 ## 🎮 Usage Guide
 

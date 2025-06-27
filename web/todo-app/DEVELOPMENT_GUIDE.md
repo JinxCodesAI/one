@@ -1,23 +1,30 @@
 # AI-Powered Todo App - Development Guide
 
-This guide provides detailed information for developers working on the AI-powered todo application.
+This guide provides detailed information for developers working on the AI-powered todo application with **co-located Backend-For-Frontend (BFF) architecture**.
 
 ## 🏗️ Architecture Overview
 
 ### Design Principles
 
-1. **Service-Oriented**: Leverages AI API and Profile Service through SDK integration
+1. **Co-located BFF Pattern**: Secure service integration through dedicated BFF server
 2. **Component-Based**: Modular React components with clear responsibilities
 3. **Type-Safe**: Comprehensive TypeScript coverage with strict mode
 4. **Responsive**: Mobile-first design with progressive enhancement
 5. **Performance**: Optimized with Vite and modern React patterns
+6. **Security-First**: No direct client access to internal services
 
 ### Data Flow
 
 ```
-User Interaction → React Components → Service Layer → External APIs
+User Interaction → React Components → BFF API Layer → Internal Services
                                    ↓
                               Local Storage ← Todo Management
+```
+
+**Detailed Flow:**
+```
+[Browser] → [Frontend:5173] → [BFF:3000] → [AI API:8000]
+                           → [BFF:3000] → [Profile:8080]
 ```
 
 ## 🔧 Development Setup
@@ -25,9 +32,9 @@ User Interaction → React Components → Service Layer → External APIs
 ### Prerequisites
 
 - Deno 2.3.6+
-- Node.js knowledge (for npm packages)
+- Understanding of Hono framework (BFF server)
 - React 19 and TypeScript experience
-- Understanding of the monorepo structure
+- Knowledge of the monorepo structure
 
 ### Environment Setup
 
@@ -38,27 +45,50 @@ User Interaction → React Components → Service Layer → External APIs
 
 2. **Install Dependencies** (handled by Deno):
    ```bash
-   deno cache src/main.tsx
+   deno cache src/main.tsx server/index.ts
    ```
 
-3. **Start Services**:
+3. **Start Internal Services**:
    ```bash
    # Terminal 1: AI API
    cd ../../internal/ai-api && deno task dev
-   
+
    # Terminal 2: Profile Service
    cd ../../internal/profile-service && deno task dev
-   
-   # Terminal 3: Todo App
+
+   # Terminal 3: Todo App (BFF + Frontend)
    deno task dev
    ```
 
+This starts both the BFF server (port 3000) and frontend dev server (port 5173).
+
 ### Development Workflow
 
-1. **Hot Reload**: Vite provides instant updates during development
-2. **Type Checking**: TypeScript errors appear in console and editor
-3. **Testing**: Run tests in watch mode during development
-4. **Debugging**: Use browser dev tools and React DevTools
+1. **Dual Server Setup**: BFF server handles API requests, Vite serves frontend
+2. **Hot Reload**: Vite provides instant frontend updates, Deno watch restarts BFF
+3. **API Proxying**: Frontend automatically proxies `/api/*` calls to BFF server
+4. **Type Checking**: TypeScript errors appear in console and editor
+5. **Testing**: Run comprehensive test suite (unit, integration, E2E)
+6. **Debugging**: Use browser dev tools, React DevTools, and Deno debugger
+
+### Alternative Development Commands
+
+```bash
+# Start only frontend (requires BFF running separately)
+deno task dev:frontend
+
+# Start only BFF server
+deno task dev:server
+
+# Run tests in watch mode
+deno task test:watch
+
+# Build for production
+deno task build
+
+# Serve production build
+deno task serve
+```
 
 ## 📁 Project Structure Deep Dive
 
@@ -66,24 +96,40 @@ User Interaction → React Components → Service Layer → External APIs
 
 ```
 src/components/
-├── Header.tsx           # App branding and navigation
+├── common/              # Shared components
+│   ├── Header.tsx       # App branding and navigation
+│   ├── LoadingSpinner.tsx # Reusable loading indicator
+│   └── ErrorMessage.tsx # Error display component
 ├── ProfileCard.tsx      # User profile management
 ├── StatsCard.tsx        # Progress visualization
 ├── FilterBar.tsx        # Search and filtering UI
 ├── TodoList.tsx         # Todo container with grouping
 ├── TodoItem.tsx         # Individual todo with inline editing
 ├── TodoForm.tsx         # Modal form for creating todos
-├── AIAssistant.tsx      # AI-powered task generation
-├── LoadingSpinner.tsx   # Reusable loading indicator
-└── ErrorMessage.tsx     # Error display component
+└── AIAssistant.tsx      # AI-powered task generation
 ```
 
-### Services Layer
+### BFF Server Architecture
+
+```
+server/
+├── api/                 # Route handlers
+│   ├── ai.ts           # AI service proxy routes
+│   └── profile.ts      # Profile service proxy routes
+├── middleware/          # Server middleware
+│   ├── errorHandler.ts # Global error handling
+│   └── validation.ts   # Request validation & rate limiting
+├── utils/              # Server utilities
+│   └── serviceClient.ts # Internal service communication
+└── index.ts            # Main server entry point
+```
+
+### Services Layer (Frontend)
 
 ```
 src/services/
-├── aiService.ts         # AI API integration
-├── profileService.ts    # Profile service integration
+├── aiService.ts         # BFF AI endpoints (/api/ai/*)
+├── profileService.ts    # BFF Profile endpoints (/api/profile/*)
 └── todoService.ts       # Local storage management
 ```
 
