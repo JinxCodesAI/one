@@ -1,6 +1,7 @@
 {
   "name": "@one/todo-app",
   "version": "0.0.1",
+  "exports": "./src/main.tsx",
   "tasks": {
     "dev": "deno run -A --node-modules-dir=auto npm:vite",
     "build": "deno run -A --node-modules-dir=auto npm:vite build",
