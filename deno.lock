@@ -1,6 +1,7 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@hono/hono@^4.6.11": "4.8.3",
     "jsr:@std/assert@1": "1.0.13",
     "jsr:@std/assert@^1.0.13": "1.0.13",
     "jsr:@std/async@^1.0.13": "1.0.13",
@@ -26,14 +27,15 @@
     "jsr:@std/uuid@1": "1.0.9",
     "npm:@ai-sdk/google@1.2.19": "1.2.19_zod@3.25.67",
     "npm:@ai-sdk/openai@1.3.22": "1.3.22_zod@3.25.67",
-    "npm:@deno/vite-plugin@^1.0.4": "1.0.4_vite@6.3.5__picomatch@4.0.2",
+    "npm:@deno/vite-plugin@^1.0.4": "1.0.4_vite@6.3.5__picomatch@4.0.2_@types+node@22.15.15",
     "npm:@openrouter/ai-sdk-provider@0.0.5": "0.0.5_zod@3.25.67",
     "npm:@testing-library/jest-dom@^6.6.3": "6.6.3",
     "npm:@testing-library/react@^16.1.0": "16.3.0_@testing-library+dom@10.4.0_@types+react@19.1.8_@types+react-dom@19.1.6__@types+react@19.1.8_react@19.1.0_react-dom@19.1.0__react@19.1.0",
     "npm:@testing-library/user-event@^14.5.2": "14.6.1_@testing-library+dom@10.4.0",
+    "npm:@types/node@*": "22.15.15",
     "npm:@types/react-dom@^19.0.4": "19.1.6_@types+react@19.1.8",
     "npm:@types/react@^19.0.10": "19.1.8",
-    "npm:@vitejs/plugin-react-swc@^3.8.0": "3.10.2_vite@6.3.5__picomatch@4.0.2",
+    "npm:@vitejs/plugin-react-swc@^3.8.0": "3.10.2_vite@6.3.5__picomatch@4.0.2_@types+node@22.15.15",
     "npm:ai@^4.3.16": "4.3.16_react@19.1.0_zod@3.25.67",
     "npm:clsx@^2.1.1": "2.1.1",
     "npm:date-fns@^4.1.0": "4.1.0",
@@ -44,11 +46,14 @@
     "npm:playwright@^1.48.0": "1.53.1",
     "npm:react-dom@19": "19.1.0_react@19.1.0",
     "npm:react@19": "19.1.0",
-    "npm:vite@*": "6.3.5_picomatch@4.0.2",
-    "npm:vite@^6.1.1": "6.3.5_picomatch@4.0.2",
+    "npm:vite@*": "6.3.5_picomatch@4.0.2_@types+node@22.15.15",
+    "npm:vite@^6.1.1": "6.3.5_picomatch@4.0.2_@types+node@22.15.15",
     "npm:zod@^3.23.0": "3.25.67"
   },
   "jsr": {
+    "@hono/hono@4.8.3": {
+      "integrity": "f17509836610b97e9ec86bce5349387115c35ee72b7b29fd2b7944abe5f843ab"
+    },
     "@std/assert@1.0.13": {
       "integrity": "ae0d31e41919b12c656c742b22522c32fb26ed0cba32975cb0de2a273cb68b29",
       "dependencies": [
@@ -268,7 +273,13 @@
     "@deno/vite-plugin@1.0.4_vite@6.3.5__picomatch@4.0.2": {
       "integrity": "sha512-xg8YT8Wn2sGXSnJgiGTpBGX1Dov0c6fd1rAp8VsfrCUtyBRRWzwVMAnd3fQ4yq8h7LSVvJUxEFN4U421k/DQLA==",
       "dependencies": [
-        "vite"
+        "vite@6.3.5_picomatch@4.0.2"
+      ]
+    },
+    "@deno/vite-plugin@1.0.4_vite@6.3.5__picomatch@4.0.2_@types+node@22.15.15": {
+      "integrity": "sha512-xg8YT8Wn2sGXSnJgiGTpBGX1Dov0c6fd1rAp8VsfrCUtyBRRWzwVMAnd3fQ4yq8h7LSVvJUxEFN4U421k/DQLA==",
+      "dependencies": [
+        "vite@6.3.5_picomatch@4.0.2_@types+node@22.15.15"
       ]
     },
     "@esbuild/aix-ppc64@0.25.5": {
@@ -644,6 +655,12 @@
     "@types/estree@1.0.8": {
       "integrity": "sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w=="
     },
+    "@types/node@22.15.15": {
+      "integrity": "sha512-R5muMcZob3/Jjchn5LcO8jdKwSCbzqmPB6ruBxMcf9kbxtniZHP327s6C37iOfuw8mbKK3cAQa7sEl7afLrQ8A==",
+      "dependencies": [
+        "undici-types"
+      ]
+    },
     "@types/react-dom@19.1.6_@types+react@19.1.8": {
       "integrity": "sha512-4hOiT/dwO8Ko0gV1m/TJZYk3y0KBnY9vzDh7W+DH17b2HFSOGgdj33dhihPeuy3l0q23+4e+hoXHV6hCC4dCXw==",
       "dependencies": [
@@ -661,7 +678,15 @@
       "dependencies": [
         "@rolldown/pluginutils",
         "@swc/core",
-        "vite"
+        "vite@6.3.5_picomatch@4.0.2"
+      ]
+    },
+    "@vitejs/plugin-react-swc@3.10.2_vite@6.3.5__picomatch@4.0.2_@types+node@22.15.15": {
+      "integrity": "sha512-xD3Rdvrt5LgANug7WekBn1KhcvLn1H3jNBfJRL3reeOIua/WnZOEV5qi5qIBq5T8R0jUDmRtxuvk4bPhzGHDWw==",
+      "dependencies": [
+        "@rolldown/pluginutils",
+        "@swc/core",
+        "vite@6.3.5_picomatch@4.0.2_@types+node@22.15.15"
       ]
     },
     "agent-base@7.1.3": {
@@ -1230,6 +1255,9 @@
         "punycode"
       ]
     },
+    "undici-types@6.21.0": {
+      "integrity": "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ=="
+    },
     "use-sync-external-store@1.5.0_react@19.1.0": {
       "integrity": "sha512-Rb46I4cGGVBmjamjphe8L/UnvJD+uPPtTkNvX5mZgqdbavhI4EbgIWJiIHXJ8bc/i9EQGPRh4DwEURJ552Do0A==",
       "dependencies": [
@@ -1248,6 +1276,25 @@
       ],
       "optionalDependencies": [
         "fsevents@2.3.3"
+      ],
+      "bin": true
+    },
+    "vite@6.3.5_picomatch@4.0.2_@types+node@22.15.15": {
+      "integrity": "sha512-cZn6NDFE7wdTpINgs++ZJ4N49W2vRp8LCKrn3Ob1kYNtOo21vfDoaV5GzBfLU4MovSAB8uNRm4jgzVQZ+mBzPQ==",
+      "dependencies": [
+        "@types/node",
+        "esbuild",
+        "fdir",
+        "picomatch",
+        "postcss",
+        "rollup",
+        "tinyglobby"
+      ],
+      "optionalDependencies": [
+        "fsevents@2.3.3"
+      ],
+      "optionalPeers": [
+        "@types/node"
       ],
       "bin": true
     },
@@ -1410,6 +1457,7 @@
       },
       "web/todo-app": {
         "dependencies": [
+          "jsr:@hono/hono@^4.6.11",
           "jsr:@std/assert@1",
           "jsr:@std/testing@1",
           "npm:@deno/vite-plugin@^1.0.4",

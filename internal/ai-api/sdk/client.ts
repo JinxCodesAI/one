@@ -1,5 +1,36 @@
 /**
- * SDK client for the AI API service
+ * AI API Service Client SDK
+ *
+ * ✅ **UNIVERSAL** - This SDK works in both browser and server environments.
+ *
+ * TypeScript/JavaScript SDK for interacting with the AI API service.
+ * Provides text generation, object generation, and model management capabilities.
+ *
+ * **USAGE:**
+ * - ✅ Frontend applications (React, Vue, vanilla JS)
+ * - ✅ Server-side applications (Node.js, Deno, BFF servers)
+ * - ✅ Service-to-service communication
+ * - ✅ Edge functions and serverless environments
+ *
+ * **DEPENDENCIES:**
+ * - Only uses standard `fetch()` API (available in modern browsers and runtimes)
+ * - No browser-specific APIs (DOM, cookies, localStorage)
+ * - No Node.js-specific APIs
+ *
+ * **EXAMPLES:**
+ * ```typescript
+ * // Browser usage
+ * const client = createSimpleClient('https://ai-api.example.com');
+ *
+ * // Server usage
+ * const client = createSimpleClient('http://localhost:8000');
+ *
+ * // Generate text
+ * const response = await client.generateText({
+ *   messages: [{ role: 'user', content: 'Hello!' }],
+ *   model: 'gpt-4.1-nano'
+ * });
+ * ```
  */
 
 import type {

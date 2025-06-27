@@ -1,8 +1,26 @@
 /**
  * Profile Service Client SDK
- * 
+ *
+ * ⚠️  **CLIENT-SIDE ONLY** - This SDK is designed exclusively for browser environments.
+ *
  * JavaScript SDK for interacting with the profile service from web applications.
  * Handles cross-domain identity management via cookies and iframe localStorage.
+ *
+ * **USAGE:**
+ * - ✅ Frontend applications (React, Vue, vanilla JS)
+ * - ✅ Browser environments with DOM access
+ * - ❌ Server-side applications (Node.js, Deno, BFF servers)
+ * - ❌ Service-to-service communication
+ *
+ * **KEY BROWSER DEPENDENCIES:**
+ * - `document.cookie` for cookie management
+ * - `document.createElement()` for iframe creation
+ * - `window.addEventListener()` for postMessage communication
+ * - `localStorage` via iframe for cross-domain storage
+ *
+ * **FOR SERVER-SIDE USE:**
+ * Use direct HTTP calls to the profile service API endpoints instead.
+ * See: docs/development/profile-service/spec_initial.md for API documentation.
  */
 
 
