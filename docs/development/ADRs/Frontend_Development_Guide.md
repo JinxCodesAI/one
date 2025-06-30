@@ -102,8 +102,35 @@ src/components/
 - **Build**: `deno task build`
 - **Preview**: `deno task preview`
 - **Testing**: `deno task test`
+- **E2E Testing**: `deno task test:e2e`
 - **Linting**: `deno task lint`
 - **Formatting**: `deno task fmt`
+
+### Development Environment Setup
+
+Before starting development, ensure all required services are running:
+
+1. **Start Internal Services** (if needed):
+   ```bash
+   # Profile Service
+   cd internal/profile-service && deno task dev
+
+   # AI API Service
+   cd internal/ai-api && deno task dev
+   ```
+
+2. **Configure Environment Variables**:
+   ```bash
+   # Copy and customize environment configuration
+   cp .env.example .env
+   # Edit .env with correct service ports and URLs
+   ```
+
+3. **Verify Service Connectivity**:
+   ```bash
+   # Run E2E tests to verify all services are connected
+   deno task test:e2e
+   ```
 
 ## Coding Standards
 
@@ -146,6 +173,49 @@ Our frontend applications follow the comprehensive testing strategy outlined in 
 - **E2E Tests**: Test complete user flows with browser automation
 - **BFF Tests**: Test server-side API routes and middleware
 
+### E2E Testing Requirements
+
+All frontend applications must include comprehensive E2E tests that verify:
+
+1. **Service Connectivity**: BFF can connect to all required internal services
+2. **API Endpoints**: All API routes work correctly through both BFF and Vite proxy
+3. **Error Handling**: Proper error responses for invalid requests
+4. **Development Workflow**: Frontend dev server and Vite proxy work correctly
+
+Example E2E test structure:
+
+```typescript
+// e2e/bff-connectivity.e2e.ts
+Deno.test("BFF should connect to Profile Service", async () => {
+  const response = await fetch("http://localhost:3000/api/profile/user-info", {
+    headers: { "X-Anon-Id": "test-user" }
+  });
+
+  assertEquals(response.status, 200);
+  const data = await response.json();
+  assertEquals(data.success, true);
+});
+
+Deno.test("Vite proxy should route to BFF", async () => {
+  const response = await fetch("http://localhost:5173/api/test");
+  assertEquals(response.status, 200);
+});
+```
+
+### Testing with Real Services
+
+E2E tests should run against real internal services when possible:
+
+```bash
+# Start all required services before running E2E tests
+cd internal/profile-service && deno task dev &
+cd internal/ai-api && deno task dev &
+cd web/todo-app && deno task dev &
+
+# Run E2E tests
+deno task test:e2e
+```
+
 For detailed testing instructions, refer to the comprehensive testing guide.
 
 ## Service Integration
@@ -164,51 +234,123 @@ All frontend applications must implement the co-located BFF pattern for secure s
 
 ### BFF Implementation
 
-Each web application must include a server implementation:
+Each web application must include a server implementation following the co-located pattern:
+
+#### Environment Configuration
+
+Use centralized environment variables for service discovery:
+
+```bash
+# .env file
+# BFF Server Configuration
+PORT=3000
+NODE_ENV=development
+
+# Internal Service Configuration (use ports, not full URLs)
+AI_API_PORT=8000
+PROFILE_SERVICE_PORT=8081
+AI_API_HOST=localhost
+PROFILE_SERVICE_HOST=localhost
+
+# Logging Configuration
+LOG_LEVEL=debug
+ENABLE_REQUEST_LOGGING=true
+ENABLE_ERROR_DETAILS=true
+```
+
+#### Server Structure
+
+Organize BFF server code in modular structure:
+
+```
+server/
+├── api/                # API route handlers
+│   ├── ai.ts          # AI service routes
+│   ├── profile.ts     # Profile service routes
+│   └── ...
+├── middleware/        # Server middleware
+│   ├── errorHandler.ts
+│   ├── validation.ts
+│   └── ...
+├── utils/             # Server utilities
+│   ├── serviceClient.ts
+│   └── ...
+└── index.ts          # Main server entry point
+```
+
+#### Server Implementation Example
 
 ```typescript
-// web/app-name/server.ts
+// server/index.ts
 import { Hono } from 'hono';
-import { serveStatic } from '@hono/node-server/serve-static';
-import { serve } from '@hono/node-server';
+import { serveStatic } from 'hono/deno';
+import { cors } from 'hono/cors';
+import { logger } from 'hono/logger';
+import { load } from "@std/dotenv";
 
-// Configuration
-const INTERNAL_SERVICE_URL = Deno.env.get("INTERNAL_SERVICE_URL");
-const INTERNAL_API_KEY = Deno.env.get("INTERNAL_API_KEY");
+// Load environment variables
+await load({ export: true });
+
+// Configuration - construct URLs from ports
+const AI_API_PORT = parseInt(Deno.env.get("AI_API_PORT") || "8000", 10);
+const PROFILE_SERVICE_PORT = parseInt(Deno.env.get("PROFILE_SERVICE_PORT") || "8081", 10);
+const AI_API_HOST = Deno.env.get("AI_API_HOST") || "localhost";
+const PROFILE_SERVICE_HOST = Deno.env.get("PROFILE_SERVICE_HOST") || "localhost";
+
+const INTERNAL_AI_API_URL = `http://${AI_API_HOST}:${AI_API_PORT}`;
+const INTERNAL_PROFILE_API_URL = `http://${PROFILE_SERVICE_HOST}:${PROFILE_SERVICE_PORT}`;
+
 const PORT = parseInt(Deno.env.get("PORT") || "3000", 10);
+const NODE_ENV = Deno.env.get("NODE_ENV") || "development";
 
 const app = new Hono();
 
-// API routes
-const api = app.basePath('/api');
+// Global middleware
+app.use('*', logger());
+app.use('*', cors({
+  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  credentials: true,
+}));
 
-api.post('/endpoint', async (c) => {
-  // Validate request
-  const body = await c.req.json();
-  
-  // Forward to internal service with authentication
-  const response = await fetch(`${INTERNAL_SERVICE_URL}/endpoint`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Internal-API-Key": INTERNAL_API_KEY!,
-    },
-    body: JSON.stringify(body),
+// Import and use route handlers
+import { aiRoutes } from './api/ai.ts';
+import { profileRoutes } from './api/profile.ts';
+
+app.route('/api/ai', aiRoutes);
+app.route('/api/profile', profileRoutes);
+
+// Health check endpoint
+app.get('/health', async (c) => {
+  // Check internal service health
+  const services = await Promise.allSettled([
+    fetch(`${INTERNAL_AI_API_URL}/health`),
+    fetch(`${INTERNAL_PROFILE_API_URL}/health`)
+  ]);
+
+  return c.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    services: {
+      ai: { url: INTERNAL_AI_API_URL, status: services[0].status },
+      profile: { url: INTERNAL_PROFILE_API_URL, status: services[1].status }
+    }
   });
-
-  return new Response(response.body, { status: response.status });
 });
 
-// Static file serving
-app.use('*', serveStatic({ root: './dist' }));
-app.get('*', serveStatic({ path: './dist/index.html' }));
+// Static file serving (production mode)
+if (NODE_ENV === "production") {
+  app.use('*', serveStatic({ root: './dist' }));
+  app.get('*', serveStatic({ path: './dist/index.html' }));
+}
 
 // Start server
-console.log(`Server starting on http://localhost:${PORT}`);
-serve({
-  fetch: app.fetch,
-  port: PORT,
-});
+if (import.meta.main) {
+  console.log(`🚀 BFF Server starting on port ${PORT}`);
+  console.log(`🤖 AI API: ${INTERNAL_AI_API_URL}`);
+  console.log(`👤 Profile API: ${INTERNAL_PROFILE_API_URL}`);
+
+  Deno.serve({ port: PORT }, app.fetch);
+}
 ```
 
 ### Frontend Service Clients
@@ -241,6 +383,104 @@ export class AIService {
 }
 ```
 
+### Service Integration Best Practices
+
+#### Use Service SDKs When Available
+
+Prefer using service SDKs over direct HTTP calls:
+
+```typescript
+// server/api/ai.ts
+import { createSimpleClient } from "../../../../internal/ai-api/sdk/client.ts";
+
+// Initialize AI client using SDK
+const aiClient = createSimpleClient(INTERNAL_AI_API_URL);
+
+export const aiRoutes = new Hono();
+
+aiRoutes.get('/models', async (c) => {
+  try {
+    const models = await aiClient.getModels();
+    return c.json({ success: true, data: models });
+  } catch (error) {
+    return c.json({ error: 'Failed to get models' }, 500);
+  }
+});
+```
+
+#### Server-side Service Clients
+
+For services with client-side only SDKs, create server-side adapters:
+
+```typescript
+// server/utils/profileServiceClient.ts
+export class ServerProfileServiceClient {
+  constructor(private config: { baseUrl: string; timeout?: number }) {}
+
+  async getUserInfo(anonId: string): Promise<UserInfoResponse> {
+    const response = await this.makeRequest('GET', '/api/userinfo', anonId);
+    return response as UserInfoResponse;
+  }
+
+  private async makeRequest(method: string, path: string, anonId: string, body?: unknown) {
+    const url = `${this.config.baseUrl}${path}`;
+    const headers = {
+      'X-Anon-Id': anonId,
+      'Content-Type': 'application/json'
+    };
+
+    const requestInit: RequestInit = { method, headers };
+    if (body && method === 'POST') {
+      requestInit.body = JSON.stringify(body);
+    }
+
+    const response = await fetch(url, requestInit);
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    return response.json();
+  }
+}
+```
+
+#### Request Body Validation
+
+Implement proper JSON validation middleware:
+
+```typescript
+// server/middleware/validation.ts
+export const validateJSON = async (c: Context, next: Next) => {
+  if (c.req.method === 'POST' || c.req.method === 'PUT' || c.req.method === 'PATCH') {
+    const contentType = c.req.header('content-type');
+
+    if (!contentType || !contentType.includes('application/json')) {
+      return c.json({ error: 'Content-Type must be application/json' }, 400);
+    }
+
+    try {
+      // Only parse JSON if there's actual content
+      const contentLength = parseInt(c.req.header('content-length') || '0', 10);
+
+      if (contentLength > 0) {
+        const body = await c.req.json();
+        c.set('parsedBody', body);
+      } else {
+        // Empty body is valid for some endpoints
+        c.set('parsedBody', {});
+      }
+    } catch (error) {
+      return c.json({
+        error: 'Invalid JSON in request body',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }, 400);
+    }
+  }
+
+  await next();
+};
+```
+
 ### Error Handling
 
 Implement consistent error handling across all service calls:
@@ -249,6 +489,13 @@ Implement consistent error handling across all service calls:
 2. **Service Layer**: Catch HTTP errors and transform into application-specific errors
 3. **Component Layer**: Handle errors with appropriate UI feedback
 4. **Global Error Boundary**: Catch uncaught errors at the application level
+
+#### Common Error Patterns
+
+- **Empty Request Bodies**: Handle `Content-Type: application/json` with empty bodies gracefully
+- **Service Unavailable**: Provide meaningful error messages when internal services are down
+- **Validation Errors**: Return clear validation error messages with proper HTTP status codes
+- **Rate Limiting**: Implement and handle rate limiting at the BFF level
 
 ## Performance Optimization
 
@@ -317,9 +564,95 @@ Frontend applications are deployed as containerized applications with their co-l
 - **CORS Configuration**: Set appropriate CORS policies to prevent unauthorized access
 - **Rate Limiting**: Implement rate limiting at the BFF layer to prevent abuse
 
+### Business Logic Validation
+
+Implement business logic validation in the BFF layer, not just in backend services:
+
+```typescript
+// Example: Daily bonus validation in BFF
+export class DailyBonusValidator {
+  private claims = new Map<string, { lastClaimDate: string }>();
+
+  canClaimToday(anonId: string): boolean {
+    const record = this.claims.get(anonId);
+    if (!record) return true;
+
+    const today = new Date().toISOString().split('T')[0];
+    return record.lastClaimDate !== today;
+  }
+
+  recordClaim(anonId: string): void {
+    const today = new Date().toISOString().split('T')[0];
+    this.claims.set(anonId, { lastClaimDate: today });
+  }
+}
+
+// Use in route handler
+app.post('/api/profile/claim-daily-bonus', async (c) => {
+  const anonId = c.req.header('X-Anon-Id');
+
+  if (!dailyBonusValidator.canClaimToday(anonId)) {
+    return c.json({
+      error: 'Daily bonus already claimed today. Try again tomorrow!',
+      timeUntilNextClaim: calculateTimeUntilTomorrow()
+    }, 429);
+  }
+
+  // Proceed with service call...
+});
+```
+
+## Troubleshooting Common Issues
+
+### JSON Parsing Errors
+
+**Problem**: "Unexpected end of JSON input" errors when making POST requests with empty bodies.
+
+**Solution**: Update JSON validation middleware to handle empty bodies:
+- Check `content-length` header before parsing JSON
+- Allow empty bodies for endpoints that don't require them
+- Provide clear error messages for actual JSON parsing failures
+
+### Service Connection Issues
+
+**Problem**: BFF cannot connect to internal services.
+
+**Solution**:
+1. Verify environment variables are correctly configured
+2. Ensure internal services are running on expected ports
+3. Check service health endpoints directly
+4. Review BFF startup logs for service URL configuration
+
+### Vite Proxy AbortError
+
+**Problem**: Vite proxy shows AbortError when forwarding requests to BFF.
+
+**Solution**:
+1. Ensure BFF server is stable and not crashing
+2. Check for proper error handling in BFF routes
+3. Verify JSON parsing doesn't fail on empty bodies
+4. Configure appropriate timeouts in Vite proxy
+
+### Port Configuration Mismatches
+
+**Problem**: Services running on different ports than expected.
+
+**Solution**:
+1. Use consistent environment variable naming (`SERVICE_NAME_PORT`)
+2. Construct URLs from ports rather than hardcoding full URLs
+3. Ensure all services use the same environment variable names
+4. Add startup logging to show actual service URLs
+
 ## Conclusion
 
 This guide provides a foundation for frontend development in the One monorepo, emphasizing the co-located BFF pattern for secure service integration. By following these standards and practices, we ensure consistent, maintainable, and secure frontend applications.
+
+Key takeaways:
+- Use centralized environment configuration with port-based service discovery
+- Implement proper JSON validation that handles empty request bodies
+- Create comprehensive E2E tests that verify real service integration
+- Use service SDKs when available, create server-side adapters when needed
+- Implement business logic validation in the BFF layer for better user experience
 
 ## References
 
