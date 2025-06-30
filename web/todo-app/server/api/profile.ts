@@ -14,7 +14,9 @@ import { Hono } from 'hono';
 import type { Context } from 'hono';
 
 // Configuration
-const INTERNAL_PROFILE_API_URL = Deno.env.get("INTERNAL_PROFILE_API_URL") || "http://localhost:8080";
+const PROFILE_SERVICE_PORT = parseInt(Deno.env.get("PROFILE_SERVICE_PORT") || "8081", 10);
+const PROFILE_SERVICE_HOST = Deno.env.get("PROFILE_SERVICE_HOST") || "localhost";
+const INTERNAL_PROFILE_API_URL = `http://${PROFILE_SERVICE_HOST}:${PROFILE_SERVICE_PORT}`;
 
 // Create Profile routes
 export const profileRoutes = new Hono();
@@ -34,6 +36,8 @@ async function callProfileService(
     'X-Anon-Id': anonId,
     'Content-Type': 'application/json'
   };
+
+  console.log(`[PROFILE-API] Calling ${method} ${url} with anonId ${anonId}`);
 
   const response = await fetch(url, {
     method,
@@ -70,7 +74,7 @@ function extractAnonId(c: Context): string | null {
  * NOTE: This endpoint is deprecated. The frontend should generate and manage
  * the anonId using the profile service client SDK, then pass it to other endpoints.
  */
-profileRoutes.get('/anon-id', async (c: Context) => {
+profileRoutes.get('/anon-id', (c: Context) => {
   return c.json({
     error: 'This endpoint is deprecated. Use the profile service client SDK in the frontend to generate and manage anonId.',
     details: 'The anonId should be generated client-side and passed to other API endpoints via headers.'

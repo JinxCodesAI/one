@@ -10,9 +10,11 @@ import { createSimpleClient } from "@one/ai-api";
 import type { Context } from 'hono';
 
 // Configuration
-const INTERNAL_AI_API_URL = Deno.env.get("INTERNAL_AI_API_URL") || "http://localhost:8000";
+const AI_API_PORT = parseInt(Deno.env.get("AI_API_PORT") || "8000", 10);
+const AI_API_HOST = Deno.env.get("AI_API_HOST") || "localhost";
+const INTERNAL_AI_API_URL = `http://${AI_API_HOST}:${AI_API_PORT}`;
 
-// Initialize AI client
+// Initialize AI client using SDK
 const aiClient = createSimpleClient(INTERNAL_AI_API_URL);
 
 // Create AI routes

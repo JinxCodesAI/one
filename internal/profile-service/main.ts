@@ -21,7 +21,7 @@ async function loadConfig(): Promise<ProfileServiceConfig> {
   }
 
   const config: ProfileServiceConfig = {
-    port: parseInt(Deno.env.get("PORT") || "8080"),
+    port: parseInt(Deno.env.get("PROFILE_SERVICE_PORT") || Deno.env.get("PORT") || "8080"),
     databaseUrl: Deno.env.get("PROFILE_SERVICE_DATABASE_URL"),
     corsOrigins: (Deno.env.get("CORS_ORIGINS") === "" ? [] : (Deno.env.get("CORS_ORIGINS") || "https://*.jinxcodes.ai,http://localhost:*").split(",")),
     cookieDomain: Deno.env.get("COOKIE_DOMAIN") || ".jinxcodes.ai",

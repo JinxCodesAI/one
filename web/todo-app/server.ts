@@ -8,8 +8,5 @@
  * This is the production entry point that imports the organized server structure.
  */
 
-// Import the organized server implementation
-import server from './server/index.ts';
-
-// Export for Deno.serve
-export default server;
+// Import and run the organized server implementation
+import './server/index.ts';

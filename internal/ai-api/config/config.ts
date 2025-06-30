@@ -156,7 +156,7 @@ export function loadConfig(): ServiceConfig {
   }
 
   return {
-    port: parseInt(Deno.env.get("PORT") || DEFAULT_CONFIG.port.toString(), 10),
+    port: parseInt(Deno.env.get("AI_API_PORT") || Deno.env.get("PORT") || DEFAULT_CONFIG.port.toString(), 10),
     host: Deno.env.get("HOST") || DEFAULT_CONFIG.host,
     providers,
     models: availableModels,

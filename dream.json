@@ -12,7 +12,11 @@
     },
     "./web/todo-app": {
       "test": [],
-      "dev": ["./internal/ai-api", "./internal/profile-service"],
+      "dev": ["./internal/ai-api", "./internal/profile-service",{
+        "projectPath": "./web/todo-app",
+        "task": "build",
+        "async": false
+      }],
       "e2e": []
     },
     "./packages/testing-infrastructure": {

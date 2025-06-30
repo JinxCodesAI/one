@@ -1459,6 +1459,7 @@
         "dependencies": [
           "jsr:@hono/hono@^4.6.11",
           "jsr:@std/assert@1",
+          "jsr:@std/dotenv@0.225",
           "jsr:@std/testing@1",
           "npm:@deno/vite-plugin@^1.0.4",
           "npm:@testing-library/jest-dom@^6.6.3",
