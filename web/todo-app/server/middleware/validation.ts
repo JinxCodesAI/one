@@ -18,11 +18,18 @@ export const validateJSON = async (c: Context, next: Next) => {
     }
 
     try {
-      // Try to parse JSON to validate it - Hono handles body parsing automatically
-      // We don't need to manually clone the request as Hono manages this
-      const body = await c.req.json();
-      // Store the parsed body for reuse if needed
-      c.set('parsedBody', body);
+      // Check if there's actually content to parse
+      const contentLength = parseInt(c.req.header('content-length') || '0', 10);
+
+      if (contentLength > 0) {
+        // Try to parse JSON to validate it - Hono handles body parsing automatically
+        const body = await c.req.json();
+        // Store the parsed body for reuse if needed
+        c.set('parsedBody', body);
+      } else {
+        // Empty body is valid for some endpoints (like claim-daily-bonus)
+        c.set('parsedBody', {});
+      }
     } catch (error) {
       return c.json({
         error: 'Invalid JSON in request body',

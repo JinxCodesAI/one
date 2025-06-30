@@ -212,22 +212,8 @@ profileRoutes.post('/claim-daily-bonus', async (c: Context) => {
       }, 400);
     }
 
-    // This endpoint doesn't require a request body, but if one is provided, validate it
-    const contentType = c.req.header('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      try {
-        const rawBody = await c.req.text();
-        if (rawBody.trim()) {
-          JSON.parse(rawBody); // Validate JSON but don't use the result
-        }
-        // If body is empty, that's fine for this endpoint
-      } catch (jsonError) {
-        return c.json({
-          error: 'Invalid JSON in request body',
-          details: jsonError instanceof Error ? jsonError.message : 'Invalid JSON format'
-        }, 400);
-      }
-    }
+    // This endpoint doesn't require body validation in the BFF
+    // The Profile Service will handle the request body validation
 
     // BFF-side validation: Check if user can claim today
     if (!dailyBonusValidator.canClaimToday(anonId)) {
