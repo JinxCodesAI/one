@@ -105,7 +105,7 @@ export function globalTestCleanup() {
 }
 
 /**
- * Mock fetch for component tests
+ * Mock fetch for component tests - now works with BFF endpoints
  */
 export function mockFetch(responses: Record<string, unknown>) {
   const originalFetch = globalThis.fetch;
@@ -119,8 +119,13 @@ export function mockFetch(responses: Record<string, unknown>) {
     // Check if we have a mock response for this URL
     for (const [pattern, response] of Object.entries(responses)) {
       if (url.includes(pattern)) {
+        // Wrap response in BFF format if it's not already wrapped
+        const bffResponse = response && typeof response === 'object' && 'success' in response
+          ? response
+          : { success: true, data: response };
+
         return Promise.resolve(
-          new Response(JSON.stringify(response), {
+          new Response(JSON.stringify(bffResponse), {
             status: 200,
             headers: { "Content-Type": "application/json" },
           }),

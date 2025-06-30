@@ -1,17 +1,25 @@
 {
+  "name": "@one/ai-chat",
+  "version": "0.0.1",
+  "exports": "./src/main.tsx",
   "tasks": {
-    "dev": "deno run -A --node-modules-dir=auto npm:vite",
+    "dev": "deno task dev:server & deno task dev:frontend",
+    "dev:frontend": "deno run -A --node-modules-dir=auto npm:vite --port 5173",
+    "dev:server": "deno run -A --watch server/index.ts",
     "build": "deno run -A --node-modules-dir=auto npm:vite build",
     "preview": "deno run -A --node-modules-dir=auto npm:vite preview",
-    "serve": "deno run --allow-net --allow-read jsr:@std/http@1/file-server dist/",
-    "test": "deno test --allow-net --allow-env --allow-read --allow-write src/",
+    "serve": "deno run -A server/index.ts",
+    "serve:static": "deno run --allow-net --allow-read jsr:@std/http@1/file-server dist/",
+    "test": "deno test --allow-net --allow-env --allow-read --allow-write src/ server/",
     "dreamer:test": "dreamer ../../ test",
-    "test:unit": "deno test --allow-net --allow-env --allow-read --allow-write --ignore='src/**/*.integration.ts' --ignore='src/**/*.e2e.ts' src/",
-    "test:integration": "deno test --allow-net --allow-env --allow-read --allow-write src/**/*.integration.ts",
+    "test:unit": "deno test --allow-net --allow-env --allow-read --allow-write --ignore='src/**/*.integration.ts' --ignore='src/**/*.e2e.ts' --ignore='server/**/*.integration.ts' src/ server/",
+    "test:integration": "deno test --allow-net --allow-env --allow-read --allow-write src/**/*.integration.ts server/**/*.integration.ts",
     "test:e2e": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys e2e/**/*.e2e.ts",
     "test:e2e-ui": "deno test --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys e2e/**/*.ui.e2e.ts",
-    "test:all": "deno test --allow-net --allow-env --allow-read --allow-write src/ e2e/",
-    "test:watch": "deno test --allow-net --allow-env --allow-read --allow-write --watch --ignore='src/**/*.e2e.ts' src/"
+    "test:all": "deno test --allow-net --allow-env --allow-read --allow-write src/ server/ e2e/",
+    "test:watch": "deno test --allow-net --allow-env --allow-read --allow-write --watch --ignore='src/**/*.e2e.ts' --ignore='server/**/*.e2e.ts' src/ server/",
+    "lint": "deno lint src/ server/",
+    "fmt": "deno fmt src/ server/"
   },
   "compilerOptions": {
     "lib": ["ES2020", "DOM", "DOM.Iterable", "deno.ns"],
@@ -28,6 +36,7 @@
     "react-dom": "npm:react-dom@^19.0.0",
     "vite": "npm:vite@^6.1.1",
     "@std/assert": "jsr:@std/assert@^1.0.0",
+    "@std/dotenv": "jsr:@std/dotenv@^0.225.0",
     "@std/testing": "jsr:@std/testing@^1.0.0",
     "@std/testing/bdd": "jsr:@std/testing@^1.0.0/bdd",
     "@testing-library/react": "npm:@testing-library/react@^16.1.0",
@@ -35,6 +44,12 @@
     "@testing-library/user-event": "npm:@testing-library/user-event@^14.5.2",
     "jsdom": "npm:jsdom@^25.0.1",
     "playwright": "npm:playwright@^1.48.0",
-    "@one/testing-infrastructure": "./../../packages/testing-infrastructure/src/mod.ts"
+    "@one/testing-infrastructure": "./../../packages/testing-infrastructure/src/mod.ts",
+    "@one/ai-api": "../../internal/ai-api/sdk/client.ts",
+    "@one/profile-service": "../../internal/profile-service/sdk/client.ts",
+    "hono": "jsr:@hono/hono@^4.6.11",
+    "hono/deno": "jsr:@hono/hono@^4.6.11/deno",
+    "hono/cors": "jsr:@hono/hono@^4.6.11/cors",
+    "hono/logger": "jsr:@hono/hono@^4.6.11/logger"
   }
 }

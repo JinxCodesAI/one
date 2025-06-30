@@ -17,15 +17,15 @@ describe("Chat Integration Logic", () => {
   let consoleRestore: () => void;
 
   beforeEach(() => {
-    // Mock successful AI responses
+    // Mock successful BFF AI responses
     restoreFetch = mockFetch({
-      "/models": {
+      "/api/ai/models": {
         success: true,
         data: {
           models: ["gpt-4.1-nano", "gemini-2.5-flash", "claude-3-sonnet"],
         },
       },
-      "/generate": {
+      "/api/ai/generate": {
         success: true,
         data: {
           content: "Hello! How can I help you today?",
@@ -37,7 +37,7 @@ describe("Chat Integration Logic", () => {
           },
         },
       },
-      "/health": {
+      "/api/ai/health": {
         success: true,
         data: {
           status: "healthy",

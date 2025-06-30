@@ -1,19 +1,67 @@
 /**
  * AI Client service for the chat application
- * Uses the ai-api SDK for communication with the AI service
+ * Uses the BFF API endpoints for communication with the AI service
  */
 
-import { createSimpleClient } from "../../../../internal/ai-api/sdk/client.ts";
 import type { Message } from "../types.ts";
+
+/**
+ * AI response types
+ */
+export interface AIGenerateResponse {
+  content: string;
+  model: string;
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+}
+
+export interface AIHealthResponse {
+  status: string;
+  models: string[];
+  version?: string;
+}
 
 /**
  * AI Client wrapper class for chat functionality
  */
 export class ChatAIClient {
-  private client: ReturnType<typeof createSimpleClient>;
+  private baseUrl: string;
 
-  constructor(baseUrl: string = "http://localhost:8000") {
-    this.client = createSimpleClient(baseUrl);
+  constructor(baseUrl: string = "/api/ai") {
+    this.baseUrl = baseUrl;
+  }
+
+  /**
+   * Make a request to the BFF AI endpoints
+   */
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`;
+      throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      const errorMessage = data.error || 'Request failed';
+      throw new Error(errorMessage);
+    }
+
+    return data.data;
   }
 
   /**
@@ -26,7 +74,7 @@ export class ChatAIClient {
       maxTokens?: number;
       temperature?: number;
     },
-  ) {
+  ): Promise<AIGenerateResponse> {
     try {
       // Convert app messages to API format
       const apiMessages = messages.map((msg) => ({
@@ -34,11 +82,14 @@ export class ChatAIClient {
         content: msg.content,
       }));
 
-      const response = await this.client.generateText({
-        messages: apiMessages,
-        model,
-        maxTokens: options?.maxTokens,
-        temperature: options?.temperature,
+      const response = await this.request<AIGenerateResponse>('/generate', {
+        method: 'POST',
+        body: JSON.stringify({
+          messages: apiMessages,
+          model,
+          maxTokens: options?.maxTokens,
+          temperature: options?.temperature,
+        }),
       });
 
       return response;
@@ -53,7 +104,8 @@ export class ChatAIClient {
    */
   async getModels(): Promise<string[]> {
     try {
-      return await this.client.getModels();
+      const response = await this.request<{ models: string[] }>('/models');
+      return response?.models || [];
     } catch (error) {
       console.error("Error fetching models:", error);
       throw error;
@@ -63,9 +115,9 @@ export class ChatAIClient {
   /**
    * Check service health
    */
-  async getHealth() {
+  async getHealth(): Promise<AIHealthResponse> {
     try {
-      return await this.client.getHealth();
+      return await this.request<AIHealthResponse>('/health');
     } catch (error) {
       console.error("Error checking health:", error);
       throw error;
@@ -74,23 +126,9 @@ export class ChatAIClient {
 }
 
 /**
- * Get AI API URL from environment or use default
- */
-function getAIApiUrl(): string {
-  // In browser environment, check for Vite environment variables
-  if (typeof window !== "undefined") {
-    // @ts-ignore - Vite injects these at build time
-    return import.meta.env?.VITE_AI_API_URL || "http://localhost:8000";
-  }
-
-  // In Node/Deno environment, check process environment
-  return Deno?.env?.get("AI_API_URL") || "http://localhost:8000";
-}
-
-/**
  * Default AI client instance
  */
-export const aiClient = new ChatAIClient(getAIApiUrl());
+export const aiClient = new ChatAIClient();
 
 /**
  * Create a new AI client with custom configuration

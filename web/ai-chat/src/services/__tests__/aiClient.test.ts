@@ -13,11 +13,11 @@ describe("ChatAIClient Service", () => {
   let restoreFetch: () => void;
 
   beforeEach(() => {
-    client = new ChatAIClient("http://localhost:8000");
+    client = new ChatAIClient("/api/ai"); // Use BFF endpoint
 
-    // Mock successful responses by default
+    // Mock successful BFF responses by default
     restoreFetch = mockFetch({
-      "/generate": {
+      "/api/ai/generate": {
         success: true,
         data: {
           content: "Test AI response",
@@ -29,13 +29,13 @@ describe("ChatAIClient Service", () => {
           },
         },
       },
-      "/models": {
+      "/api/ai/models": {
         success: true,
         data: {
           models: ["gpt-4.1-nano", "gemini-2.5-flash", "claude-3-sonnet"],
         },
       },
-      "/health": {
+      "/api/ai/health": {
         success: true,
         data: {
           status: "healthy",
