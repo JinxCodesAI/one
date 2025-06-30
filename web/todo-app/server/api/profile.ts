@@ -12,11 +12,19 @@
 
 import { Hono } from 'hono';
 import type { Context } from 'hono';
+import { createServerProfileClient } from '../utils/profileServiceClient.ts';
+import { dailyBonusValidator } from '../utils/dailyBonusValidator.ts';
 
 // Configuration
 const PROFILE_SERVICE_PORT = parseInt(Deno.env.get("PROFILE_SERVICE_PORT") || "8081", 10);
 const PROFILE_SERVICE_HOST = Deno.env.get("PROFILE_SERVICE_HOST") || "localhost";
 const INTERNAL_PROFILE_API_URL = `http://${PROFILE_SERVICE_HOST}:${PROFILE_SERVICE_PORT}`;
+
+// Create server-side profile client
+const profileClient = createServerProfileClient({
+  baseUrl: INTERNAL_PROFILE_API_URL,
+  timeout: 10000
+});
 
 // Create Profile routes
 export const profileRoutes = new Hono();
@@ -96,27 +104,11 @@ profileRoutes.get('/user-info', async (c: Context) => {
       }, 400);
     }
 
-    const response = await callProfileService('GET', '/userinfo', anonId);
+    const userInfo = await profileClient.getUserInfo(anonId);
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return c.json({
-        error: 'Failed to load user profile',
-        details: errorData.error || `HTTP ${response.status}`
-      }, 500);
-    }
-
-    const profile = await response.json();
     return c.json({
       success: true,
-      data: {
-        anonId: profile.anonId,
-        userId: profile.userId,
-        name: profile.name || undefined,
-        avatarUrl: profile.avatarUrl || undefined,
-        createdAt: profile.createdAt,
-        updatedAt: profile.updatedAt
-      }
+      data: userInfo
     });
   } catch (error) {
     console.error("Error getting user profile:", error);
@@ -142,7 +134,15 @@ profileRoutes.post('/update-profile', async (c: Context) => {
       }, 400);
     }
 
-    const body = await c.req.json();
+    let body;
+    try {
+      body = await c.req.json();
+    } catch (jsonError) {
+      return c.json({
+        error: 'Invalid JSON in request body',
+        details: jsonError instanceof Error ? jsonError.message : 'Invalid JSON format'
+      }, 400);
+    }
 
     const updates: { name?: string; avatarUrl?: string } = {};
     if (body.name && typeof body.name === 'string') {
@@ -152,27 +152,11 @@ profileRoutes.post('/update-profile', async (c: Context) => {
       updates.avatarUrl = body.avatarUrl;
     }
 
-    const response = await callProfileService('POST', '/profile', anonId, updates);
+    const userInfo = await profileClient.updateProfile(anonId, updates);
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return c.json({
-        error: 'Failed to update profile',
-        details: errorData.error || `HTTP ${response.status}`
-      }, 500);
-    }
-
-    const profile = await response.json();
     return c.json({
       success: true,
-      data: {
-        anonId: profile.anonId,
-        userId: profile.userId,
-        name: profile.name || undefined,
-        avatarUrl: profile.avatarUrl || undefined,
-        createdAt: profile.createdAt,
-        updatedAt: profile.updatedAt
-      }
+      data: userInfo
     });
   } catch (error) {
     console.error("Error updating user profile:", error);
@@ -198,32 +182,11 @@ profileRoutes.get('/credits', async (c: Context) => {
       }, 400);
     }
 
-    const response = await callProfileService('GET', '/credits', anonId);
+    const credits = await profileClient.getCredits(anonId);
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return c.json({
-        error: 'Failed to load credits',
-        details: errorData.error || `HTTP ${response.status}`
-      }, 500);
-    }
-
-    const credits = await response.json();
     return c.json({
       success: true,
-      data: {
-        balance: credits.balance,
-        ledger: credits.ledger.map((transaction: unknown) => {
-          const t = transaction as Record<string, unknown>;
-          return {
-            id: t.id as string,
-            amount: t.amount as number,
-            type: t.type as 'daily_bonus' | 'spend' | 'earn' | 'adjustment',
-            reason: (t.reason as string) || '',
-            ts: t.ts as string
-          };
-        })
-      }
+      data: credits
     });
   } catch (error) {
     console.error("Error getting user credits:", error);
@@ -249,43 +212,55 @@ profileRoutes.post('/claim-daily-bonus', async (c: Context) => {
       }, 400);
     }
 
-    const response = await callProfileService('POST', '/credits/daily-award', anonId, {});
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-
-      if (response.status === 429) {
+    // This endpoint doesn't require a request body, but if one is provided, validate it
+    const contentType = c.req.header('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        const rawBody = await c.req.text();
+        if (rawBody.trim()) {
+          JSON.parse(rawBody); // Validate JSON but don't use the result
+        }
+        // If body is empty, that's fine for this endpoint
+      } catch (jsonError) {
         return c.json({
-          error: 'Daily bonus already claimed today. Try again tomorrow!',
-          details: errorData.error || 'Rate limit exceeded'
-        }, 429);
+          error: 'Invalid JSON in request body',
+          details: jsonError instanceof Error ? jsonError.message : 'Invalid JSON format'
+        }, 400);
       }
-
-      return c.json({
-        error: 'Failed to claim daily bonus',
-        details: errorData.error || `HTTP ${response.status}`
-      }, 500);
     }
 
-    const credits = await response.json();
+    // BFF-side validation: Check if user can claim today
+    if (!dailyBonusValidator.canClaimToday(anonId)) {
+      const timeUntilNext = dailyBonusValidator.getTimeUntilNextClaim(anonId);
+      const hoursUntilNext = Math.ceil(timeUntilNext / (1000 * 60 * 60));
+
+      return c.json({
+        error: 'Daily bonus already claimed today. Try again tomorrow!',
+        details: `You can claim your next daily bonus in approximately ${hoursUntilNext} hours.`,
+        timeUntilNextClaim: timeUntilNext
+      }, 429);
+    }
+
+    const credits = await profileClient.claimDailyBonus(anonId);
+
+    // Record successful claim in BFF validator
+    dailyBonusValidator.recordClaim(anonId);
+
     return c.json({
       success: true,
-      data: {
-        balance: credits.balance,
-        ledger: credits.ledger.map((transaction: unknown) => {
-          const t = transaction as Record<string, unknown>;
-          return {
-            id: t.id as string,
-            amount: t.amount as number,
-            type: t.type as 'daily_bonus' | 'spend' | 'earn' | 'adjustment',
-            reason: (t.reason as string) || '',
-            ts: t.ts as string
-          };
-        })
-      }
+      data: credits
     });
   } catch (error) {
     console.error("Error claiming daily bonus:", error);
+
+    // Handle specific error cases
+    if (error instanceof Error && error.message.includes('429')) {
+      return c.json({
+        error: 'Daily bonus already claimed today. Try again tomorrow!',
+        details: error.message
+      }, 429);
+    }
+
     return c.json({
       error: 'Failed to claim daily bonus',
       details: error instanceof Error ? error.message : 'Unknown error'
