@@ -1,0 +1,45 @@
+# Production Dockerfile for Todo App
+# Multi-stage build for optimized production image
+
+FROM denoland/deno:2.3.6 as builder
+
+WORKDIR /app
+
+# Copy dependency files first for better caching
+COPY deno.json deno.lock* ./
+COPY web/todo-app/deno.json ./web/todo-app/
+
+# Cache dependencies
+RUN deno cache web/todo-app/src/main.tsx
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN deno task --cwd web/todo-app build
+
+# Production stage
+FROM denoland/deno:2.3.6
+
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy built application and server files
+COPY --from=builder /app/web/todo-app/dist ./dist
+COPY --from=builder /app/web/todo-app/server ./server
+COPY --from=builder /app/web/todo-app/deno.json ./
+COPY --from=builder /app/web/todo-app/server.ts ./
+COPY --from=builder /app/deno.json ../
+
+# Create non-root user for security
+RUN groupadd -r deno && useradd -r -g deno deno
+RUN chown -R deno:deno /app
+USER deno
+
+# Expose port
+EXPOSE 3000
+
+# Production command (serve static files with BFF)
+CMD ["deno", "task", "serve"]
