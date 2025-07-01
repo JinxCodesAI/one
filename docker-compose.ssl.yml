@@ -1,0 +1,13 @@
+# Docker Compose SSL Override
+# Use this file to enable HTTPS after obtaining SSL certificates
+# Usage: docker-compose -f docker-compose.prod.yml -f docker-compose.ssl.yml up -d
+
+version: "3.8"
+
+services:
+  nginx:
+    volumes:
+      - ./nginx/nginx-ssl.conf:/etc/nginx/nginx.conf:ro  # Override with SSL config
+      - ./nginx/ssl:/etc/nginx/ssl:ro  # SSL certificates
+    ports:
+      - "443:443"  # Add HTTPS port
