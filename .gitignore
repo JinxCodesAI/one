@@ -62,6 +62,10 @@ jspm_packages/
 .next
 out
 
+#Vite
+dist
+.vite/
+
 # Nuxt.js build / generate output
 .nuxt
 dist
