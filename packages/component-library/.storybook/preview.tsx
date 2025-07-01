@@ -1,11 +1,12 @@
 /**
  * Storybook Preview Configuration
- * 
+ *
  * Global configuration for all stories including themes, backgrounds, and viewports
  */
 
+import React from "react";
 import type { Preview } from "@storybook/react";
-import { theme } from "../src/tokens/index.ts";
+import { theme } from "../src/tokens/index";
 
 const preview: Preview = {
   parameters: {

@@ -1,0 +1,47 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "es6"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/atoms": ["./src/atoms"],
+      "@/molecules": ["./src/molecules"],
+      "@/organisms": ["./src/organisms"],
+      "@/tokens": ["./src/tokens"],
+      "@/hooks": ["./src/hooks"],
+      "@/utils": ["./src/utils"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "stories/**/*",
+    ".storybook/**/*",
+    "**/*.stories.*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "storybook-static",
+    "**/*.test.*",
+    "**/*.spec.*"
+  ]
+}

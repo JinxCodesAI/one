@@ -71,5 +71,8 @@
   "bugs": {
     "url": "https://github.com/JinxCodesAI/one/issues"
   },
-  "homepage": "https://github.com/JinxCodesAI/one#readme"
+  "homepage": "https://github.com/JinxCodesAI/one#readme",
+  "dependencies": {
+    "function-bind": "1.1.2"
+  }
 }
