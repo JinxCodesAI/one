@@ -1,5 +1,6 @@
 # Deno
 .deno/
+deno.lock # Commit this for reproducible Deno dependency resolution
 
 # VSCode
 .vscode/
@@ -25,82 +26,67 @@ pids
 *.seed
 *.pid.lock
 
-# Coverage directory used by tools like istanbul
+# Coverage output
 coverage/
 *.lcov
-
-# nyc test coverage
 .nyc_output
 
 # Dependency directories
 node_modules/
 jspm_packages/
+.npm # Optional npm cache directory
 
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
+# Optional caches
 .eslintcache
-
-# Optional REPL history
 .node_repl_history
+.cache           # General cache directory (e.g., Parcel)
+.parcel-cache    # Parcel-specific cache
 
 # Output of 'npm pack'
 *.tgz
 
-# Yarn Integrity file
+# Yarn integrity and cache files (for Yarn v2/v3+ Berry)
 .yarn-integrity
-
-# dotenv environment variables file
-.env.test
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# Next.js build output
-.next
-out
-
-#Vite
-dist
-.vite/
-
-# Nuxt.js build / generate output
-.nuxt
-dist
-
-# Gatsby files
-.cache/
-public
-
-# Vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless/
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS port file
-.tern-port
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-
-# yarn v2
 .yarn/cache
 .yarn/unplugged
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
 
+# Build outputs (Vite, general)
+dist/
+.vite/
+build/
+out/
+
+# Other framework-specific build outputs (uncomment if you use them)
+# .next                  # Next.js build output
+# .nuxt                  # Nuxt.js build / generate output
+# public                 # Gatsby public directory (also .cache/)
+# .vuepress/dist         # Vuepress build output
+# .serverless/           # Serverless directories
+# .fusebox/              # FuseBox cache
+
+# Database and local development files
+.dynamodb/               # DynamoDB Local files
+.tern-port               # TernJS port file
+.vscode-test             # Stores VSCode versions used for testing VSCode extensions
+test-results/            # General test results
+*.db
+*.sqlite
+*.sqlite3
+.local/
+local/
+
+# Backup and temporary files
+*.bak
+*.backup
+*.tmp
+*.temp
+temp/
+tmp/
+
 # IDE files
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -115,35 +101,8 @@ public
 ehthumbs.db
 Thumbs.db
 
-# Temporary files
-*.tmp
-*.temp
-temp/
-tmp/
-
-# Build outputs
-build/
-dist/
-out/
-
-# Test outputs
-test-results/
-coverage/
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# Backup files
-*.bak
-*.backup
-
-# Package manager lock files (keep deno.lock, ignore others)
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-
-# Local development files
-.local/
-local/
+# Package manager lock files (IMPORTANT: UNCOMMENT ONLY THE ONE YOU USE AND COMMIT IT!)
+# Choose ONE of these based on your primary package manager for Node.js dependencies:
+# package-lock.json # For npm
+# yarn.lock         # For Yarn 1 or Yarn 2+/3 (Berry) workspaces (root only)
+# pnpm-lock.yaml    # For pnpm
