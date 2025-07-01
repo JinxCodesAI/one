@@ -1,0 +1,75 @@
+{
+  "name": "@one/component-library",
+  "version": "0.1.0",
+  "description": "Comprehensive React component library with design system",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./atoms": "./src/atoms/index.ts",
+    "./molecules": "./src/molecules/index.ts",
+    "./organisms": "./src/organisms/index.ts",
+    "./tokens": "./src/tokens/index.ts",
+    "./hooks": "./src/hooks/index.ts"
+  },
+  "scripts": {
+    "dev": "deno run --watch --allow-net --allow-read --allow-env dev.ts",
+    "build": "deno run --allow-read --allow-write --allow-env build.ts",
+    "test": "deno test --allow-read --allow-env",
+    "test:watch": "deno test --watch --allow-read --allow-env",
+    "lint": "deno lint",
+    "fmt": "deno fmt",
+    "check": "deno check src/**/*.ts src/**/*.tsx",
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build",
+    "storybook:serve": "npx serve storybook-static"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "^7.6.0",
+    "@storybook/addon-backgrounds": "^7.6.0",
+    "@storybook/addon-controls": "^7.6.0",
+    "@storybook/addon-docs": "^7.6.0",
+    "@storybook/addon-essentials": "^7.6.0",
+    "@storybook/addon-interactions": "^7.6.0",
+    "@storybook/addon-links": "^7.6.0",
+    "@storybook/addon-measure": "^7.6.0",
+    "@storybook/addon-outline": "^7.6.0",
+    "@storybook/addon-viewport": "^7.6.0",
+    "@storybook/blocks": "^7.6.0",
+    "@storybook/manager-api": "^7.6.0",
+    "@storybook/react": "^7.6.0",
+    "@storybook/react-vite": "^7.6.0",
+    "@storybook/theming": "^7.6.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "storybook": "^7.6.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "keywords": [
+    "react",
+    "components",
+    "design-system",
+    "typescript",
+    "storybook",
+    "deno",
+    "ui-library"
+  ],
+  "author": "One Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JinxCodesAI/one.git",
+    "directory": "packages/component-library"
+  },
+  "bugs": {
+    "url": "https://github.com/JinxCodesAI/one/issues"
+  },
+  "homepage": "https://github.com/JinxCodesAI/one#readme"
+}

@@ -1,0 +1,58 @@
+{
+  "name": "@one/component-library",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./atoms": "./src/atoms/index.ts",
+    "./molecules": "./src/molecules/index.ts",
+    "./organisms": "./src/organisms/index.ts",
+    "./tokens": "./src/tokens/index.ts",
+    "./hooks": "./src/hooks/index.ts",
+    "./utils": "./src/utils/index.ts"
+  },
+  "imports": {
+    "@/": "./src/",
+    "react": "npm:react@^18.2.0",
+    "react/jsx-runtime": "npm:react@^18.2.0/jsx-runtime"
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "lib": ["dom", "dom.iterable", "es2022"],
+    "allowJs": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true
+  },
+  "tasks": {
+    "dev": "deno run --watch --allow-net --allow-read --allow-env dev.ts",
+    "build": "deno run --allow-read --allow-write --allow-env build.ts",
+    "test": "deno test --allow-read --allow-env",
+    "test:watch": "deno test --watch --allow-read --allow-env",
+    "storybook": "npm run storybook",
+    "storybook:build": "npm run storybook:build",
+    "storybook:serve": "npm run storybook:serve",
+    "storybook:install": "npm install",
+    "storybook:setup": "deno run --allow-run --allow-read --allow-write scripts/setup-storybook.ts",
+    "lint": "deno lint",
+    "fmt": "deno fmt",
+    "check": "deno check src/**/*.ts src/**/*.tsx"
+  },
+  "lint": {
+    "rules": {
+      "tags": ["recommended"],
+      "include": ["ban-untagged-todo"]
+    }
+  },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "semiColons": true,
+    "singleQuote": false,
+    "proseWrap": "preserve"
+  }
+}
