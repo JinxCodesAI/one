@@ -9,7 +9,7 @@ A comprehensive, highly customizable React component library built with TypeScri
 - **Type-Safe**: Full TypeScript support with comprehensive prop interfaces
 - **Accessible**: WCAG 2.1 AA compliance built-in
 - **Performance**: Optimized for tree-shaking and minimal bundle impact
-- **Developer Experience**: Comprehensive Storybook documentation
+- **Developer Experience**: Comprehensive Storybook documentation with interactive examples
 
 ## 📦 Installation
 
@@ -191,9 +191,212 @@ const theme = createTheme({
 - **Accessibility Tests**: Automated a11y testing
 - **Integration Tests**: Real-world usage scenarios
 
+## 📚 Storybook Documentation
+
+The component library includes comprehensive Storybook documentation with interactive examples, design tokens showcase, and real-world usage patterns.
+
+### 🚀 Running Storybook
+
+#### Prerequisites
+First, install Node.js dependencies for Storybook:
+
+```bash
+# Navigate to the component library directory
+cd packages/component-library
+
+# Install Storybook dependencies
+deno task storybook:install
+# or
+npm install
+```
+
+#### Development Server
+Start the Storybook development server:
+
+```bash
+# Using Deno tasks
+deno task storybook
+
+# Or directly with npm
+npm run storybook
+```
+
+This will start Storybook at `http://localhost:6006` with:
+- **Live reload**: Automatic updates when you modify stories or components
+- **Interactive controls**: Modify component props in real-time
+- **Accessibility testing**: Built-in a11y addon for testing compliance
+- **Responsive testing**: Test components across different viewport sizes
+- **Theme switching**: Toggle between different application themes
+
+#### Production Build
+Build Storybook for production deployment:
+
+```bash
+# Build static Storybook
+deno task storybook:build
+
+# Serve the built Storybook
+deno task storybook:serve
+```
+
+### 📖 Storybook Structure
+
+The Storybook is organized into several main sections:
+
+#### **Introduction**
+- Welcome guide and overview
+- Installation instructions
+- Quick start examples
+- Architecture explanation
+
+#### **Design System**
+- **Design Tokens**: Complete showcase of colors, typography, spacing, borders, and breakpoints
+- **Theme Examples**: AI Chat and Todo App theme demonstrations
+- **Customization Guide**: How to create and apply custom themes
+
+#### **Components**
+Each component includes comprehensive stories:
+
+**Atoms** (Basic building blocks)
+- **Button**: All variants, sizes, states, and real-world examples
+- **Input**: Validation states, icons, different input types
+- **Textarea**: Auto-resize functionality, validation states
+- **LoadingSpinner**: All sizes, colors, and usage contexts
+- **Badge**: Priority variants, styles, and semantic usage
+
+**Molecules** (Functional groupings)
+- **FormField**: Complete form field composition with validation
+- **Alert**: Error handling, notifications, and retry functionality
+- **Card**: Content containers with various visual styles
+
+**Organisms** (Complex components)
+- **Modal**: Comprehensive modal system with accessibility features
+
+#### **Real-World Examples**
+- **AI Chat Patterns**: Message inputs, error handling, loading states
+- **Todo App Patterns**: Task forms, priority badges, card layouts
+- **Form Patterns**: Complete form compositions and validation
+- **Dashboard Patterns**: Metric cards, status indicators
+
+### 🎯 Story Features
+
+Each component story includes:
+
+#### **Interactive Controls**
+- Modify props in real-time using Storybook controls
+- Test different combinations of props and states
+- See immediate visual feedback
+
+#### **Multiple Examples**
+- Basic usage examples
+- All variants and sizes
+- Different states (loading, error, success)
+- Real-world usage scenarios
+
+#### **Accessibility Testing**
+- Built-in accessibility addon
+- WCAG compliance checking
+- Keyboard navigation testing
+- Screen reader compatibility
+
+#### **Responsive Testing**
+- Multiple viewport sizes
+- Mobile, tablet, and desktop views
+- Responsive behavior demonstration
+
+#### **Code Examples**
+- Copy-paste ready code snippets
+- TypeScript interfaces and prop documentation
+- Usage examples with proper imports
+
+### 🔄 Updating Storybook
+
+#### Adding New Stories
+When adding new components, create corresponding stories:
+
+```tsx
+// src/atoms/NewComponent/NewComponent.stories.tsx
+import type { Meta, StoryObj } from "@storybook/react";
+import { NewComponent } from "./NewComponent.tsx";
+
+const meta: Meta<typeof NewComponent> = {
+  title: "Atoms/NewComponent",
+  component: NewComponent,
+  parameters: {
+    docs: {
+      description: {
+        component: "Description of the new component..."
+      }
+    }
+  }
+};
+
+export default meta;
+type Story = StoryObj<typeof NewComponent>;
+
+export const Default: Story = {
+  args: {
+    // Default props
+  }
+};
+```
+
+#### Updating Existing Stories
+When modifying components:
+
+1. **Update prop interfaces**: Ensure stories reflect new props
+2. **Add new examples**: Show new functionality or variants
+3. **Update documentation**: Keep descriptions current
+4. **Test accessibility**: Verify WCAG compliance
+
+#### Story Best Practices
+
+1. **Comprehensive Coverage**: Include all variants, sizes, and states
+2. **Real-World Examples**: Show actual usage patterns from applications
+3. **Interactive Controls**: Make props controllable where appropriate
+4. **Clear Documentation**: Provide helpful descriptions and usage notes
+5. **Accessibility Focus**: Include accessibility considerations
+
+### 🚀 Deployment
+
+#### Automated Deployment
+Storybook can be automatically deployed on:
+- **Vercel**: Connect your repository for automatic deployments
+- **Netlify**: Deploy from Git with build commands
+- **GitHub Pages**: Use GitHub Actions for automated deployment
+
+#### Manual Deployment
+```bash
+# Build Storybook
+deno task storybook:build
+
+# Deploy the storybook-static folder to your hosting service
+```
+
+### 🔧 Customization
+
+#### Storybook Configuration
+Customize Storybook in `.storybook/main.ts`:
+- Add new addons
+- Configure build settings
+- Modify story patterns
+
+#### Theme Configuration
+Customize Storybook's appearance in `.storybook/manager.ts`:
+- Brand colors and logos
+- UI customization
+- Custom themes
+
+#### Preview Configuration
+Configure story rendering in `.storybook/preview.ts`:
+- Global decorators
+- Default parameters
+- Background options
+- Viewport configurations
+
 ## 📋 Migration Guide
 
-See [MIGRATION.md](./MIGRATION.md) for detailed instructions on migrating from application-specific components to the shared library.
+See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for detailed instructions on migrating from application-specific components to the shared library.
 
 ## 🤝 Contributing
 
