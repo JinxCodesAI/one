@@ -1,12 +1,21 @@
 /**
  * Button Component Tests
- * 
+ *
  * Comprehensive test suite for the Button component covering
- * functionality, accessibility, and edge cases.
+ * functionality, accessibility, performance, and edge cases.
+ * Follows the comprehensive testing guide.
  */
 
-import { assertEquals, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { describe, it } from "https://deno.land/std@0.208.0/testing/bdd.ts";
+import { assertEquals, assertExists, assert } from "https://deno.land/std@0.208.0/assert/mod.ts";
+import { describe, it, beforeEach, afterEach } from "https://deno.land/std@0.208.0/testing/bdd.ts";
+import {
+  ComponentTestUtils,
+  AccessibilityTestUtils,
+  VisualTestUtils,
+  PerformanceTestUtils,
+  initializeTestEnvironment,
+  testLogger
+} from "../../../tests/setup.ts";
 
 // Mock React for testing (simplified)
 const React = {
